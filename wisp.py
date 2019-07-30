@@ -21,7 +21,14 @@ from scipy import interpolate
 from scipy.spatial.distance import cdist
 import networkx
 import time
-import cPickle
+
+try:
+    # Python 2
+	import cPickle as pickle
+except ImportError:
+    # Python 3
+	import pickle
+
 import multiprocessing
 import copy
 import textwrap
@@ -40,7 +47,7 @@ def log(astring, fileobjects): # prints to screen and to log file
 
     if isinstance(fileobjects, list) == False: fileobjects = [fileobjects] # it's not a list, so make it one
 
-    print astring
+    print(astring)
 
     for fileobject in fileobjects: fileobject.write(astring + "\n")
 
@@ -59,11 +66,11 @@ class Atom:
         self.line = Line
         self.atomname = Line[11:16].strip()
 
-        if len(self.atomname)==1:
+        if len(self.atomname) == 1:
             self.atomname = self.atomname + "  "
-        elif len(self.atomname)==2:
+        elif len(self.atomname) == 2:
             self.atomname = self.atomname + " "
-        elif len(self.atomname)==3:
+        elif len(self.atomname) == 3:
             self.atomname = self.atomname + " " # This line is necessary for babel to work, though many PDBs in the PDB would have this line commented out
 
         # now get the chain
@@ -75,30 +82,30 @@ class Atom:
         except:
             self.resid = 0
 
-        self.coordinates_numpy = numpy.array([float(Line[30:38]), float(Line[38:46]), float(Line[46:54])])
+        self.coordinates_numpy = numpy.array([float(Line[30:38]), float(Line[38:46]), float(Line[46:54])], numpy.float64)
 
         self.element = ""
         if len(Line) >= 79: self.element = Line[76:79].strip().upper() # element specified explicitly at end of life
         if self.element == "": # try to guess at element from name
             two_letters = self.atomname[0:2].strip().upper()
-            if two_letters=='BR':
-                self.element='BR'
-            elif two_letters=='CL':
-                self.element='CL'
-            elif two_letters=='BI':
-                self.element='BI'
-            elif two_letters=='AS':
-                self.element='AS'
-            elif two_letters=='AG':
-                self.element='AG'
-            elif two_letters=='LI':
-                self.element='LI'
-            elif two_letters=='MG':
-                self.element='MG'
-            elif two_letters=='RH':
-                self.element='RH'
-            elif two_letters=='ZN':
-                self.element='ZN'
+            if two_letters == 'BR':
+                self.element = 'BR'
+            elif two_letters == 'CL':
+                self.element = 'CL'
+            elif two_letters == 'BI':
+                self.element = 'BI'
+            elif two_letters == 'AS':
+                self.element = 'AS'
+            elif two_letters == 'AG':
+                self.element = 'AG'
+            elif two_letters == 'LI':
+                self.element = 'LI'
+            elif two_letters == 'MG':
+                self.element = 'MG'
+            elif two_letters == 'RH':
+                self.element = 'RH'
+            elif two_letters == 'ZN':
+                self.element = 'ZN'
             else: #So, just assume it's the first letter.
                 self.element = self.atomname[0:1].strip().upper()
 
@@ -139,9 +146,9 @@ class Molecule:
         self.coordinates = []
 
         for t in range(0,len(alist)):
-            line=alist[t]
+            line = alist[t]
             if len(line) >= 7:
-                if line[0:4]=="ATOM" or line[0:6]=="HETATM": # Load atom data (coordinates, etc.)
+                if line[0:4] == "ATOM" or line[0:6] == "HETATM": # Load atom data (coordinates, etc.)
                     temp_atom = Atom()
                     temp_atom.read_pdb_line(line)
                     self.atomnames.append(temp_atom.atomname)
@@ -157,7 +164,7 @@ class Molecule:
         self.resids = numpy.array(self.resids)
         self.elements = numpy.array(self.elements)
         self.resnames = numpy.array(self.resnames)
-        self.coordinates = numpy.array(self.coordinates)
+        self.coordinates = numpy.array(self.coordinates, numpy.float64)
 
         gc.enable()
 
@@ -214,7 +221,7 @@ class Molecule:
                 if self.atomnames[indx].strip() in atom_names_list: indices_to_keep.append(indx)
             else:
                 if not self.atomnames[indx].strip() in atom_names_list: indices_to_keep.append(indx)
-        indices_to_keep = numpy.array(indices_to_keep)
+        indices_to_keep = numpy.array(indices_to_keep, numpy.float64)
         return indices_to_keep
 
     def get_center_of_mass_from_selection_by_atom_indices(self, indices_selection):
@@ -237,7 +244,7 @@ class Molecule:
             masses[t][2] = themass
 
         center_of_mass = ((coors * masses).sum(axis=0)) * (1.0 / masses.sum(axis=0))
-        return numpy.array([center_of_mass[0], center_of_mass[1], center_of_mass[2]])
+        return numpy.array([center_of_mass[0], center_of_mass[1], center_of_mass[2]], numpy.float64)
 
     def get_mass(self, element_name):
         """A library to provide the mass of a given element
@@ -330,21 +337,21 @@ class UserInput():
         self.parameters['vmd_resolution'] = 6
         self.parameters['node_sphere_radius'] = 1.0
         self.parameters['seconds_to_wait_before_parallelizing_path_finding'] = 5.0
-        self.parameters['user_specified_contact_map_filename'] = '';
-        self.parameters['user_specified_functionalized_matrix_filename'] = '';
-        self.parameters['shortest_path_r'] = 0.0;
-        self.parameters['shortest_path_g'] = 0.0;
-        self.parameters['shortest_path_b'] = 1.0;
-        self.parameters['longest_path_r'] = 1.0;
-        self.parameters['longest_path_g'] = 0.0;
-        self.parameters['longest_path_b'] = 0.0;
-        self.parameters['node_sphere_r'] = 1.0;
-        self.parameters['node_sphere_g'] = 1.0;
-        self.parameters['node_sphere_b'] = 1.0;
-        self.parameters['longest_path_opacity'] = 1.0;
-        self.parameters['shortest_path_opacity'] = 1.0;
-        self.parameters['node_sphere_opacity'] = 1.0;
-        self.parameters['output_directory'] = 'wisp_output__' + time.strftime('%b_%d_%Y__%I_%M_%p');
+        self.parameters['user_specified_contact_map_filename'] = ''
+        self.parameters['user_specified_functionalized_matrix_filename'] = ''
+        self.parameters['shortest_path_r'] = 0.0
+        self.parameters['shortest_path_g'] = 0.0
+        self.parameters['shortest_path_b'] = 1.0
+        self.parameters['longest_path_r'] = 1.0
+        self.parameters['longest_path_g'] = 0.0
+        self.parameters['longest_path_b'] = 0.0
+        self.parameters['node_sphere_r'] = 1.0
+        self.parameters['node_sphere_g'] = 1.0
+        self.parameters['node_sphere_b'] = 1.0
+        self.parameters['longest_path_opacity'] = 1.0
+        self.parameters['shortest_path_opacity'] = 1.0
+        self.parameters['node_sphere_opacity'] = 1.0
+        self.parameters['output_directory'] = 'wisp_output__' + time.strftime('%b_%d_%Y__%I_%M_%p')
         self.parameters['pdb_single_frame_filename'] = ''
 
         # first, check if the help file has been requested
@@ -392,29 +399,29 @@ class UserInput():
 
         # what if not all required parameters have been specified?
         if self.parameters['pdb_trajectory_filename'] == "" or self.parameters['source_residues'] == [] or self.parameters['sink_residues'] == []:
-            print "\nYou have failed to provide all the required parameters. In its simplest form, WISP can be used like this:"
-            print '     python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37'
-            print
-            print "For more detailed help, use the -help command-line parameter: python wisp.py -help\n"
+            print("\nYou have failed to provide all the required parameters. In its simplest form, WISP can be used like this:")
+            print('     python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37')
+            print()
+            print("For more detailed help, use the -help command-line parameter: python wisp.py -help\n")
             sys.exit(0)
 
         # make the output directory
         if self.parameters['output_directory'][-1:] != os.sep: self.parameters['output_directory'] = self.parameters['output_directory'] + os.sep
         if os.path.exists(self.parameters['output_directory']):
-            print "The output directory, " + self.parameters['output_directory'] + ", already exists. Please delete this directory or select a different one for output before proceeding."
+            print("The output directory, " + self.parameters['output_directory'] + ", already exists. Please delete this directory or select a different one for output before proceeding.")
             sys.exit()
         else: os.mkdir(self.parameters['output_directory'])
 
         # some parameters are auto generated
         autogenerated_parameters = ['logfile', 'simply_formatted_paths_filename']
         self.parameters['logfile'] = open(self.parameters['output_directory'] + "log.txt",'w')
-        self.parameters['simply_formatted_paths_filename'] = self.parameters['output_directory'] + 'simply_formatted_paths.txt';
+        self.parameters['simply_formatted_paths_filename'] = self.parameters['output_directory'] + 'simply_formatted_paths.txt'
 
         # inform what parameters will be used
         parameters_file = open(self.parameters['output_directory'] + "parameters_used.txt", 'w')
         log("# Command-line Parameters:", [self.parameters['logfile'], parameters_file])
         somekeys = self.parameters.keys()
-        somekeys.sort()
+        somekeys = sorted(somekeys)
         for key in somekeys:
             if not key in autogenerated_parameters:
                 log("#\t" + key + ": " + str(self.parameters[key]), [self.parameters['logfile'],parameters_file])
@@ -489,23 +496,23 @@ class UserInput():
 
         for item in description:
             if item[0] == "title":
-                print "\n" + item[1]
-                print "-"*len(item[1])
+                print("\n" + item[1])
+                print("-"*len(item[1]))
             else:
                 towrap = item[0] + ": " + item[1]
                 if self.parameters[item[0]] == [] or self.parameters[item[0]] == '': towrap = towrap + ""
                 else: towrap = towrap + " The default value is " + str(self.parameters[item[0]]) + "."
 
                 wrapper = textwrap.TextWrapper(initial_indent="", subsequent_indent="    ")
-                print wrapper.fill(towrap)
-        print
-        print "Notes:"
-        print "1) To visualize in VMD, first load the output TCL file, then load the PDB file."
-        print "2) WISP ignores PDB segnames. Every residue in your PDB trajectory must be uniquely identifiable by the combination of its chain, resname, and resid."
-        print
-        print "Example:"
+                print(wrapper.fill(towrap))
+        print()
+        print("Notes:")
+        print("1) To visualize in VMD, first load the output TCL file, then load the PDB file.")
+        print("2) WISP ignores PDB segnames. Every residue in your PDB trajectory must be uniquely identifiable by the combination of its chain, resname, and resid.")
+        print()
+        print("Example:")
         wrapper = textwrap.TextWrapper(initial_indent="     ", subsequent_indent="         ")
-        print wrapper.fill('python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -node_definition CA -contact_map_distance_limit 50.0 -load_wisp_saved_matrix false -wisp_saved_matrix_filename matrix.file -desired_number_of_paths 30 -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37 -number_processors 24 -num_frames_to_load_before_processing 96 -seconds_to_wait_before_parallelizing_path_finding 10.0 -shortest_path_radius 0.2 -longest_path_radius 0.05 -spline_smoothness 0.05 -vmd_resolution 6 -node_sphere_radius 1.0')
+        print(wrapper.fill('python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -node_definition CA -contact_map_distance_limit 50.0 -load_wisp_saved_matrix false -wisp_saved_matrix_filename matrix.file -desired_number_of_paths 30 -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37 -number_processors 24 -num_frames_to_load_before_processing 96 -seconds_to_wait_before_parallelizing_path_finding 10.0 -shortest_path_radius 0.2 -longest_path_radius 0.05 -spline_smoothness 0.05 -vmd_resolution 6 -node_sphere_radius 1.0'))
         print
         sys.exit(0)
 
@@ -561,7 +568,8 @@ class multi_threading_to_collect_data_from_frames():
             p.start()
             processes.append(p)
 
-        while running.value > 0: is_running = 0 # wait for everything to finish
+        while running.value > 0:
+            is_running = 0 # wait for everything to finish
 
         # compile all results
         total_summed_coordinates = None
@@ -681,7 +689,8 @@ class multi_threading_find_paths():
             p.start()
             processes.append(p)
 
-        while running.value > 0: is_running = 0 # wait for everything to finish
+        while running.value > 0:
+            is_running = 0 # wait for everything to finish
 
         # compile all results
         for thread in threads:
@@ -758,12 +767,12 @@ class find_paths: # other, more specific classes with inherit this one
                 paths_growing_out_from_source.pop(i)
                 break
             elif (paths_growing_out_from_source[i][-1] != sink): # sink not yet reached, but paths still short enough. So add new paths, same as old, but with neighboring element appended.
-                node_neighbors=list(G.neighbors(paths_growing_out_from_source[i][-1]))
+                node_neighbors = list(G.neighbors(paths_growing_out_from_source[i][-1]))
                 for j in range(len(node_neighbors)):
                    if not node_neighbors[j] in paths_growing_out_from_source[i]:
-                        temp=paths_growing_out_from_source[i][:]
+                        temp = paths_growing_out_from_source[i][:]
                         temp.append(node_neighbors[j])
-                        temp[0]=temp[0]+G.edges[temp[-2],temp[-1]]['weight']
+                        temp[0] = temp[0]+G.edges[temp[-2],temp[-1]]['weight']
                         paths_growing_out_from_source.insert((i+j+1),temp)
                 paths_growing_out_from_source.pop(i)
                 break
@@ -819,7 +828,7 @@ class GetCovarianceMatrix():
 
             total_coordinate_sum = load_frames_data.summed_coordinates
             dictionary_of_node_lists = load_frames_data.nodes
-            self.average_pdb.coordinates = total_coordinate_sum/number_of_frames # because the previous coordinates belonged to the first frame
+            self.average_pdb.coordinates = total_coordinate_sum / number_of_frames # because the previous coordinates belonged to the first frame
 
         else: # so more than one processor. Load in 100 frames, work on those.
             multiple_frames = []
@@ -845,6 +854,7 @@ class GetCovarianceMatrix():
 
                     if number_of_frames % parameters['num_frames_to_load_before_processing'] == 0: # so you've collected 100 frames. Time to send them off to the multiple processes
                         tmp = multi_threading_to_collect_data_from_frames(multiple_frames, parameters['number_processors']).combined_results # note that the results are cumulative within the object
+
                         if total_coordinate_sum is None:
                             total_coordinate_sum = tmp[0]
                             dictionary_of_node_lists = tmp[1]
@@ -872,12 +882,12 @@ class GetCovarianceMatrix():
                     try: dictionary_of_node_lists[key].extend(tmp[1][key])
                     except: dictionary_of_node_lists[key] = tmp[1][key]
 
-            self.average_pdb.coordinates = total_coordinate_sum/number_of_frames # because the previous coordinates belonged to the first frame
+            self.average_pdb.coordinates = total_coordinate_sum / number_of_frames # because the previous coordinates belonged to the first frame
 
         afile.close()
 
         # numpyify dictionary_of_node_lists
-        for res_iden in dictionary_of_node_lists.keys(): dictionary_of_node_lists[res_iden] = numpy.array(dictionary_of_node_lists[res_iden])
+        for res_iden in dictionary_of_node_lists.keys(): dictionary_of_node_lists[res_iden] = numpy.array(dictionary_of_node_lists[res_iden], numpy.float64)
 
         # now process the data that has been loaded
         # now get the average location of each node
@@ -962,7 +972,7 @@ class GetCovarianceMatrix():
 
         # now save the matrix if needed
         if parameters['wisp_saved_matrix_filename'] != '': # because it only would have gotten here if load_wisp_saved_matrix = FALSE
-            cPickle.dump(self, open(parameters['wisp_saved_matrix_filename'], 'wb'))
+            pickle.dump(self, open(parameters['wisp_saved_matrix_filename'], 'wb'))
 
     def convert_list_of_residue_keys_to_residue_indices(self, list_residue_keys):
         """Identify the indices in a networkx.Graph object corresponding to the identified residue string ids (CHAIN_RESNAME_RESID).
@@ -979,7 +989,8 @@ class GetCovarianceMatrix():
             networkx_residue_indices.append(index_of_key)
         return networkx_residue_indices
 
-    def __getitem__(self): return self.correlations
+    def __getitem__(self, _):
+        return self.correlations
 
 ######################### To Identify Paths ##############################
 
@@ -1021,7 +1032,7 @@ class GetPaths():
         log("#      Identifying the cutoff required to produce " + str(parameters['desired_number_of_paths']) + " paths...", parameters['logfile'])
         while num_paths < parameters['desired_number_of_paths']:
             log("#          Testing the cutoff " + str(cutoff) + "...", parameters['logfile'])
-            cutoff_in_array = numpy.array([cutoff])
+            cutoff_in_array = numpy.array([cutoff], numpy.float64)
             paths = self.remove_redundant_paths(self.get_paths_between_multiple_endpoints(cutoff_in_array, correlation_matrix, sources, sinks, G, parameters))
             num_paths = len(paths)
 
@@ -1170,8 +1181,8 @@ class GetPaths():
 
         if source == sink: return []
 
-        source_lengths,source_paths=networkx.single_source_dijkstra(G, source, target=None, cutoff=None, weight='weight')
-        sink_lengths,sink_paths=networkx.single_source_dijkstra(G, sink, target=None, cutoff=None, weight='weight')
+        source_lengths,source_paths = networkx.single_source_dijkstra(G, source, target=None, cutoff=None, weight='weight')
+        sink_lengths,sink_paths = networkx.single_source_dijkstra(G, sink, target=None, cutoff=None, weight='weight')
 
         so_l = [source_lengths[key] for key in source_lengths.keys()]
         so_p = [source_paths[key] for key in source_paths.keys()]
@@ -1187,7 +1198,7 @@ class GetPaths():
         node_list=[]
         dijkstra_list=[]
         upper_minimum_length=0
-        if check_list_1 == check_list_2:
+        if len(set(check_list_1).difference(check_list_2)) == 0:
            for i in range(len(so_l)):
               if so_l[i]+si_l[i] <= cutoff:
                  node_list.extend(so_p[i][:])
@@ -1199,9 +1210,9 @@ class GetPaths():
                  temp_length=so_l[i]+si_l[i]
                  dijkstra_list.append(temp_path)
                  if ((so_l[i]+si_l[i]) > upper_minimum_length):
-                    upper_minimum_path=temp_path
-                    upper_minimum_length=temp_length
-                    forced_node=temp_forced_node
+                    upper_minimum_path = temp_path
+                    upper_minimum_length = temp_length
+                    forced_node = temp_forced_node
 
         else:
            print('paths do not match up')
@@ -1219,11 +1230,11 @@ class GetPaths():
         correlation_matrix=new_matrix
         G=networkx.Graph(incoming_graph_data=correlation_matrix,labels=unique_nodes)
 
-        length=0.0
-        paths_growing_out_from_source=[[length,source]]
-        temp=[]
-        full_paths_from_start_to_sink=[]
-        condition=1
+        length = 0.0
+        paths_growing_out_from_source = [[length,source]]
+        temp = []
+        full_paths_from_start_to_sink = []
+        condition = 1
 
         # This is essentially this list-addition replacement for a recursive algorithm you've envisioned.
         # To parallelize, just get the first N branches, and send them off to each node. Rest of branches filled out in separate processes.
@@ -1295,8 +1306,8 @@ class Visualize():
             ratios.append(ratio)
 
         # define the colors
-        a1 = numpy.array([parameters['shortest_path_r'], parameters['shortest_path_g'], parameters['shortest_path_b']])
-        a2 = numpy.array([parameters['longest_path_r'], parameters['longest_path_g'], parameters['longest_path_b']])
+        a1 = numpy.array([parameters['shortest_path_r'], parameters['shortest_path_g'], parameters['shortest_path_b']], numpy.float64)
+        a2 = numpy.array([parameters['longest_path_r'], parameters['longest_path_g'], parameters['longest_path_b']], numpy.float64)
         color_defs = {}
         for coloridd in range(23,33): # 33 because I want it to go to 32
             thiscolor = ((a2 - a1) / 9.0) * coloridd + (32.0/9.0) * a1 - (23.0/9.0) * a2
@@ -1397,12 +1408,12 @@ class Visualize():
                 degree = len(x_vals) - 1
                 if degree > 3: degree = 3 # so at most degree 3
 
-                tck,u = interpolate.splprep([x_vals, y_vals, z_vals],s=0,k=degree)
+                tck, u = interpolate.splprep([x_vals, y_vals, z_vals],s=0,k=degree)
 
                 # now interpolate
                 unew = numpy.arange(0,1.01,parameters['spline_smoothness'])
 
-                out = interpolate.splev(unew,tck)
+                out = interpolate.splev(unew, tck)
 
                 for t in range(len(out[0])-1):
                     x1 = str(out[0][t])
@@ -1453,12 +1464,12 @@ if __name__=="__main__":
     parameters = UserInput()
 
     # compute the correlation matrix
-    if (parameters['load_wisp_saved_matrix'] == "TRUE"): correlation_matrix_object = cPickle.load(open(parameters['wisp_saved_matrix_filename'], 'rb')) # load the matrix instead of generating
+    if (parameters['load_wisp_saved_matrix'] == "TRUE"): correlation_matrix_object = pickle.load(open(parameters['wisp_saved_matrix_filename'], 'rb')) # load the matrix instead of generating
     else: correlation_matrix_object = GetCovarianceMatrix(parameters) # so generate the matrix instead of loading it
     correlation_matrix = correlation_matrix_object.correlations
 
     # always save a copy of the correlation matrix, regardless of how it was loaded/generated
-    cPickle.dump(correlation_matrix_object, open(parameters['output_directory'] + "functionalized_matrix_with_contact_map_applied.pickle", 'wb'))
+    pickle.dump(correlation_matrix_object, open(parameters['output_directory'] + "functionalized_matrix_with_contact_map_applied.pickle", 'wb'))
 
     # now get the source and sink locations from the parameters
     sources = correlation_matrix_object.convert_list_of_residue_keys_to_residue_indices(parameters['source_residues'])
