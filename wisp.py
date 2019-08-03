@@ -296,7 +296,7 @@ class Molecule:
         for index, residue_iden in enumerate(self.residue_identifiers_in_order):
             if node_definition == "CA": # the node is at the alpha carbon
                 indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(residue_iden,['CA'])
-                node_loc = self.coordinates[indices_to_consider[0]]
+                node_loc = self.coordinates[int(indices_to_consider[0])]
             elif node_definition == "RESIDUE_COM": # the node is the residue center of mass
                 node_loc = self.get_center_of_mass_from_selection_by_atom_indices(self.residue_identifier_to_atom_indices[residue_iden])
             elif node_definition == "BACKBONE_COM": # the node is the residue center of mass
