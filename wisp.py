@@ -325,7 +325,7 @@ class UserInput():
         self.parameters['num_frames_to_load_before_processing'] = 96 # only relevant if number_processors > 1
         self.parameters['node_definition'] = 'RESIDUE_COM' # can be CA, SIDECHAIN_COM, BACKBONE_COM, or RESIDUE_COM
         self.parameters['pdb_trajectory_filename'] = '' # The trajectory to be analyzed
-        self.parameters['contact_map_distance_limit'] = 999999.999 # If specified, correlations between residues whose average node locations are greater than this value will be ignored
+        self.parameters['contact_map_distance_limit'] = 4.5 # If specified, correlations between residues whose average node locations are greater than this value will be ignored
         self.parameters['desired_number_of_paths'] = 1 # how many paths to consider
         self.parameters['source_residues'] = []
         self.parameters['sink_residues'] = []
