@@ -505,6 +505,11 @@ class UserInput():
         # inform what parameters will be used
         with open(self.parameters['output_directory'] + "parameters_used.txt", 'w') as parameters_file:
             log(
+                "# Wisp 1.1\n# ========\n",
+                [self.parameters['logfile'], parameters_file]
+            )
+
+            log(
                 "# Command-line Parameters:",
                 [self.parameters['logfile'], parameters_file]
             )
