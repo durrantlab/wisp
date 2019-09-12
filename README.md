@@ -104,8 +104,8 @@ descriptions of each:
   reindexes the residues. See the `visualize.tcl` file instead for a more
   human-readable output.
 
-HELP FILE
----------
+PARAMETER DESCRIPTION
+---------------------
 
 `python wisp.py -help` displays the following text:
 
