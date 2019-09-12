@@ -45,7 +45,8 @@ def log(astring, fileobjects): # prints to screen and to log file
     """
 
     if not isinstance(fileobjects, list):
-        fileobjects = [fileobjects] # it's not a list, so make it one
+        # it's not a list, so make it one
+        fileobjects = [fileobjects]
 
     print(astring)
 
@@ -60,9 +61,9 @@ class Atom:
     def read_pdb_line(self, Line):
         """Reads atomic information from a string formatted according to the PDB standard.
 
-	Arguments:
-	Line -- A string formatted according to the PDB standard.
-	"""
+        Arguments:
+        Line -- A string formatted according to the PDB standard.
+        """
 
         self.line = Line
         self.atomname = Line[11:16].strip()
@@ -72,7 +73,9 @@ class Atom:
         elif len(self.atomname) == 2:
             self.atomname = self.atomname + " "
         elif len(self.atomname) == 3:
-            self.atomname = self.atomname + " " # This line is necessary for babel to work, though many PDBs in the PDB would have this line commented out
+            # This line is necessary for babel to work, though many PDBs in
+            # the PDB would have this line commented out
+            self.atomname = self.atomname + " "
 
         # now get the chain
         self.chain = Line[21:22]
@@ -83,11 +86,14 @@ class Atom:
         except:
             self.resid = 0
 
-        self.coordinates_numpy = numpy.array([float(Line[30:38]), float(Line[38:46]), float(Line[46:54])], numpy.float64)
+        self.coordinates_numpy = numpy.array([
+            float(Line[30:38]), float(Line[38:46]), float(Line[46:54])
+        ], numpy.float64)
 
         self.element = ""
         if len(Line) >= 79:
-            self.element = Line[76:79].strip().upper() # element specified explicitly at end of life
+            # element specified explicitly at end of life
+            self.element = Line[76:79].strip().upper()
         if self.element == "": # try to guess at element from name
             two_letters = self.atomname[0:2].strip().upper()
             if two_letters == 'BR':
@@ -108,7 +114,8 @@ class Atom:
                 self.element = 'RH'
             elif two_letters == 'ZN':
                 self.element = 'ZN'
-            else: #So, just assume it's the first letter.
+            else:
+                #So, just assume it's the first letter.
                 self.element = self.atomname[0:1].strip().upper()
 
         # Any number needs to be removed from the element name
@@ -148,10 +155,10 @@ class Molecule:
         self.resnames = []
         self.coordinates = []
 
-        for t in range(0,len(alist)):
-            line = alist[t]
+        for line in alist:
             if len(line) >= 7:
-                if line[0:4] == "ATOM" or line[0:6] == "HETATM": # Load atom data (coordinates, etc.)
+                if line[0:4] == "ATOM" or line[0:6] == "HETATM":
+                    # Load atom data (coordinates, etc.)
                     temp_atom = Atom()
                     temp_atom.read_pdb_line(line)
                     self.atomnames.append(temp_atom.atomname)
@@ -180,29 +187,46 @@ class Molecule:
 
         f = open(filename, 'w')
         for index in range(len(self.atomnames)):
-            line = "ATOM  " + str(index+1).rjust(5) + self.atomnames[index].rjust(5) + self.resnames[index].strip().rjust(4) + self.chains[index].strip().rjust(2) + str(self.resids[index]).rjust(4) + "    " + ("%.3f" % self.coordinates[index][0]).rjust(8) + ("%.3f" % self.coordinates[index][1]).rjust(8) + ("%.3f" % self.coordinates[index][2]).rjust(8) + " "*24
+            line = "ATOM  " + str(index+1).rjust(5) + \
+                   self.atomnames[index].rjust(5) + \
+                   self.resnames[index].strip().rjust(4) + \
+                   self.chains[index].strip().rjust(2) + \
+                   str(self.resids[index]).rjust(4) + "    " + \
+                   ("%.3f" % self.coordinates[index][0]).rjust(8) + \
+                   ("%.3f" % self.coordinates[index][1]).rjust(8) + \
+                   ("%.3f" % self.coordinates[index][2]).rjust(8) + " " * 24
             f.write(line + "\n")
 
         f.close()
 
     def map_atoms_to_residues(self):
-        """Sets up self.residue_identifier_to_atom_indices, which matches chain_resname_resid to associated atom indices"""
+        """Sets up self.residue_identifier_to_atom_indices, which matches
+        chain_resname_resid to associated atom indices"""
 
         # each residue is uniquely identified by its chain, resname, resid triplet
         residue_identifiers_for_all_atoms = []
         for index in range(len(self.coordinates)):
-            residue_identifiers_for_all_atoms.append(self.chains[index].strip() + "_" + self.resnames[index].strip() + "_" + str(self.resids[index]))
+            residue_identifiers_for_all_atoms.append(
+                self.chains[index].strip() + "_" + \
+                self.resnames[index].strip() + "_" + str(self.resids[index])
+            )
         self.residue_identifiers_in_order = residue_identifiers_for_all_atoms[:]
         for t in range(len(self.residue_identifiers_in_order)-1,0,-1):
             if self.residue_identifiers_in_order[t] == self.residue_identifiers_in_order[t-1]:
                 self.residue_identifiers_in_order.pop(t)
 
-        residue_identifiers_for_all_atoms = numpy.array(residue_identifiers_for_all_atoms)
-        self.residue_identifiers_in_order = numpy.array(self.residue_identifiers_in_order)
+        residue_identifiers_for_all_atoms = numpy.array(
+            residue_identifiers_for_all_atoms
+        )
+        self.residue_identifiers_in_order = numpy.array(
+            self.residue_identifiers_in_order
+        )
 
         self.residue_identifier_to_atom_indices = {}
         for the_id in self.residue_identifiers_in_order:
-            self.residue_identifier_to_atom_indices[the_id] = numpy.nonzero(residue_identifiers_for_all_atoms == the_id)[0]
+            self.residue_identifier_to_atom_indices[the_id] = numpy.nonzero(
+                residue_identifiers_for_all_atoms == the_id
+            )[0]
 
     def get_indices_of_atoms_in_a_residue_by_atom_name(self, residue_identifier, atom_names_list, not_selection=False):
         """Gets the indices of atoms in a specified residue
@@ -210,7 +234,8 @@ class Molecule:
         Arguments:
         residue_identifier -- a string (chain_resname_resid) specifying the residue
         atom_names_list -- a list of strings containing the names of the atoms to keep
-        not_selection -- a optional boolean. if False, match the atom_names_list items. if True, match the items not in atom_names_list
+        not_selection -- a optional boolean. if False, match the atom_names_list items.
+                         if True, match the items not in atom_names_list
 
         Returns a numpy array containing the indices of the atoms to keep
         """
@@ -234,9 +259,11 @@ class Molecule:
         """Gets the center of mass of a set of atoms
 
         Arguments:
-        indices_selection -- a numpy array containing the indices of the atoms to consider
+        indices_selection -- a numpy array containing the indices of the
+                             atoms to consider
 
-        Returns a numpy array containing the 3D coordinates of the center of mass of those atoms
+        Returns a numpy array containing the 3D coordinates of the center of
+        mass of those atoms
         """
 
         coors = self.coordinates[indices_selection]
@@ -250,7 +277,9 @@ class Molecule:
             masses[t][2] = themass
 
         center_of_mass = ((coors * masses).sum(axis=0)) * (1.0 / masses.sum(axis=0))
-        return numpy.array([center_of_mass[0], center_of_mass[1], center_of_mass[2]], numpy.float64)
+        return numpy.array([
+            center_of_mass[0], center_of_mass[1], center_of_mass[2]
+        ], numpy.float64)
 
     def get_mass(self, element_name):
         """A library to provide the mass of a given element
@@ -258,7 +287,8 @@ class Molecule:
         Arguments:
         element_name -- a string that specifies the element
 
-        Returns a float, the mass of the specified element. If the element is not in the library, returns None.
+        Returns a float, the mass of the specified element. If the element is
+        not in the library, returns None.
         """
 
         element_name = element_name.upper()
@@ -295,22 +325,41 @@ class Molecule:
         """For each residue in the molecule, define the node
 
         Arguments:
-        node_definition -- a string describing the definition of the node: CA, RESIDUE_COM, BACKBONE_COM, or SIDECHAIN_COM
+        node_definition -- a string describing the definition of the node: CA,
+                           RESIDUE_COM, BACKBONE_COM, or SIDECHAIN_COM
         """
 
         self.nodes = numpy.empty((len(self.residue_identifiers_in_order),3))
         for index, residue_iden in enumerate(self.residue_identifiers_in_order):
             if node_definition == "CA": # the node is at the alpha carbon
-                indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(residue_iden,['CA'])
+                indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(
+                    residue_iden,['CA']
+                )
                 node_loc = self.coordinates[int(indices_to_consider[0])]
             elif node_definition == "RESIDUE_COM": # the node is the residue center of mass
-                node_loc = self.get_center_of_mass_from_selection_by_atom_indices(self.residue_identifier_to_atom_indices[residue_iden])
+                node_loc = self.get_center_of_mass_from_selection_by_atom_indices(
+                    self.residue_identifier_to_atom_indices[residue_iden]
+                )
             elif node_definition == "BACKBONE_COM": # the node is the residue center of mass
-                indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(residue_iden,['C', 'CA', 'H', 'H1', 'H2', 'H3', 'HA', 'HA2', 'HH1', 'HN', 'HT1', 'HT2', 'HT3', 'HW', 'N', 'O', 'O1', 'O2', 'OT1', 'OT2', 'OXT'])
-                node_loc = self.get_center_of_mass_from_selection_by_atom_indices(indices_to_consider)
+                indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(
+                    residue_iden,['C', 'CA', 'H', 'H1', 'H2', 'H3', 'HA',
+                                  'HA2', 'HH1', 'HN', 'HT1', 'HT2', 'HT3',
+                                  'HW', 'N', 'O', 'O1', 'O2', 'OT1', 'OT2',
+                                  'OXT']
+                )
+                node_loc = self.get_center_of_mass_from_selection_by_atom_indices(
+                    indices_to_consider
+                )
             elif node_definition == "SIDECHAIN_COM": # the node is the residue center of mass
-                indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(residue_iden,['C', 'CA', 'H', 'H1', 'H2', 'H3', 'HA', 'HA2', 'HH1', 'HN', 'HT1', 'HT2', 'HT3', 'HW', 'N', 'O', 'O1', 'O2', 'OT1', 'OT2', 'OXT'], True)
-                node_loc = self.get_center_of_mass_from_selection_by_atom_indices(indices_to_consider)
+                indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(
+                    residue_iden,['C', 'CA', 'H', 'H1', 'H2', 'H3', 'HA',
+                                  'HA2', 'HH1', 'HN', 'HT1', 'HT2', 'HT3',
+                                  'HW', 'N', 'O', 'O1', 'O2', 'OT1', 'OT2',
+                                  'OXT'], True
+                )
+                node_loc = self.get_center_of_mass_from_selection_by_atom_indices(
+                    indices_to_consider
+                )
             self.nodes[index][0] = node_loc[0]
             self.nodes[index][1] = node_loc[1]
             self.nodes[index][2] = node_loc[2]
@@ -362,12 +411,29 @@ class UserInput():
 
         # first, check if the help file has been requested
         for t in sys.argv:
-            if t.replace('-','').lower() == "help": self.get_help()
+            if t.replace('-','').lower() == "help":
+                self.get_help()
 
         # load the parameters
-        parameters_that_are_floats = ['node_sphere_opacity', 'node_sphere_r', 'node_sphere_g', 'node_sphere_b', 'longest_path_opacity', 'shortest_path_opacity', 'shortest_path_r', 'shortest_path_g', 'shortest_path_b', 'longest_path_r', 'longest_path_g', 'longest_path_b', 'contact_map_distance_limit', 'shortest_path_radius', 'longest_path_radius', 'spline_smoothness', 'seconds_to_wait_before_parallelizing_path_finding', 'node_sphere_radius']
-        parameters_that_are_ints = ['number_processors', 'num_frames_to_load_before_processing', 'desired_number_of_paths', 'vmd_resolution']
-        parameters_that_are_strings = ['pdb_single_frame_filename', 'output_directory', 'user_specified_contact_map_filename', 'user_specified_functionalized_matrix_filename', 'node_definition', 'pdb_trajectory_filename', 'load_wisp_saved_matrix', 'wisp_saved_matrix_filename', 'simply_formatted_paths_filename']
+        parameters_that_are_floats = [
+            'node_sphere_opacity', 'node_sphere_r', 'node_sphere_g',
+            'node_sphere_b', 'longest_path_opacity',
+            'shortest_path_opacity', 'shortest_path_r', 'shortest_path_g',
+            'shortest_path_b', 'longest_path_r', 'longest_path_g',
+            'longest_path_b', 'contact_map_distance_limit',
+            'shortest_path_radius', 'longest_path_radius', 'spline_smoothness',
+            'seconds_to_wait_before_parallelizing_path_finding',
+            'node_sphere_radius'
+        ]
+        parameters_that_are_ints = [
+            'number_processors', 'num_frames_to_load_before_processing',
+            'desired_number_of_paths', 'vmd_resolution']
+        parameters_that_are_strings = ['pdb_single_frame_filename',
+            'output_directory', 'user_specified_contact_map_filename',
+            'user_specified_functionalized_matrix_filename', 'node_definition',
+            'pdb_trajectory_filename', 'load_wisp_saved_matrix',
+            'wisp_saved_matrix_filename', 'simply_formatted_paths_filename'
+        ]
         parameters_that_are_lists = ['source_residues', 'sink_residues']
 
         for t in range(len(sys.argv)):
@@ -387,7 +453,8 @@ class UserInput():
             if key in parameters_that_are_lists: # format: "CHAIN_RESNAME_RESID CHAIN_RESNAME_RESID".
                 residues = sys.argv[t+1].strip()
                 residues = residues.replace("\t",' ')
-                while "  " in residues: residues = residues.replace('  ',' ')
+                while "  " in residues:
+                    residues = residues.replace('  ',' ')
                 residues = residues.split(" ")
                 self.parameters[key] = residues
                 sys.argv[t] = ''
@@ -395,12 +462,13 @@ class UserInput():
 
         # some parameters need to always be caps
         tocap = ['node_definition', 'load_wisp_saved_matrix']
-        for param in tocap: self.parameters[param] = self.parameters[param].upper()
+        for param in tocap:
+            self.parameters[param] = self.parameters[param].upper()
 
-        # The paths from A to B are the same as the paths from B to A.
-        # If the same residue is in both source_residues and sink_residues there will be redundancies
-        # Furthermore, the path from A to A will produce an error.
-        # So these two lists need to be made mutually exclusive.
+        # The paths from A to B are the same as the paths from B to A. If the
+        # same residue is in both source_residues and sink_residues there will
+        # be redundancies. Furthermore, the path from A to A will produce an
+        # error. So these two lists need to be made mutually exclusive.
         # parameters_that_are_lists = ['source_residues', 'sink_residues']
 
         # what if not all required parameters have been specified?
@@ -412,32 +480,52 @@ class UserInput():
             sys.exit(0)
 
         # make the output directory
-        if self.parameters['output_directory'][-1:] != os.sep: self.parameters['output_directory'] = self.parameters['output_directory'] + os.sep
+        if self.parameters['output_directory'][-1:] != os.sep:
+            self.parameters['output_directory'] = self.parameters['output_directory'] + os.sep
         if os.path.exists(self.parameters['output_directory']):
-            print("The output directory, " + self.parameters['output_directory'] + ", already exists. Please delete this directory or select a different one for output before proceeding.")
+            print("The output directory, " + self.parameters['output_directory'] +
+                  ", already exists. Please delete this directory or select a different one for output before proceeding."
+            )
             sys.exit()
-        else: os.mkdir(self.parameters['output_directory'])
+        else:
+            os.mkdir(self.parameters['output_directory'])
 
         # some parameters are auto generated
-        autogenerated_parameters = ['logfile', 'simply_formatted_paths_filename']
-        self.parameters['logfile'] = open(self.parameters['output_directory'] + "log.txt",'w')
-        self.parameters['simply_formatted_paths_filename'] = self.parameters['output_directory'] + 'simply_formatted_paths.txt'
+        autogenerated_parameters = [
+            'logfile', 'simply_formatted_paths_filename'
+        ]
+        self.parameters['logfile'] = open(
+            self.parameters['output_directory'] + "log.txt", 'w'
+        )
+        self.parameters['simply_formatted_paths_filename'] = self.parameters['output_directory'] + \
+                                                             'simply_formatted_paths.txt'
 
         # inform what parameters will be used
         with open(self.parameters['output_directory'] + "parameters_used.txt", 'w') as parameters_file:
-            log("# Command-line Parameters:", [self.parameters['logfile'], parameters_file])
+            log(
+                "# Command-line Parameters:",
+                [self.parameters['logfile'], parameters_file]
+            )
             somekeys = self.parameters.keys()
             somekeys = sorted(somekeys)
             for key in somekeys:
                 if not key in autogenerated_parameters:
-                    log("#\t" + key + ": " + str(self.parameters[key]), [self.parameters['logfile'],parameters_file])
+                    log(
+                        "#\t" + key + ": " + str(self.parameters[key]),
+                        [self.parameters['logfile'],parameters_file]
+                    )
 
-            log("\n# A command like the following should regenerate this output:", [self.parameters['logfile'], parameters_file])
+            log(
+                "\n# A command like the following should regenerate this output:",
+                [self.parameters['logfile'], parameters_file]
+            )
             prog = "# " + sys.executable + " " + os.path.basename(sys.argv[0]) + " "
             for key in somekeys:
                 if not key in autogenerated_parameters and self.parameters[key] != '':
-                    if not key in ['sink_residues', 'source_residues']: prog = prog + "-" + key + " " + str(self.parameters[key]) + " "
-                    else: prog = prog + "-" + key + ' "' + " ".join(self.parameters[key]) + '" '
+                    if not key in ['sink_residues', 'source_residues']:
+                        prog = prog + "-" + key + " " + str(self.parameters[key]) + " "
+                    else:
+                        prog = prog + "-" + key + ' "' + " ".join(self.parameters[key]) + '" '
 
             prog = prog.strip()
             log(prog, [self.parameters['logfile'],parameters_file])
@@ -506,8 +594,10 @@ class UserInput():
                 print("-"*len(item[1]))
             else:
                 towrap = item[0] + ": " + item[1]
-                if self.parameters[item[0]] == [] or self.parameters[item[0]] == '': towrap = towrap + ""
-                else: towrap = towrap + " The default value is " + str(self.parameters[item[0]]) + "."
+                if self.parameters[item[0]] == [] or self.parameters[item[0]] == '':
+                    towrap = towrap + ""
+                else:
+                    towrap = towrap + " The default value is " + str(self.parameters[item[0]]) + "."
 
                 wrapper = textwrap.TextWrapper(initial_indent="", subsequent_indent="    ")
                 print(wrapper.fill(towrap))
@@ -541,20 +631,25 @@ class multi_threading_to_collect_data_from_frames():
 
         self.results = []
 
-        # first, if num_processors <= 0, determine the number of processors to use programatically
-        if num_processors <= 0: num_processors = multiprocessing.cpu_count()
+        # first, if num_processors <= 0, determine the number of processors to
+        # use programatically
+        if num_processors <= 0:
+            num_processors = multiprocessing.cpu_count()
 
         # reduce the number of processors if too many have been specified
-        if len(inputs) < num_processors: num_processors = len(inputs)
+        if len(inputs) < num_processors:
+            num_processors = len(inputs)
 
         # now, divide the inputs into the appropriate number of processors
         inputs_divided = {}
-        for t in range(num_processors): inputs_divided[t] = []
+        for t in range(num_processors):
+            inputs_divided[t] = []
 
         for t in range(0, len(inputs), num_processors):
             for t2 in range(num_processors):
                 index = t + t2
-                if index < len(inputs): inputs_divided[t2].append(inputs[index])
+                if index < len(inputs):
+                    inputs_divided[t2].append(inputs[index])
 
         # now, run each division on its own processor
         running = multiprocessing.Value('i', num_processors)
@@ -570,27 +665,36 @@ class multi_threading_to_collect_data_from_frames():
 
         processes = []
         for i in range(num_processors):
-            p = multiprocessing.Process(target=threads[i].runit, args=(running, mutex, results_queue, inputs_divided[i]))
+            p = multiprocessing.Process(
+                target=threads[i].runit, args=(running, mutex,
+                results_queue, inputs_divided[i])
+            )
             p.start()
             processes.append(p)
 
         while running.value > 0:
-            is_running = 0 # wait for everything to finish
+            continue # wait for everything to finish
 
         # compile all results
         total_summed_coordinates = None
         dictionary_of_node_lists = {}
-        for thread in threads:
+        for _ in threads:
             chunk = results_queue.get()
 
-            if total_summed_coordinates is None: total_summed_coordinates = chunk[0]
-            else: total_summed_coordinates = total_summed_coordinates + chunk[0]
+            if total_summed_coordinates is None:
+                total_summed_coordinates = chunk[0]
+            else:
+                total_summed_coordinates = total_summed_coordinates + chunk[0]
 
             for key in chunk[1].keys():
-                try: dictionary_of_node_lists[key].extend(chunk[1][key])
-                except: dictionary_of_node_lists[key] = chunk[1][key]
+                try:
+                    dictionary_of_node_lists[key].extend(chunk[1][key])
+                except:
+                    dictionary_of_node_lists[key] = chunk[1][key]
 
-        self.combined_results = (total_summed_coordinates,dictionary_of_node_lists)
+        self.combined_results = (
+            total_summed_coordinates, dictionary_of_node_lists
+        )
 
 class collect_data_from_frames():
     """PDB-frame data processing on a single processor"""
@@ -608,17 +712,18 @@ class collect_data_from_frames():
         items -- the data to be processed, in a list
 
         """
-        for item in items: self.value_func(item) #, results_queue)
+        for item in items:
+            self.value_func(item) #, results_queue)
         mutex.acquire()
         running.value -= 1
         mutex.release()
         results_queue.put((self.summed_coordinates, self.nodes))
 
-    def value_func(self, parameters_and_residue_keys_and_pdb_lines_and_residue_mappings): #, results_queue): # so overwriting this function
+    def value_func(self, params_and_res_keys_and_pdb_lines_and_res_maps): #, results_queue): # so overwriting this function
         """Process a single PDB frame: identify the relevant nodes
 
         Arguments:
-        parameters_and_residue_keys_and_pdb_lines_and_residue_mappings -- a tuple containing required information.
+        params_and_res_keys_and_pdb_lines_and_res_maps -- a tuple containing required information.
              The first item contains user-defined parameters (a UserInput object)
              The second item is a list containing string representations of each residue ("CHAIN_RESNAME_RESID")
              The third item is a list of strings representing the PDB frame to be processed, where each string
@@ -627,18 +732,20 @@ class collect_data_from_frames():
                   of the indices of the atoms that correspond to that residue
         """
 
-        parameters = parameters_and_residue_keys_and_pdb_lines_and_residue_mappings[0] # user-defined parameters
-        pdb_lines = parameters_and_residue_keys_and_pdb_lines_and_residue_mappings[1] # make sure this is not empty
+        params = params_and_res_keys_and_pdb_lines_and_res_maps[0] # user-defined parameters
+        pdb_lines = params_and_res_keys_and_pdb_lines_and_res_maps[1] # make sure this is not empty
 
         # now load the frame into its own Molecule object
         pdb = Molecule()
         pdb.load_pdb_from_list(pdb_lines)
 
-        if self.summed_coordinates is None: self.summed_coordinates = pdb.coordinates
-        else: self.summed_coordinates = self.summed_coordinates + pdb.coordinates
+        if self.summed_coordinates is None:
+            self.summed_coordinates = pdb.coordinates
+        else:
+            self.summed_coordinates = self.summed_coordinates + pdb.coordinates
 
         pdb.map_atoms_to_residues()
-        pdb.map_nodes_to_residues(parameters['node_definition'])
+        pdb.map_nodes_to_residues(params['node_definition'])
 
         for index, residue_iden in enumerate(pdb.residue_identifiers_in_order):
             try:
@@ -662,7 +769,8 @@ class multi_threading_find_paths():
 
         self.results = []
 
-        # first, if num_processors <= 0, determine the number of processors to use programatically
+        # first, if num_processors <= 0, determine the number of processors to
+        # use programatically
         if num_processors <= 0:
             num_processors = multiprocessing.cpu_count()
 
@@ -672,12 +780,14 @@ class multi_threading_find_paths():
 
         # now, divide the inputs into the appropriate number of processors
         inputs_divided = {}
-        for t in range(num_processors): inputs_divided[t] = []
+        for t in range(num_processors):
+            inputs_divided[t] = []
 
         for t in range(0, len(inputs), num_processors):
             for t2 in range(num_processors):
                 index = t + t2
-                if index < len(inputs): inputs_divided[t2].append(inputs[index])
+                if index < len(inputs):
+                    inputs_divided[t2].append(inputs[index])
 
         # now, run each division on its own processor
         running = multiprocessing.Value('i', num_processors)
@@ -693,15 +803,18 @@ class multi_threading_find_paths():
 
         processes = []
         for i in range(num_processors):
-            p = multiprocessing.Process(target=threads[i].runit, args=(running, mutex, results_queue, inputs_divided[i]))
+            p = multiprocessing.Process(
+                target=threads[i].runit, args=(running, mutex,
+                results_queue, inputs_divided[i])
+            )
             p.start()
             processes.append(p)
 
         while running.value > 0:
-            is_running = 0 # wait for everything to finish
+            continue # wait for everything to finish
 
         # compile all results
-        for thread in threads:
+        for _ in threads:
             chunk =  results_queue.get()
             for chun in chunk:
                 self.results.extend(chun)
@@ -748,14 +861,18 @@ class find_paths: # other, more specific classes with inherit this one
         paths_growing_out_from_source = [item[3]]
         full_paths_from_start_to_sink = []
 
-        while len(paths_growing_out_from_source) > 0:
-            self.expand_growing_paths_one_step(paths_growing_out_from_source, full_paths_from_start_to_sink, cutoff, sink, G)
+        while paths_growing_out_from_source:
+            self.expand_growing_paths_one_step(
+                paths_growing_out_from_source, full_paths_from_start_to_sink,
+                cutoff, sink, G
+            )
 
-        self.results.append(full_paths_from_start_to_sink) # here save the results for later compilation
+        # here save the results for later compilation
+        self.results.append(full_paths_from_start_to_sink)
 
     def expand_growing_paths_one_step(self, paths_growing_out_from_source, full_paths_from_start_to_sink, cutoff, sink, G):
-        """Expand the paths growing out from the source to the sink by one step (to the neighbors of the terminal node)
-             of the expanding paths
+        """Expand the paths growing out from the source to the sink by one step
+           (to the neighbors of the terminal node) of the expanding paths
 
         Arguments:
         paths_growing_out_from_source -- a list of paths, where each path is represented by a list. The first item in each path
@@ -768,22 +885,29 @@ class find_paths: # other, more specific classes with inherit this one
         G -- a networkx.Graph object describing the connectivity of the different nodes
         """
 
-        for i in range(len(paths_growing_out_from_source)):
-            if (paths_growing_out_from_source[i][0]>cutoff): # Because if the path is already greater than the cutoff, no use continuing to branch out, since subsequent branhes will be longer.
+        for i, path_growing_out_from_source in enumerate(paths_growing_out_from_source):
+            if path_growing_out_from_source[0] > cutoff:
+                # Because if the path is already greater than the cutoff, no
+                # use continuing to branch out, since subsequent branhes will
+                # be longer.
                 paths_growing_out_from_source.pop(i)
                 break
-            elif (paths_growing_out_from_source[i][-1] == sink): # so the sink has been reached
-                full_paths_from_start_to_sink.append(paths_growing_out_from_source[i])
+            elif path_growing_out_from_source[-1] == sink:
+                # so the sink has been reached
+                full_paths_from_start_to_sink.append(path_growing_out_from_source)
                 paths_growing_out_from_source.pop(i)
                 break
-            elif (paths_growing_out_from_source[i][-1] != sink): # sink not yet reached, but paths still short enough. So add new paths, same as old, but with neighboring element appended.
-                node_neighbors = list(G.neighbors(paths_growing_out_from_source[i][-1]))
-                for j in range(len(node_neighbors)):
-                   if not node_neighbors[j] in paths_growing_out_from_source[i]:
-                        temp = paths_growing_out_from_source[i][:]
-                        temp.append(node_neighbors[j])
+            elif path_growing_out_from_source[-1] != sink:
+                # sink not yet reached, but paths still short enough. So add
+                # new paths, same as old, but with neighboring element
+                # appended.
+                node_neighbors = list(G.neighbors(path_growing_out_from_source[-1]))
+                for j, node_neighbor in enumerate(node_neighbors):
+                   if not node_neighbor in path_growing_out_from_source:
+                        temp = path_growing_out_from_source[:]
+                        temp.append(node_neighbor)
                         temp[0] = temp[0]+G.edges[temp[-2],temp[-1]]['weight']
-                        paths_growing_out_from_source.insert((i+j+1),temp)
+                        paths_growing_out_from_source.insert((i + j + 1),temp)
                 paths_growing_out_from_source.pop(i)
                 break
             else:
@@ -795,57 +919,31 @@ class find_paths: # other, more specific classes with inherit this one
 class GetCovarianceMatrix():
     """Calculate and store the covariance matrix"""
 
-    def __init__(self, parameters):
+    def __init__(self, params):
         """Calculates a covariance matrix
 
         Arguments:
-        parameters -- user-specified command-line parameters (a UserInput object)
+        params -- user-specified command-line parameters (a UserInput object)
         """
 
-        # first, split the file into frames. ^END matches both VMD and ENDMDL formats.
-        afile = open(parameters['pdb_trajectory_filename'],'r')
+        # first, split the file into frames. ^END matches both VMD and ENDMDL
+        # formats.
+        afile = open(params['pdb_trajectory_filename'],'r')
         this_frame = []
         first_frame = True
-        all_nodes_for_residue = {} # a dictionary corresponding to numpy arrays containing all the nodes
         number_of_frames = 0
 
-        log("\n# Loading frames from the PDB file and building the covariance matrix...", parameters['logfile'])
+        log(
+            "\n# Loading frames from the PDB file and building the covariance matrix...",
+            params['logfile']
+        )
 
-        if parameters['number_processors'] == 1:
+        if params['number_processors'] == 1:
 
             load_frames_data = collect_data_from_frames()
 
-            self.average_pdb = None # a pdb object that will eventually contain the average structure
-
-            while 1:
-                line = afile.readline()
-                if not line:
-                    break # until eof
-
-                if line[:4] == "ATOM" or line[:6] == "HETATM": this_frame.append(line)
-                if line[:3] == "END": # so reached end of frame
-
-                    if first_frame:
-                        self.average_pdb = Molecule()
-                        self.average_pdb.load_pdb_from_list(this_frame)
-                        first_frame = False
-
-                    load_frames_data.value_func((parameters, this_frame))
-
-                    this_frame = [] # so deleted for next time
-
-                    log("#      Loading frame " + str(number_of_frames) + "...", parameters['logfile'])
-                    number_of_frames = number_of_frames + 1
-
-            total_coordinate_sum = load_frames_data.summed_coordinates
-            dictionary_of_node_lists = load_frames_data.nodes
-            self.average_pdb.coordinates = total_coordinate_sum / number_of_frames # because the previous coordinates belonged to the first frame
-
-        else: # so more than one processor. Load in 100 frames, work on those.
-            multiple_frames = []
-            total_coordinate_sum = None # this will keep a tallied sum of the coordinates of each frame for subsequently calculating the average structure
-            dictionary_of_node_lists = {}
-            self.average_pdb = None # a pdb object that will eventually contain the average structure
+            # a pdb object that will eventually contain the average structure
+            self.average_pdb = None
 
             while 1:
                 line = afile.readline()
@@ -856,44 +954,97 @@ class GetCovarianceMatrix():
                     this_frame.append(line)
                 if line[:3] == "END": # so reached end of frame
 
-                    if first_frame == True:
+                    if first_frame:
+                        self.average_pdb = Molecule()
+                        self.average_pdb.load_pdb_from_list(this_frame)
+                        first_frame = False
+
+                    load_frames_data.value_func((params, this_frame))
+
+                    this_frame = [] # so deleted for next time
+
+                    log(
+                        "#      Loading frame " + str(number_of_frames) + "...",
+                        params['logfile']
+                    )
+                    number_of_frames = number_of_frames + 1
+
+            total_coordinate_sum = load_frames_data.summed_coordinates
+            dictionary_of_node_lists = load_frames_data.nodes
+
+            # because the previous coordinates belonged to the first frame
+            self.average_pdb.coordinates = total_coordinate_sum / number_of_frames
+
+        else:
+            # so more than one processor. Load in 100 frames, work on those.
+            multiple_frames = []
+
+            # this will keep a tallied sum of the coordinates of each frame
+            # for subsequently calculating the average structure
+            total_coordinate_sum = None
+
+            dictionary_of_node_lists = {}
+
+            # a pdb object that will eventually contain the average structure
+            self.average_pdb = None
+
+            while 1:
+                line = afile.readline()
+                if not line:
+                    break # until eof
+
+                if line[:4] == "ATOM" or line[:6] == "HETATM":
+                    this_frame.append(line)
+                if line[:3] == "END": # so reached end of frame
+
+                    if first_frame:
                         #self.get_residue_mappings(this_frame)
                         self.average_pdb = Molecule()
                         self.average_pdb.load_pdb_from_list(this_frame)
                         first_frame = False
 
-                    multiple_frames.append((parameters, this_frame))
+                    multiple_frames.append((params, this_frame))
                     this_frame = [] # so deleted for next time
 
-                    if number_of_frames % parameters['num_frames_to_load_before_processing'] == 0: # so you've collected 100 frames. Time to send them off to the multiple processes
-                        tmp = multi_threading_to_collect_data_from_frames(multiple_frames, parameters['number_processors']).combined_results # note that the results are cumulative within the object
+                    if number_of_frames % params['num_frames_to_load_before_processing'] == 0:
+                        # so you've collected 100 frames. Time to send them
+                        # off to the multiple processes. note that the results
+                        # are cumulative within the object.
+                        tmp = multi_threading_to_collect_data_from_frames(
+                            multiple_frames, params['number_processors']
+                        ).combined_results
 
                         if total_coordinate_sum is None:
                             total_coordinate_sum = tmp[0]
                             dictionary_of_node_lists = tmp[1]
                         else:
                             total_coordinate_sum = total_coordinate_sum + tmp[0]
-                            for key in tmp[1].keys():
+                            for key in tmp[1]:
                                 try:
                                     dictionary_of_node_lists[key].extend(tmp[1][key])
                                 except:
                                     dictionary_of_node_lists[key] = tmp[1][key]
 
-                        multiple_frames = [] # so you're done processing the 100 frames, start over with the next 100
+                        # so you're done processing the 100 frames, start over
+                        # with the next 100
+                        multiple_frames = []
 
-                    log("#      Loading frame " + str(number_of_frames) + "...", parameters['logfile'])
+                    log(
+                        "#      Loading frame " + str(number_of_frames) + "...",
+                        params['logfile']
+                    )
                     number_of_frames = number_of_frames + 1
 
-            log("\n# Analyzing frames...", parameters['logfile'])
+            log("\n# Analyzing frames...", params['logfile'])
 
             # you need to get the last chunck
-            tmp = multi_threading_to_collect_data_from_frames(multiple_frames, parameters['number_processors']).combined_results # note that the results are cumulative within the object
+            tmp = multi_threading_to_collect_data_from_frames(multiple_frames, params['number_processors']).combined_results # note that the results are cumulative within the object
             if total_coordinate_sum is None:
                 total_coordinate_sum = tmp[0]
                 dictionary_of_node_lists = tmp[1]
             else:
                 total_coordinate_sum = total_coordinate_sum + tmp[0]
-                for key in tmp[1].keys():
+                for key in tmp[1]:
                     try:
                         dictionary_of_node_lists[key].extend(tmp[1][key])
                     except:
@@ -904,22 +1055,22 @@ class GetCovarianceMatrix():
         afile.close()
 
         # numpyify dictionary_of_node_lists
-        for res_iden in dictionary_of_node_lists.keys():
+        for res_iden in dictionary_of_node_lists:
             dictionary_of_node_lists[res_iden] = numpy.array(dictionary_of_node_lists[res_iden], numpy.float64)
 
         # now process the data that has been loaded
         # now get the average location of each node
 
-        log("#      Saving the average PDB file...", parameters['logfile'])
-        self.average_pdb.save_pdb(parameters['output_directory'] + 'average_structure.pdb')
+        log("#      Saving the average PDB file...", params['logfile'])
+        self.average_pdb.save_pdb(params['output_directory'] + 'average_structure.pdb')
 
-        log("#      Calculating the average location of each node...", parameters['logfile'])
+        log("#      Calculating the average location of each node...", params['logfile'])
         self.average_pdb.map_atoms_to_residues()
-        self.average_pdb.map_nodes_to_residues(parameters['node_definition'])
+        self.average_pdb.map_nodes_to_residues(params['node_definition'])
 
         # now compute a set of deltas for each node, stored in a big array. delta = distance from node to average node location
         # so note that the nodes do need to be computed for each frame
-        log("#      Calculating the correlation for each node-node pair...", parameters['logfile'])
+        log("#      Calculating the correlation for each node-node pair...", params['logfile'])
         set_of_deltas = {}
         for index, residue_iden in enumerate(self.average_pdb.residue_identifiers_in_order):
             set_of_deltas[residue_iden] = dictionary_of_node_lists[residue_iden] - self.average_pdb.nodes[index]
@@ -931,8 +1082,8 @@ class GetCovarianceMatrix():
             ensmeble_average_deltas_self_dotproducted[residue_iden] = numpy.average(dot_products)
 
         # now build the correlation matrix
-        if parameters['user_specified_functionalized_matrix_filename'] == '':
-            log("#      Building the correlation matrix...", parameters['logfile'])
+        if params['user_specified_functionalized_matrix_filename'] == '':
+            log("#      Building the correlation matrix...", params['logfile'])
             self.correlations = numpy.empty((len(self.average_pdb.residue_identifiers_in_order), len(self.average_pdb.residue_identifiers_in_order)))
 
             for x in range(len(self.average_pdb.residue_identifiers_in_order)):
@@ -945,7 +1096,7 @@ class GetCovarianceMatrix():
                     residue2_deltas = set_of_deltas[residue2_key]
 
                     if len(residue1_deltas) != len(residue2_deltas):
-                        log("ERROR: There were " + str(len(residue1_deltas)) + ' residues that matched "' + residue1_key + '", but ' + str(len(residue2_deltas)) + ' residues that matched "' + residue2_key + '". Are each of your residues uniquely defined?',  parameters['logfile'])
+                        log("ERROR: There were " + str(len(residue1_deltas)) + ' residues that matched "' + residue1_key + '", but ' + str(len(residue2_deltas)) + ' residues that matched "' + residue2_key + '". Are each of your residues uniquely defined?',  params['logfile'])
                         sys.exit(0)
 
                     # generate a list of the dot products for all frames
@@ -957,17 +1108,17 @@ class GetCovarianceMatrix():
 
                     self.correlations[x][y] = -numpy.log(numpy.fabs(C)) # functionalizing the covariances
         else: # so the user has specified a filename containing the covariance matrix
-            log("#      Loading the user-specified functionalized correlation matrix from the file " + parameters['user_specified_functionalized_matrix_filename'], parameters['logfile'])
-            self.correlations = numpy.loadtxt(parameters['user_specified_functionalized_matrix_filename'], dtype=float)
+            log("#      Loading the user-specified functionalized correlation matrix from the file " + params['user_specified_functionalized_matrix_filename'], params['logfile'])
+            self.correlations = numpy.loadtxt(params['user_specified_functionalized_matrix_filename'], dtype=float)
 
         # save the correlation matrix in a human-readable format
-        numpy.savetxt(parameters['output_directory'] + "functionalized_correlation_matrix.txt", self.correlations)
+        numpy.savetxt(params['output_directory'] + "functionalized_correlation_matrix.txt", self.correlations)
 
         # now modify the coorelation matrix, setting to 0 wherever the average distance between nodes is greater than a given cutoff
         contact_map = numpy.ones(self.correlations.shape)
-        if parameters['user_specified_contact_map_filename'] == '':
-            if parameters['contact_map_distance_limit'] != 999999.999:
-                log("#      Applying the default WISP distance-based contact-map filter to the matrix so that distant residues will never be considered correlated...", parameters['logfile'])
+        if params['user_specified_contact_map_filename'] == '':
+            if params['contact_map_distance_limit'] != 999999.999:
+                log("#      Applying the default WISP distance-based contact-map filter to the matrix so that distant residues will never be considered correlated...", params['logfile'])
                 for index1 in range(len(self.average_pdb.residue_identifiers_in_order)-1):
                     residue_iden1 = self.average_pdb.residue_identifiers_in_order[index1]
                     residue1_pts = self.average_pdb.coordinates[self.average_pdb.residue_identifier_to_atom_indices[residue_iden1]]
@@ -975,22 +1126,22 @@ class GetCovarianceMatrix():
                         residue_iden2 = self.average_pdb.residue_identifiers_in_order[index2]
                         residue2_pts = self.average_pdb.coordinates[self.average_pdb.residue_identifier_to_atom_indices[residue_iden2]]
                         min_dist_between_residue_atoms = numpy.min(cdist(residue1_pts,residue2_pts))
-                        if min_dist_between_residue_atoms > parameters['contact_map_distance_limit']: # so they are far apart
+                        if min_dist_between_residue_atoms > params['contact_map_distance_limit']: # so they are far apart
                             self.correlations[index1][index2] = 0.0
                             self.correlations[index2][index1] = 0.0
                             contact_map[index1][index1] = 0.0
                             contact_map[index2][index1] = 0.0
         else: # so the user has specified a contact map
-            log("#      Loading and applying the user-specified contact map from the file " + parameters['user_specified_contact_map_filename'], parameters['logfile'])
-            contact_map = numpy.loadtxt(parameters['user_specified_contact_map_filename'], dtype=float)
+            log("#      Loading and applying the user-specified contact map from the file " + params['user_specified_contact_map_filename'], params['logfile'])
+            contact_map = numpy.loadtxt(params['user_specified_contact_map_filename'], dtype=float)
             self.correlations = self.correlations * contact_map
 
         # save the contact map in a human-readable format
-        numpy.savetxt(parameters['output_directory'] + "contact_map_matrix.txt", contact_map)
+        numpy.savetxt(params['output_directory'] + "contact_map_matrix.txt", contact_map)
 
         # now save the matrix if needed
-        if parameters['wisp_saved_matrix_filename'] != '': # because it only would have gotten here if load_wisp_saved_matrix = FALSE
-            pickle.dump(self, open(parameters['wisp_saved_matrix_filename'], 'wb'))
+        if params['wisp_saved_matrix_filename'] != '': # because it only would have gotten here if load_wisp_saved_matrix = FALSE
+            pickle.dump(self, open(params['wisp_saved_matrix_filename'], 'wb'))
 
     def convert_list_of_residue_keys_to_residue_indices(self, list_residue_keys):
         """Identify the indices in a networkx.Graph object corresponding to the identified residue string ids (CHAIN_RESNAME_RESID).
@@ -1015,31 +1166,31 @@ class GetCovarianceMatrix():
 class GetPaths():
     """Get the paths from a list of sources to a list of sinks"""
 
-    def __init__(self, correlation_matrix, sources, sinks, parameters, residue_keys):
+    def __init__(self, corr_matrix, srcs, snks, params, residue_keys):
         """Identify paths that link the source and the sink and order them by their lengths
 
         Arguments:
-        correlation_matrix -- a numpy.array, the calculated correlation matrix
-        sources -- a list of ints, the indices of the sources for path finding
-        sinks -- a list of ints, the indices of the sinks for path finding
-        parameters -- the user-specified command-line parameters, a UserInput object
+        corr_matrix -- a numpy.array, the calculated correlation matrix
+        srcs -- a list of ints, the indices of the sources for path finding
+        snks -- a list of ints, the indices of the sinks for path finding
+        params -- the user-specified command-line parameters, a UserInput object
         residue_keys -- a list containing string representations of each residue
         """
 
         #populate graph nodes and weighted edges
-        G = networkx.Graph(incoming_graph_data=correlation_matrix)
+        G = networkx.Graph(incoming_graph_data=corr_matrix)
 
         # first calculate length of shortest path between any source and sink
-        log("\n# Calculating paths...", parameters['logfile'])
-        log("#       Calculating the shortest path between any of the specified sources and any of the specified sinks...", parameters['logfile'])
-        shortest_length, shortest_path = self.get_shortest_path_length(correlation_matrix, sources, sinks, G)
-        log("#           The shortest path has length " + str(shortest_length), parameters['logfile'])
+        log("\n# Calculating paths...", params['logfile'])
+        log("#       Calculating the shortest path between any of the specified sources and any of the specified sinks...", params['logfile'])
+        shortest_length, shortest_path = self.get_shortest_path_length(corr_matrix, srcs, snks, G)
+        log("#           The shortest path has length " + str(shortest_length), params['logfile'])
 
         num_paths = 1
 
         path = [shortest_length]
         path.extend(shortest_path)
-        paths = [path] # need to create this initial path in case only one path is requrested
+        pths = [path] # need to create this initial path in case only one path is requrested
 
         cutoff = shortest_length
 
@@ -1047,17 +1198,19 @@ class GetPaths():
         cutoff_yields_min_num_paths_above_target = 1000000.0
 
         # first step, keep incrementing a little until you have more than the desired number of paths
-        log("#      Identifying the cutoff required to produce " + str(parameters['desired_number_of_paths']) + " paths...", parameters['logfile'])
-        while num_paths < parameters['desired_number_of_paths']:
-            log("#          Testing the cutoff " + str(cutoff) + "...", parameters['logfile'])
+        log("#      Identifying the cutoff required to produce " + str(params['desired_number_of_paths']) + " paths...", params['logfile'])
+        while num_paths < params['desired_number_of_paths']:
+            log("#          Testing the cutoff " + str(cutoff) + "...", params['logfile'])
             cutoff_in_array = numpy.array([cutoff], numpy.float64)
-            paths = self.remove_redundant_paths(self.get_paths_between_multiple_endpoints(cutoff_in_array, correlation_matrix, sources, sinks, G, parameters))
-            num_paths = len(paths)
+            pths = self.remove_redundant_paths(self.get_paths_between_multiple_endpoints(cutoff_in_array, corr_matrix, srcs, snks, G, params))
+            num_paths = len(pths)
 
-            log("#                The cutoff " + str(cutoff) + " produces " + str(num_paths) + " paths...", parameters['logfile'])
+            log("#                The cutoff " + str(cutoff) + " produces " + str(num_paths) + " paths...", params['logfile'])
 
-            if num_paths < parameters['desired_number_of_paths'] and cutoff > cutoff_yields_max_num_paths_below_target: cutoff_yields_max_num_paths_below_target = cutoff
-            if num_paths > parameters['desired_number_of_paths'] and cutoff < cutoff_yields_min_num_paths_above_target: cutoff_yields_min_num_paths_above_target = cutoff
+            if num_paths < params['desired_number_of_paths'] and cutoff > cutoff_yields_max_num_paths_below_target:
+                cutoff_yields_max_num_paths_below_target = cutoff
+            if num_paths > params['desired_number_of_paths'] and cutoff < cutoff_yields_min_num_paths_above_target:
+                cutoff_yields_min_num_paths_above_target = cutoff
 
 			# Original code adds .1 each time... but this may be to fast for
 			# some systems and very slow for others... lets try increasing by
@@ -1065,51 +1218,51 @@ class GetPaths():
 			# could be an input parameter in the future.
             cutoff = cutoff + shortest_length*0.1
 
-        paths = self.remove_redundant_paths(paths)
+        pths = self.remove_redundant_paths(pths)
 
-        paths.sort() # sort the paths by length
+        pths.sort() # sort the paths by length
 
-        if num_paths != parameters['desired_number_of_paths']: # so further refinement is needed
-            paths = paths[:parameters['desired_number_of_paths']]
-            log("#          Keeping the first " + str(parameters['desired_number_of_paths']) + " of these paths...", parameters['logfile'])
+        if num_paths != params['desired_number_of_paths']: # so further refinement is needed
+            pths = pths[:params['desired_number_of_paths']]
+            log("#          Keeping the first " + str(params['desired_number_of_paths']) + " of these paths...", params['logfile'])
 
         self.paths_description  = ''
 
         self.paths_description = self.paths_description + "\n# Output identified paths" + "\n"
         index = 1
 
-        if parameters['simply_formatted_paths_filename'] != '':
-            simp = open(parameters['simply_formatted_paths_filename'],'w')
-        for path in paths:
+        if params['simply_formatted_paths_filename'] != '':
+            simp = open(params['simply_formatted_paths_filename'],'w')
+        for path in pths:
             self.paths_description = self.paths_description + "#     Path " + str(index) + ":" + "\n"
             self.paths_description = self.paths_description + "#          Length: " + str(path[0]) + "\n"
             self.paths_description = self.paths_description + "#          Nodes: " + " - ".join([residue_keys[item] for item in path[1:]]) + "\n"
-            if parameters['simply_formatted_paths_filename'] != '':
+            if params['simply_formatted_paths_filename'] != '':
                 simp.write(' '.join([str(item) for item in path]) + "\n")
             index = index + 1
-        if parameters['simply_formatted_paths_filename'] != '':
+        if params['simply_formatted_paths_filename'] != '':
             simp.close()
 
-        self.paths = paths
+        self.paths = pths
 
-    def remove_redundant_paths(self, paths):
+    def remove_redundant_paths(self, pths):
         """Removes redundant paths
 
         Arguments:
-        paths -- a list of paths
+        pths -- a list of paths
 
         Returns a list of paths with the redundant ones eliminated
         """
 
-        if len(paths) == 1:
+        if len(pths) == 1:
             # no reason to check if there's only one
-            return paths
+            return pths
 
-        for indx1 in range(len(paths)-1):
-            path1 = paths[indx1]
+        for indx1 in range(len(pths) - 1):
+            path1 = pths[indx1]
             if not path1 is None:
-                for indx2 in range(indx1 + 1, len(paths)):
-                    path2 = paths[indx2]
+                for indx2 in range(indx1 + 1, len(pths)):
+                    path2 = pths[indx2]
                     if not path2 is None:
                         if len(path1) == len(path2): # paths are same length
 
@@ -1122,20 +1275,20 @@ class GetPaths():
                                 pth2.reverse()
 
                             if pth1 == pth2:
-                                paths[indx2] = None
+                                pths[indx2] = None
 
-        while None in paths:
-            paths.remove(None)
+        while None in pths:
+            pths.remove(None)
 
-        return paths
+        return pths
 
-    def get_shortest_path_length(self, correlation_matrix, sources, sinks, G): # where sources and sinks are lists
+    def get_shortest_path_length(self, corr_matrix, srcs, snks, G): # where sources and sinks are lists
         """Identify the length of the shortest path connecting any of the sources and any of the sinks
 
         Arguments:
-        correlation_matrix -- a numpy.array, the calculated correlation matrix
-        sources -- a list of ints, the indices of the sources for path finding
-        sinks -- a list of ints, the indices of the sinks for path finding
+        corr_matrix -- a numpy.array, the calculated correlation matrix
+        srcs -- a list of ints, the indices of the sources for path finding
+        snks -- a list of ints, the indices of the sinks for path finding
         G -- a networkx.Graph object describing the connectivity of the different nodes
 
         Returns a float, the length of the shortest path, and a list of ints corresponding to
@@ -1145,63 +1298,63 @@ class GetPaths():
         shortest_length = 99999999.999
         shortest_path = []
 
-        for source in sources:
-            for sink in sinks:
+        for source in srcs:
+            for sink in snks:
                 if source != sink: # important to avoid this situation
                     short_path = networkx.dijkstra_path(G, source, sink, weight='weight')
-                    length = self.get_length_of_path(short_path, correlation_matrix)
+                    length = self.get_length_of_path(short_path, corr_matrix)
                     if length < shortest_length:
                         shortest_length = length
                         shortest_path = short_path
         return shortest_length, shortest_path
 
-    def get_length_of_path(self, path, correlation_matrix):
+    def get_length_of_path(self, path, corr_matrix):
         """Calculate the length of a path
 
         Arguments:
         path -- a list of ints, the indices of the path
-        correlation_matrix -- a numpy.array, the calculated correlation matrix
+        corr_matrix -- a numpy.array, the calculated correlation matrix
 
         Returns a float, the length of the path
         """
 
         length = 0.0
         for t in range(len(path)-1):
-            length = length + correlation_matrix[path[t],path[t+1]]
+            length = length + corr_matrix[path[t], path[t+1]]
         return length
 
-    def get_paths_between_multiple_endpoints(self, cutoff, correlation_matrix, sources, sinks, G, parameters): # where sources and sinks are lists
+    def get_paths_between_multiple_endpoints(self, cutoff, corr_matrix, srcs, snks, G, params): # where sources and sinks are lists
         """Get paths between sinks and sources
 
         Arguments:
         cutoff -- a numpy.array containing a single float, the cutoff specifying the maximum permissible path length
-        correlation_matrix -- a numpy.array, the calculated correlation matrix
-        sources -- a list of ints, the indices of the sources for path finding
-        sinks -- a list of ints, the indices of the sinks for path finding
+        corr_matrix -- a numpy.array, the calculated correlation matrix
+        srcs -- a list of ints, the indices of the sources for path finding
+        snks -- a list of ints, the indices of the sinks for path finding
         G -- a networkx.Graph object describing the connectivity of the different nodes
-        parameters -- the user-specified command-line parameters, a UserInput object
+        params -- the user-specified command-line parameters, a UserInput object
 
         Returns a list of paths, where each path is represented by a list. The first item in each path is the length
              of the path (float). The remaining items are the indices of the nodes in the path (int).
         """
 
-        paths = []
-        for source in sources:
-            for sink in sinks:
+        pths = []
+        for source in srcs:
+            for sink in snks:
                 if source != sink: # avoid this situation
-                    paths.extend(self.get_paths_fixed_endpoints(cutoff, correlation_matrix, source, sink, G, parameters))
-        return paths
+                    pths.extend(self.get_paths_fixed_endpoints(cutoff, corr_matrix, source, sink, G, params))
+        return pths
 
-    def get_paths_fixed_endpoints(self, cutoff, correlation_matrix, source, sink, G, parameters):
+    def get_paths_fixed_endpoints(self, cutoff, corr_matrix, source, sink, G, params):
         """Get paths between a single sink and a single source
 
         Arguments:
         cutoff -- a numpy.array containing a single float, the cutoff specifying the maximum permissible path length
-        correlation_matrix -- a numpy.array, the calculated correlation matrix
+        corr_matrix -- a numpy.array, the calculated correlation matrix
         source -- the index of the source for path finding
         sink -- the index of the sink for path finding
         G -- a networkx.Graph object describing the connectivity of the different nodes
-        parameters -- the user-specified command-line parameters, a UserInput object
+        params -- the user-specified command-line parameters, a UserInput object
 
         Returns a list of paths, where each path is represented by a list. The first item in each path is the length
              of the path (float). The remaining items are the indices of the nodes in the path (int).
@@ -1227,22 +1380,18 @@ class GetPaths():
         node_list=[]
         dijkstra_list=[]
         upper_minimum_length=0
-        if len(set(check_list_1).difference(check_list_2)) == 0:
-           for i in range(len(so_l)):
-              if so_l[i]+si_l[i] <= cutoff:
+        if not set(check_list_1).difference(check_list_2):
+           for i, _ in enumerate(so_l):
+              if so_l[i] + si_l[i] <= cutoff:
                  node_list.extend(so_p[i][:])
                  node_list.extend(si_p[i][:])
                  si_pReversed=si_p[i][:]
                  si_pReversed.reverse()
-                 temp_path= so_p[i][:]+ si_pReversed[1:]
-                 temp_forced_node=si_pReversed[0]
-                 temp_length=so_l[i]+si_l[i]
+                 temp_path = so_p[i][:]+ si_pReversed[1:]
+                 temp_length = so_l[i]+si_l[i]
                  dijkstra_list.append(temp_path)
                  if (so_l[i] + si_l[i]) > upper_minimum_length:
-                    upper_minimum_path = temp_path
                     upper_minimum_length = temp_length
-                    forced_node = temp_forced_node
-
         else:
            print('paths do not match up')
 
@@ -1250,121 +1399,122 @@ class GetPaths():
         unique_nodes.sort()
 
         node_length = len(unique_nodes)
-        new_matrix = numpy.zeros((len(correlation_matrix),len(correlation_matrix)))
+        new_matrix = numpy.zeros((len(corr_matrix),len(corr_matrix)))
 
         for i in range(node_length):
            for j in range(node_length):
-              new_matrix[unique_nodes[i]][unique_nodes[j]]=correlation_matrix[unique_nodes[i]][unique_nodes[j]]
+              new_matrix[unique_nodes[i]][unique_nodes[j]]=corr_matrix[unique_nodes[i]][unique_nodes[j]]
 
-        correlation_matrix=new_matrix
-        G=networkx.Graph(incoming_graph_data=correlation_matrix, labels=unique_nodes)
+        corr_matrix = new_matrix
+        G=networkx.Graph(incoming_graph_data=corr_matrix, labels=unique_nodes)
 
         length = 0.0
         paths_growing_out_from_source = [[length,source]]
-        temp = []
         full_paths_from_start_to_sink = []
-        condition = 1
 
         # This is essentially this list-addition replacement for a recursive algorithm you've envisioned.
         # To parallelize, just get the first N branches, and send them off to each node. Rest of branches filled out in separate processes.
 
         find_paths_object = find_paths()
-        if parameters['number_processors'] == 1:
-            while len(paths_growing_out_from_source) > 0:
+        if params['number_processors'] == 1:
+            while paths_growing_out_from_source:
                 find_paths_object.expand_growing_paths_one_step(paths_growing_out_from_source, full_paths_from_start_to_sink, cutoff, sink, G)
         else:
             # just get some of the initial paths on a single processor
-            log("#                Starting serial portion of path-finding algorithm (will run for " + str(parameters['seconds_to_wait_before_parallelizing_path_finding']) + " seconds)...", parameters['logfile'])
+            log("#                Starting serial portion of path-finding algorithm (will run for " + str(params['seconds_to_wait_before_parallelizing_path_finding']) + " seconds)...", params['logfile'])
             atime = time.time()
-            while len(paths_growing_out_from_source) > 0 and time.time() - atime < parameters['seconds_to_wait_before_parallelizing_path_finding']:
+            while paths_growing_out_from_source and time.time() - atime < params['seconds_to_wait_before_parallelizing_path_finding']:
                find_paths_object.expand_growing_paths_one_step(paths_growing_out_from_source, full_paths_from_start_to_sink, cutoff, sink, G)
 
             # ok, so having generated just a first few, divy up those among multiple processors
-            if len(paths_growing_out_from_source) != 0: # in case you've already finished
-                log("#                Starting parallel portion of path-finding algorithm running on " + str(parameters['number_processors']) + " processors...", parameters['logfile'])
+            if paths_growing_out_from_source: # in case you've already finished
+                log("#                Starting parallel portion of path-finding algorithm running on " + str(params['number_processors']) + " processors...", params['logfile'])
                 paths_growing_out_from_source = [(cutoff, sink, G, path) for path in paths_growing_out_from_source]
-                additional_full_paths_from_start_to_sink = multi_threading_find_paths(paths_growing_out_from_source, parameters['number_processors'])
+                additional_full_paths_from_start_to_sink = multi_threading_find_paths(paths_growing_out_from_source, params['number_processors'])
                 full_paths_from_start_to_sink.extend(additional_full_paths_from_start_to_sink.results)
             else:
-                log("#                     (All paths found during serial path finding; parallelization not required)", parameters['logfile'])
+                log("#                     (All paths found during serial path finding; parallelization not required)", params['logfile'])
 
         full_paths_from_start_to_sink.sort()
 
-        paths = []
+        pths = []
 
-        for i in range(len(full_paths_from_start_to_sink)):
-           paths.append(full_paths_from_start_to_sink[i])
+        for full_path_from_start_to_sink in full_paths_from_start_to_sink:
+           pths.append(full_path_from_start_to_sink)
 
-        return paths
+        return pths
 
 class Visualize():
     """A class to facilitate the visualization of the identified paths in VMD"""
 
-    def __init__(self, parameters, correlation_matrix_object, paths):
+    def __init__(self, params, corr_matrix_object, pths):
         """Get paths between a single sink and a single source
 
         Arguments:
-        parameters -- the user-specified command-line parameters, a UserInput object
+        params -- the user-specified command-line parameters, a UserInput object
         residue_keys -- a list containing string representations of each residue ("CHAIN_RESNAME_RESID")
         node_locs -- a dictionary, mapping string representations of each residue to a numpy.array representation
              of the node location
-        paths -- a GetPaths object
+        pths -- a GetPaths object
         """
 
-        log_files = [parameters['logfile'], open(parameters['output_directory'] + 'visualize.tcl','w'), open(parameters['output_directory'] + 'visualize.vmd','w')]
+        log_files = [params['logfile'], open(params['output_directory'] + 'visualize.tcl','w'), open(params['output_directory'] + 'visualize.vmd','w')]
 
         # output a easy-to-read-representation of the paths
-        log(paths.paths_description, log_files)
+        log(pths.paths_description, log_files)
 
-        if parameters['longest_path_opacity'] == parameters['shortest_path_opacity'] and parameters['longest_path_opacity'] == parameters['node_sphere_opacity']: opacity_required = False
-        else: opacity_required = True
+        if params['longest_path_opacity'] == params['shortest_path_opacity'] and params['longest_path_opacity'] == params['node_sphere_opacity']:
+            opacity_required = False
+        else:
+            opacity_required = True
 
-        log("", parameters['logfile'])
+        log("", params['logfile'])
         log("# Creating VMD state (TCL) file for visualization...", log_files)
 
         # get the color range
-        lengths = [t[:1][0] for t in paths.paths]
+        lengths = [t[:1][0] for t in pths.paths]
         min_length = min(lengths)
         max_length = max(lengths)
 
         # Get the sizes of the various strands
         ratios = [] # so the shortest (best) path has a ratio of 0, and longest has a ratio of 1
-        for t in range(len(lengths)):
-            if len(paths.paths) > 1:
-                ratio = (lengths[t] - min_length)/(max_length - min_length)
-            else: ratio = 0.5
+        for length in lengths:
+            if len(pths.paths) > 1:
+                ratio = (length - min_length) / (max_length - min_length)
+            else:
+                ratio = 0.5
 
             ratios.append(ratio)
 
         # define the colors
-        a1 = numpy.array([parameters['shortest_path_r'], parameters['shortest_path_g'], parameters['shortest_path_b']], numpy.float64)
-        a2 = numpy.array([parameters['longest_path_r'], parameters['longest_path_g'], parameters['longest_path_b']], numpy.float64)
+        a1 = numpy.array([params['shortest_path_r'], params['shortest_path_g'], params['shortest_path_b']], numpy.float64)
+        a2 = numpy.array([params['longest_path_r'], params['longest_path_g'], params['longest_path_b']], numpy.float64)
         color_defs = {}
         for coloridd in range(23,33): # 33 because I want it to go to 32
             thiscolor = ((a2 - a1) / 9.0) * coloridd + (32.0/9.0) * a1 - (23.0/9.0) * a2
             color_defs[coloridd] = "color change rgb " + str(coloridd) + " " + str(thiscolor[0]) + " " + str(thiscolor[1]) + " " + str(thiscolor[2])
-        color_defs[coloridd] = "color change rgb 22 " + str(parameters['node_sphere_r']) + " " + str(parameters['node_sphere_g']) + " " + str(parameters['node_sphere_b']) # node sphere color
+        color_defs[coloridd] = "color change rgb 22 " + str(params['node_sphere_r']) + " " + str(params['node_sphere_g']) + " " + str(params['node_sphere_b']) # node sphere color
 
         # determine whether the average structure or a user-specified structure will be used for drawing
-        if parameters['pdb_single_frame_filename'] != '': # use a user-specified structure
+        if params['pdb_single_frame_filename'] != '': # use a user-specified structure
             molecule_object_to_use = Molecule()
-            molecule_object_to_use.load_pdb_from_list(open(parameters['pdb_single_frame_filename'],'r').readlines())
+            molecule_object_to_use.load_pdb_from_list(open(params['pdb_single_frame_filename'],'r').readlines())
             molecule_object_to_use.map_atoms_to_residues()
-            molecule_object_to_use.map_nodes_to_residues(parameters['node_definition'])
-            molecule_object_to_use.save_pdb(parameters['output_directory'] + 'draw_frame.pdb')
+            molecule_object_to_use.map_nodes_to_residues(params['node_definition'])
+            molecule_object_to_use.save_pdb(params['output_directory'] + 'draw_frame.pdb')
             molecule_filename = 'draw_frame.pdb'
         else: # so use the average structure
-            molecule_object_to_use = correlation_matrix_object.average_pdb
+            molecule_object_to_use = corr_matrix_object.average_pdb
             molecule_filename = 'average_structure.pdb'
 
         # get all the nodes
         nodes_used = []
-        for path in paths.paths:
+        for path in pths.paths:
             for index in path[1:]:
                 if not index in nodes_used:
                     nodes_used.append(index)
 
-        node_ids = [correlation_matrix_object.average_pdb.residue_identifiers_in_order[i] for i in nodes_used]
+        node_ids = [corr_matrix_object.average_pdb.residue_identifiers_in_order[i] for i in nodes_used]
         node_ids = [item.split("_") for item in node_ids]
         selection = "".join(["(resid " + item[2] + " and chain " + item[0] + ") or " for item in node_ids])[:-4]
 
@@ -1383,12 +1533,12 @@ class Visualize():
         log("mol addrep top", log_files)
         log("mol rename top " + molecule_filename, log_files)
 
-        if parameters['node_sphere_radius'] != 0.0: # if the radius is 0.0, don't even draw the spheres
+        if params['node_sphere_radius'] != 0.0: # if the radius is 0.0, don't even draw the spheres
             # draw spheres
             log("\n# Draw spheres at the nodes", log_files)
             if opacity_required:
                 log("if {[lsearch [material list] node_spheres] == -1} {material add node_spheres}", log_files)
-                log("material change opacity node_spheres " + str(parameters['node_sphere_opacity']), log_files)
+                log("material change opacity node_spheres " + str(params['node_sphere_opacity']), log_files)
                 log("draw material node_spheres", log_files)
                 log("mol rename top \"Node Spheres\"", log_files)
 
@@ -1396,11 +1546,11 @@ class Visualize():
             log("graphics top color 22", log_files)
 
             for node in nodes:
-                log("draw sphere {" + str(node[0]) + " " + str(node[1]) + " " + str(node[2]) + "} resolution " + str(parameters['vmd_resolution']) + " radius " + str(parameters['node_sphere_radius']), log_files)
+                log("draw sphere {" + str(node[0]) + " " + str(node[1]) + " " + str(node[2]) + "} resolution " + str(params['vmd_resolution']) + " radius " + str(params['node_sphere_radius']), log_files)
 
         color_index = 0
-        log("set wisp_num_paths %i" % len(paths.paths), log_files) # tell the WISP plugin how many paths there are total
-        for path in paths.paths:
+        log("set wisp_num_paths %i" % len(pths.paths), log_files) # tell the WISP plugin how many paths there are total
+        for path in pths.paths:
 
             log("\n# Draw a new path", log_files)
             log("# \tLength: " + str(path[0]), log_files)
@@ -1408,7 +1558,7 @@ class Visualize():
 
             # make the spline from the paths
 
-            nodes = [correlation_matrix_object.average_pdb.nodes[i] for i in path[1:]]
+            nodes = [corr_matrix_object.average_pdb.nodes[i] for i in path[1:]]
 
             x_vals = []
             y_vals = []
@@ -1422,8 +1572,8 @@ class Visualize():
             ratio = ratios[color_index]
             color = numpy.floor(ratio * 9) + 23 # so 0.95 => 9.5 => 9 => 32 (red); 0.05 => 0.5 > 0 > 23 (pretty close to blue, but not perfect blue)
 
-            radius = ratio * (parameters['longest_path_radius'] - parameters['shortest_path_radius']) + parameters['shortest_path_radius']
-            opacity = ratio * (parameters['longest_path_opacity'] - parameters['shortest_path_opacity']) + parameters['shortest_path_opacity']
+            radius = ratio * (params['longest_path_radius'] - params['shortest_path_radius']) + params['shortest_path_radius']
+            opacity = ratio * (params['longest_path_opacity'] - params['shortest_path_opacity']) + params['shortest_path_opacity']
 
             if opacity_required:
                 log("mol new", log_files)
@@ -1444,10 +1594,10 @@ class Visualize():
                     # so at most degree 3
                     degree = 3
 
-                tck, u = interpolate.splprep([x_vals, y_vals, z_vals],s=0,k=degree)
+                tck, _ = interpolate.splprep([x_vals, y_vals, z_vals],s=0,k=degree)
 
                 # now interpolate
-                unew = numpy.arange(0,1.01,parameters['spline_smoothness'])
+                unew = numpy.arange(0, 1.01, params['spline_smoothness'])
 
                 out = interpolate.splev(unew, tck)
 
@@ -1460,21 +1610,21 @@ class Visualize():
                     y2 = str(out[1][t+1])
                     z2 = str(out[2][t+1])
 
-                    log("draw cylinder {" + x1 + " " + y1 + " " + z1 + "} {" + x2 + " " + y2 + " " + z2 + "} radius " + str(radius) + " resolution " + str(parameters['vmd_resolution']) + " filled 0", log_files)
+                    log("draw cylinder {" + x1 + " " + y1 + " " + z1 + "} {" + x2 + " " + y2 + " " + z2 + "} radius " + str(radius) + " resolution " + str(params['vmd_resolution']) + " filled 0", log_files)
 
             except: # so just draw a single cylinder as a backup
-                log("draw cylinder {" + str(x_vals[0]) + " " + str(y_vals[0]) + " " + str(z_vals[0])+ "} {" + str(x_vals[-1]) + " " + str(y_vals[-1]) + " " + str(z_vals[-1]) + "} radius " + str(radius) + " resolution " + str(parameters['vmd_resolution']) + " filled 0", log_files)
+                log("draw cylinder {" + str(x_vals[0]) + " " + str(y_vals[0]) + " " + str(z_vals[0])+ "} {" + str(x_vals[-1]) + " " + str(y_vals[-1]) + " " + str(z_vals[-1]) + "} radius " + str(radius) + " resolution " + str(params['vmd_resolution']) + " filled 0", log_files)
 
             color_index = color_index + 1
 
-def output_directory_info(parameters):
+def output_directory_info(params):
     """Create a README.txt file in the output directory describing the directory contents
 
     Arguments:
-    parameters -- the user-specified command-line parameters, a UserInput object
+    params -- the user-specified command-line parameters, a UserInput object
     """
 
-    f = open(parameters['output_directory'] + "README.txt", 'w')
+    f = open(params['output_directory'] + "README.txt", 'w')
     f.write("This directory contains output from the program WISP. The best way to visualize the output is to use a free program called VMD, which can be downloaded from http://www.ks.uiuc.edu/Research/vmd/ ." + "\n\n")
     f.write("The WISP output can be automatically loaded into VMD using the TCL script named \"visualize.tcl\". Assuming \"vmd\" is the full path to your installed VMD executable, just run the following from the command line:" + "\n\n")
     f.write("vmd -e visualize.tcl" + "\n\n")
@@ -1500,7 +1650,7 @@ if __name__=="__main__":
     parameters = UserInput()
 
     # compute the correlation matrix
-    if (parameters['load_wisp_saved_matrix'] == "TRUE"):
+    if parameters['load_wisp_saved_matrix'] == "TRUE":
         correlation_matrix_object = pickle.load(open(parameters['wisp_saved_matrix_filename'], 'rb')) # load the matrix instead of generating
     else: correlation_matrix_object = GetCovarianceMatrix(parameters) # so generate the matrix instead of loading it
     correlation_matrix = correlation_matrix_object.correlations
