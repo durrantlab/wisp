@@ -15,12 +15,17 @@ https://sourceforge.net/projects/wisp-pathways/
 
 If you use WISP in your work, please cite [REFERENCE HERE]"""
 
+import copy
+import gc
+import multiprocessing
+import os
 import sys
+import time
+import textwrap
+import networkx
 import numpy
 from scipy import interpolate
 from scipy.spatial.distance import cdist
-import networkx
-import time
 
 try:
     # Python 2
@@ -29,12 +34,6 @@ except ImportError:
     # Python 3
 	import pickle
 
-import multiprocessing
-import copy
-import textwrap
-import gc
-import time
-import os
 
 ######################## For logging ########################
 def log(astring, fileobjects): # prints to screen and to log file
@@ -45,11 +44,13 @@ def log(astring, fileobjects): # prints to screen and to log file
     fileobjects -- a list of python file objects specifying where the messages should be saved
     """
 
-    if isinstance(fileobjects, list) == False: fileobjects = [fileobjects] # it's not a list, so make it one
+    if not isinstance(fileobjects, list):
+        fileobjects = [fileobjects] # it's not a list, so make it one
 
     print(astring)
 
-    for fileobject in fileobjects: fileobject.write(astring + "\n")
+    for fileobject in fileobjects:
+        fileobject.write(astring + "\n")
 
 ######################## Data Structures to Store PDB Info ########################
 
@@ -85,7 +86,8 @@ class Atom:
         self.coordinates_numpy = numpy.array([float(Line[30:38]), float(Line[38:46]), float(Line[46:54])], numpy.float64)
 
         self.element = ""
-        if len(Line) >= 79: self.element = Line[76:79].strip().upper() # element specified explicitly at end of life
+        if len(Line) >= 79:
+            self.element = Line[76:79].strip().upper() # element specified explicitly at end of life
         if self.element == "": # try to guess at element from name
             two_letters = self.atomname[0:2].strip().upper()
             if two_letters == 'BR':
@@ -123,7 +125,8 @@ class Atom:
 
         self.molecule_index = Line[6:12].strip()
         self.resname = Line[16:20]
-        if self.resname.strip() == "": self.resname = " MOL"
+        if self.resname.strip() == "":
+            self.resname = " MOL"
 
 class Molecule:
     """Loads, saves, and manupulates molecuar models."""
@@ -191,7 +194,8 @@ class Molecule:
             residue_identifiers_for_all_atoms.append(self.chains[index].strip() + "_" + self.resnames[index].strip() + "_" + str(self.resids[index]))
         self.residue_identifiers_in_order = residue_identifiers_for_all_atoms[:]
         for t in range(len(self.residue_identifiers_in_order)-1,0,-1):
-            if self.residue_identifiers_in_order[t] == self.residue_identifiers_in_order[t-1]: self.residue_identifiers_in_order.pop(t)
+            if self.residue_identifiers_in_order[t] == self.residue_identifiers_in_order[t-1]:
+                self.residue_identifiers_in_order.pop(t)
 
         residue_identifiers_for_all_atoms = numpy.array(residue_identifiers_for_all_atoms)
         self.residue_identifiers_in_order = numpy.array(self.residue_identifiers_in_order)
@@ -217,10 +221,12 @@ class Molecule:
         # now find which of these correspond to the desired atom names
         indices_to_keep = []
         for indx in residue_indices:
-            if not_selection == False:
-                if self.atomnames[indx].strip() in atom_names_list: indices_to_keep.append(indx)
+            if not not_selection:
+                if self.atomnames[indx].strip() in atom_names_list:
+                    indices_to_keep.append(indx)
             else:
-                if not self.atomnames[indx].strip() in atom_names_list: indices_to_keep.append(indx)
+                if not self.atomnames[indx].strip() in atom_names_list:
+                    indices_to_keep.append(indx)
         indices_to_keep = numpy.array(indices_to_keep, numpy.float64)
         return indices_to_keep
 
@@ -401,7 +407,7 @@ class UserInput():
         if self.parameters['pdb_trajectory_filename'] == "" or self.parameters['source_residues'] == [] or self.parameters['sink_residues'] == []:
             print("\nYou have failed to provide all the required parameters. In its simplest form, WISP can be used like this:")
             print('     python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37')
-            print()
+            print('')
             print("For more detailed help, use the -help command-line parameter: python wisp.py -help\n")
             sys.exit(0)
 
@@ -418,26 +424,26 @@ class UserInput():
         self.parameters['simply_formatted_paths_filename'] = self.parameters['output_directory'] + 'simply_formatted_paths.txt'
 
         # inform what parameters will be used
-        parameters_file = open(self.parameters['output_directory'] + "parameters_used.txt", 'w')
-        log("# Command-line Parameters:", [self.parameters['logfile'], parameters_file])
-        somekeys = self.parameters.keys()
-        somekeys = sorted(somekeys)
-        for key in somekeys:
-            if not key in autogenerated_parameters:
-                log("#\t" + key + ": " + str(self.parameters[key]), [self.parameters['logfile'],parameters_file])
+        with open(self.parameters['output_directory'] + "parameters_used.txt", 'w') as parameters_file:
+            log("# Command-line Parameters:", [self.parameters['logfile'], parameters_file])
+            somekeys = self.parameters.keys()
+            somekeys = sorted(somekeys)
+            for key in somekeys:
+                if not key in autogenerated_parameters:
+                    log("#\t" + key + ": " + str(self.parameters[key]), [self.parameters['logfile'],parameters_file])
 
-        log("\n# A command like the following should regenerate this output:", [self.parameters['logfile'], parameters_file])
-        prog = "# " + sys.executable + " " + os.path.basename(sys.argv[0]) + " "
-        for key in somekeys:
-            if not key in autogenerated_parameters and self.parameters[key] != '':
-                if not key in ['sink_residues', 'source_residues']: prog = prog + "-" + key + " " + str(self.parameters[key]) + " "
-                else: prog = prog + "-" + key + ' "' + " ".join(self.parameters[key]) + '" '
+            log("\n# A command like the following should regenerate this output:", [self.parameters['logfile'], parameters_file])
+            prog = "# " + sys.executable + " " + os.path.basename(sys.argv[0]) + " "
+            for key in somekeys:
+                if not key in autogenerated_parameters and self.parameters[key] != '':
+                    if not key in ['sink_residues', 'source_residues']: prog = prog + "-" + key + " " + str(self.parameters[key]) + " "
+                    else: prog = prog + "-" + key + ' "' + " ".join(self.parameters[key]) + '" '
 
-        prog = prog.strip()
-        log(prog, [self.parameters['logfile'],parameters_file])
-        parameters_file.close()
+            prog = prog.strip()
+            log(prog, [self.parameters['logfile'],parameters_file])
 
-    def __getitem__(self, key): return self.parameters[key.lower()]
+    def __getitem__(self, key):
+        return self.parameters[key.lower()]
 
     def get_help(self):
         """Returns a help file describing program usage"""
@@ -505,15 +511,15 @@ class UserInput():
 
                 wrapper = textwrap.TextWrapper(initial_indent="", subsequent_indent="    ")
                 print(wrapper.fill(towrap))
-        print()
+        print('')
         print("Notes:")
         print("1) To visualize in VMD, first load the output TCL file, then load the PDB file.")
         print("2) WISP ignores PDB segnames. Every residue in your PDB trajectory must be uniquely identifiable by the combination of its chain, resname, and resid.")
-        print()
+        print('')
         print("Example:")
         wrapper = textwrap.TextWrapper(initial_indent="     ", subsequent_indent="         ")
         print(wrapper.fill('python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -node_definition CA -contact_map_distance_limit 50.0 -load_wisp_saved_matrix false -wisp_saved_matrix_filename matrix.file -desired_number_of_paths 30 -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37 -number_processors 24 -num_frames_to_load_before_processing 96 -seconds_to_wait_before_parallelizing_path_finding 10.0 -shortest_path_radius 0.2 -longest_path_radius 0.05 -spline_smoothness 0.05 -vmd_resolution 6 -node_sphere_radius 1.0'))
-        print
+        print('')
         sys.exit(0)
 
 ######################## Objects to Handle Usign Multiple Processors ########################
@@ -657,10 +663,12 @@ class multi_threading_find_paths():
         self.results = []
 
         # first, if num_processors <= 0, determine the number of processors to use programatically
-        if num_processors <= 0: num_processors = multiprocessing.cpu_count()
+        if num_processors <= 0:
+            num_processors = multiprocessing.cpu_count()
 
         # reduce the number of processors if too many have been specified
-        if len(inputs) < num_processors: num_processors = len(inputs)
+        if len(inputs) < num_processors:
+            num_processors = len(inputs)
 
         # now, divide the inputs into the appropriate number of processors
         inputs_divided = {}
@@ -695,7 +703,8 @@ class multi_threading_find_paths():
         # compile all results
         for thread in threads:
             chunk =  results_queue.get()
-            for chun in chunk: self.results.extend(chun)
+            for chun in chunk:
+                self.results.extend(chun)
 
 class find_paths: # other, more specific classes with inherit this one
     """Path-finding data processing on a single processor"""
@@ -712,7 +721,8 @@ class find_paths: # other, more specific classes with inherit this one
         items -- the data to be processed, in a list
         """
 
-        for item in items: self.value_func(item, results_queue)
+        for item in items:
+            self.value_func(item, results_queue)
         mutex.acquire()
         running.value -= 1
         mutex.release()
@@ -809,12 +819,13 @@ class GetCovarianceMatrix():
 
             while 1:
                 line = afile.readline()
-                if not line: break # until eof
+                if not line:
+                    break # until eof
 
                 if line[:4] == "ATOM" or line[:6] == "HETATM": this_frame.append(line)
                 if line[:3] == "END": # so reached end of frame
 
-                    if first_frame == True:
+                    if first_frame:
                         self.average_pdb = Molecule()
                         self.average_pdb.load_pdb_from_list(this_frame)
                         first_frame = False
@@ -838,9 +849,11 @@ class GetCovarianceMatrix():
 
             while 1:
                 line = afile.readline()
-                if not line: break # until eof
+                if not line:
+                    break # until eof
 
-                if line[:4] == "ATOM" or line[:6] == "HETATM": this_frame.append(line)
+                if line[:4] == "ATOM" or line[:6] == "HETATM":
+                    this_frame.append(line)
                 if line[:3] == "END": # so reached end of frame
 
                     if first_frame == True:
@@ -861,8 +874,10 @@ class GetCovarianceMatrix():
                         else:
                             total_coordinate_sum = total_coordinate_sum + tmp[0]
                             for key in tmp[1].keys():
-                                try: dictionary_of_node_lists[key].extend(tmp[1][key])
-                                except: dictionary_of_node_lists[key] = tmp[1][key]
+                                try:
+                                    dictionary_of_node_lists[key].extend(tmp[1][key])
+                                except:
+                                    dictionary_of_node_lists[key] = tmp[1][key]
 
                         multiple_frames = [] # so you're done processing the 100 frames, start over with the next 100
 
@@ -879,15 +894,18 @@ class GetCovarianceMatrix():
             else:
                 total_coordinate_sum = total_coordinate_sum + tmp[0]
                 for key in tmp[1].keys():
-                    try: dictionary_of_node_lists[key].extend(tmp[1][key])
-                    except: dictionary_of_node_lists[key] = tmp[1][key]
+                    try:
+                        dictionary_of_node_lists[key].extend(tmp[1][key])
+                    except:
+                        dictionary_of_node_lists[key] = tmp[1][key]
 
             self.average_pdb.coordinates = total_coordinate_sum / number_of_frames # because the previous coordinates belonged to the first frame
 
         afile.close()
 
         # numpyify dictionary_of_node_lists
-        for res_iden in dictionary_of_node_lists.keys(): dictionary_of_node_lists[res_iden] = numpy.array(dictionary_of_node_lists[res_iden], numpy.float64)
+        for res_iden in dictionary_of_node_lists.keys():
+            dictionary_of_node_lists[res_iden] = numpy.array(dictionary_of_node_lists[res_iden], numpy.float64)
 
         # now process the data that has been loaded
         # now get the average location of each node
@@ -1009,7 +1027,7 @@ class GetPaths():
         """
 
         #populate graph nodes and weighted edges
-        G=networkx.Graph(incoming_graph_data=correlation_matrix)
+        G = networkx.Graph(incoming_graph_data=correlation_matrix)
 
         # first calculate length of shortest path between any source and sink
         log("\n# Calculating paths...", parameters['logfile'])
@@ -1060,14 +1078,17 @@ class GetPaths():
         self.paths_description = self.paths_description + "\n# Output identified paths" + "\n"
         index = 1
 
-        if parameters['simply_formatted_paths_filename'] != '': simp = open(parameters['simply_formatted_paths_filename'],'w')
+        if parameters['simply_formatted_paths_filename'] != '':
+            simp = open(parameters['simply_formatted_paths_filename'],'w')
         for path in paths:
             self.paths_description = self.paths_description + "#     Path " + str(index) + ":" + "\n"
             self.paths_description = self.paths_description + "#          Length: " + str(path[0]) + "\n"
             self.paths_description = self.paths_description + "#          Nodes: " + " - ".join([residue_keys[item] for item in path[1:]]) + "\n"
-            if parameters['simply_formatted_paths_filename'] != '': simp.write(' '.join([str(item) for item in path]) + "\n")
+            if parameters['simply_formatted_paths_filename'] != '':
+                simp.write(' '.join([str(item) for item in path]) + "\n")
             index = index + 1
-        if parameters['simply_formatted_paths_filename'] != '': simp.close()
+        if parameters['simply_formatted_paths_filename'] != '':
+            simp.close()
 
         self.paths = paths
 
@@ -1080,7 +1101,9 @@ class GetPaths():
         Returns a list of paths with the redundant ones eliminated
         """
 
-        if len(paths) == 1: return paths # no reason to check if there's only one
+        if len(paths) == 1:
+            # no reason to check if there's only one
+            return paths
 
         for indx1 in range(len(paths)-1):
             path1 = paths[indx1]
@@ -1093,12 +1116,16 @@ class GetPaths():
                             pth1 = copy.deepcopy(path1[1:])
                             pth2 = copy.deepcopy(path2[1:])
 
-                            if pth1[0] < pth1[-1]: pth1.reverse()
-                            if pth2[0] < pth2[-1]: pth2.reverse()
+                            if pth1[0] < pth1[-1]:
+                                pth1.reverse()
+                            if pth2[0] < pth2[-1]:
+                                pth2.reverse()
 
-                            if pth1 == pth2: paths[indx2] = None
+                            if pth1 == pth2:
+                                paths[indx2] = None
 
-        while None in paths: paths.remove(None)
+        while None in paths:
+            paths.remove(None)
 
         return paths
 
@@ -1139,7 +1166,8 @@ class GetPaths():
         """
 
         length = 0.0
-        for t in range(len(path)-1): length = length + correlation_matrix[path[t],path[t+1]]
+        for t in range(len(path)-1):
+            length = length + correlation_matrix[path[t],path[t+1]]
         return length
 
     def get_paths_between_multiple_endpoints(self, cutoff, correlation_matrix, sources, sinks, G, parameters): # where sources and sinks are lists
@@ -1179,7 +1207,8 @@ class GetPaths():
              of the path (float). The remaining items are the indices of the nodes in the path (int).
         """
 
-        if source == sink: return []
+        if source == sink:
+            return []
 
         source_lengths,source_paths = networkx.single_source_dijkstra(G, source, target=None, cutoff=None, weight='weight')
         sink_lengths,sink_paths = networkx.single_source_dijkstra(G, sink, target=None, cutoff=None, weight='weight')
@@ -1209,7 +1238,7 @@ class GetPaths():
                  temp_forced_node=si_pReversed[0]
                  temp_length=so_l[i]+si_l[i]
                  dijkstra_list.append(temp_path)
-                 if ((so_l[i]+si_l[i]) > upper_minimum_length):
+                 if (so_l[i] + si_l[i]) > upper_minimum_length:
                     upper_minimum_path = temp_path
                     upper_minimum_length = temp_length
                     forced_node = temp_forced_node
@@ -1220,15 +1249,15 @@ class GetPaths():
         unique_nodes = list(set(node_list))
         unique_nodes.sort()
 
-        node_length=len(unique_nodes)
-        new_matrix=numpy.zeros((len(correlation_matrix),len(correlation_matrix)))
+        node_length = len(unique_nodes)
+        new_matrix = numpy.zeros((len(correlation_matrix),len(correlation_matrix)))
 
         for i in range(node_length):
            for j in range(node_length):
               new_matrix[unique_nodes[i]][unique_nodes[j]]=correlation_matrix[unique_nodes[i]][unique_nodes[j]]
 
         correlation_matrix=new_matrix
-        G=networkx.Graph(incoming_graph_data=correlation_matrix,labels=unique_nodes)
+        G=networkx.Graph(incoming_graph_data=correlation_matrix, labels=unique_nodes)
 
         length = 0.0
         paths_growing_out_from_source = [[length,source]]
@@ -1241,7 +1270,8 @@ class GetPaths():
 
         find_paths_object = find_paths()
         if parameters['number_processors'] == 1:
-            while len(paths_growing_out_from_source) > 0: find_paths_object.expand_growing_paths_one_step(paths_growing_out_from_source, full_paths_from_start_to_sink, cutoff, sink, G)
+            while len(paths_growing_out_from_source) > 0:
+                find_paths_object.expand_growing_paths_one_step(paths_growing_out_from_source, full_paths_from_start_to_sink, cutoff, sink, G)
         else:
             # just get some of the initial paths on a single processor
             log("#                Starting serial portion of path-finding algorithm (will run for " + str(parameters['seconds_to_wait_before_parallelizing_path_finding']) + " seconds)...", parameters['logfile'])
@@ -1300,7 +1330,8 @@ class Visualize():
         # Get the sizes of the various strands
         ratios = [] # so the shortest (best) path has a ratio of 0, and longest has a ratio of 1
         for t in range(len(lengths)):
-            if len(paths.paths) > 1: ratio = (lengths[t] - min_length)/(max_length - min_length)
+            if len(paths.paths) > 1:
+                ratio = (lengths[t] - min_length)/(max_length - min_length)
             else: ratio = 0.5
 
             ratios.append(ratio)
@@ -1330,7 +1361,8 @@ class Visualize():
         nodes_used = []
         for path in paths.paths:
             for index in path[1:]:
-                if not index in nodes_used: nodes_used.append(index)
+                if not index in nodes_used:
+                    nodes_used.append(index)
 
         node_ids = [correlation_matrix_object.average_pdb.residue_identifiers_in_order[i] for i in nodes_used]
         node_ids = [item.split("_") for item in node_ids]
@@ -1354,7 +1386,7 @@ class Visualize():
         if parameters['node_sphere_radius'] != 0.0: # if the radius is 0.0, don't even draw the spheres
             # draw spheres
             log("\n# Draw spheres at the nodes", log_files)
-            if opacity_required == True:
+            if opacity_required:
                 log("if {[lsearch [material list] node_spheres] == -1} {material add node_spheres}", log_files)
                 log("material change opacity node_spheres " + str(parameters['node_sphere_opacity']), log_files)
                 log("draw material node_spheres", log_files)
@@ -1363,7 +1395,8 @@ class Visualize():
             nodes = [molecule_object_to_use.nodes[i] for i in nodes_used]
             log("graphics top color 22", log_files)
 
-            for node in nodes: log("draw sphere {" + str(node[0]) + " " + str(node[1]) + " " + str(node[2]) + "} resolution " + str(parameters['vmd_resolution']) + " radius " + str(parameters['node_sphere_radius']), log_files)
+            for node in nodes:
+                log("draw sphere {" + str(node[0]) + " " + str(node[1]) + " " + str(node[2]) + "} resolution " + str(parameters['vmd_resolution']) + " radius " + str(parameters['node_sphere_radius']), log_files)
 
         color_index = 0
         log("set wisp_num_paths %i" % len(paths.paths), log_files) # tell the WISP plugin how many paths there are total
@@ -1392,12 +1425,13 @@ class Visualize():
             radius = ratio * (parameters['longest_path_radius'] - parameters['shortest_path_radius']) + parameters['shortest_path_radius']
             opacity = ratio * (parameters['longest_path_opacity'] - parameters['shortest_path_opacity']) + parameters['shortest_path_opacity']
 
-            if opacity_required == True: log("mol new", log_files)
+            if opacity_required:
+                log("mol new", log_files)
             log(color_defs[color], log_files)
             log("graphics top color " + str(int(color)), log_files)
 
             mat_name = "wisp_material" + str(color_index)
-            if opacity_required == True:
+            if opacity_required:
                 log("if {[lsearch [material list] %s] == -1} {material add %s}" % (mat_name, mat_name), log_files)
                 log("material change opacity " + mat_name + " " + str(opacity), log_files)
                 log("mol rename top \"Path Length: " + str(path[0]) + "\"", log_files)
@@ -1406,7 +1440,9 @@ class Visualize():
             try:
 
                 degree = len(x_vals) - 1
-                if degree > 3: degree = 3 # so at most degree 3
+                if degree > 3:
+                    # so at most degree 3
+                    degree = 3
 
                 tck, u = interpolate.splprep([x_vals, y_vals, z_vals],s=0,k=degree)
 
@@ -1464,7 +1500,8 @@ if __name__=="__main__":
     parameters = UserInput()
 
     # compute the correlation matrix
-    if (parameters['load_wisp_saved_matrix'] == "TRUE"): correlation_matrix_object = pickle.load(open(parameters['wisp_saved_matrix_filename'], 'rb')) # load the matrix instead of generating
+    if (parameters['load_wisp_saved_matrix'] == "TRUE"):
+        correlation_matrix_object = pickle.load(open(parameters['wisp_saved_matrix_filename'], 'rb')) # load the matrix instead of generating
     else: correlation_matrix_object = GetCovarianceMatrix(parameters) # so generate the matrix instead of loading it
     correlation_matrix = correlation_matrix_object.correlations
 

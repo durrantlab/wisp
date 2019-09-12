@@ -6,8 +6,7 @@ Changes
 
 * Changed the default `contact_map_distance_limit` to 4.5 so `wisp.py` now
   matches `Wisp.tcl`.
-* Updated the `README.md` file so it mentions that there is one distance
-  cutoff only, etc.
+* Updated the `README.md` file.
 * Python2/3 compatibility.
 
 1.0
