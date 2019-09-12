@@ -2,7 +2,23 @@ README
 ======
 
 WISP is a trajectory analysis tool that calculates and visualizes allosteric
-pathways.
+pathways. It is licensed under the Academic Free License 3.0. For more
+information, please see http://opensource.org/licenses/AFL-3.0
+
+WISP is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+Copyright 2012 Adam VanWart and Jacob D. Durrant. If you have any questions,
+comments, or suggestions, please contact durrantj [at] pitt [dot] edu.
+
+The latest version of WISP can be downloaded from
+[http://git.durrantlab.com/jdurrant/wisp](http://git.durrantlab.com/jdurrant/wisp).
+
+If you use WISP in your work, please cite: A.T. Van Wart, J.D. Durrant, L.
+Votapka, R.E. Amaro. Weighted implementation of suboptimal paths (WISP): An
+optimized algorithm and tool for dynamical network analysis, J. Chem. Theory
+Comput. 10 (2014) 511-517
 
 HOW TO INSTALL THE VMD WISP PLUGIN (UNIX BASED OS: LINUX/MAC)
 -------------------------------------------------------------

@@ -1,19 +1,21 @@
 """WISP is licensed under the Academic Free License 3.0. For more
 information, please see http://opensource.org/licenses/AFL-3.0
 
-WISP is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+WISP is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-Copyright 2012 Adam VanWart and Jacob D. Durrant. If you have any
-questions, comments, or suggestions, please don't hesitate to contact
-jdurrant [at] ucsd [dot] edu.
+Copyright 2012 Adam VanWart and Jacob D. Durrant. If you have any questions,
+comments, or suggestions, please don't hesitate to contact jdurrant [at] ucsd
+[dot] edu.
 
 The latest version of WISP can be downloaded from
-https://sourceforge.net/projects/wisp-pathways/
+http://git.durrantlab.com/jdurrant/wisp
 
-If you use WISP in your work, please cite [REFERENCE HERE]"""
+If you use WISP in your work, please cite A.T. Van Wart, J.D. Durrant, L.
+Votapka, R.E. Amaro. Weighted implementation of suboptimal paths (WISP): An
+optimized algorithm and tool for dynamical network analysis, J. Chem. Theory
+Comput. 10 (2014) 511-517."""
 
 import copy
 import gc
