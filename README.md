@@ -267,7 +267,8 @@ user_specified_contact_map_filename: A text file containing a user-
 
 Notes:
 1) To visualize in VMD, first load the output TCL file, then load the PDB file.
-2) WISP ignores PDB segnames. Every residue in your PDB trajectory must be uniquely identifiable by the combination of its chain, resname, and resid.
+2) WISP ignores PDB segnames. Every residue in your PDB trajectory must be
+   uniquely identifiable by the combination of its chain, resname, and resid.
 
 Example:
      python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb
