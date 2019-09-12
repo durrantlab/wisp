@@ -7,7 +7,8 @@ Changes
 * Changed the default `contact_map_distance_limit` to 4.5 so `wisp.py` now
   matches `Wisp.tcl`.
 * Updated the `README.md` file.
-* Python2/3 compatibility.
+* Ensured Python2/3 compatibility.
+* Modernized/cleaned up the code.
 
 1.0
 ---

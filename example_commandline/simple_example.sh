@@ -3,7 +3,7 @@ python ../wisp.py -contact_map_distance_limit 999999.999 -desired_number_of_path
 
 # Get expected contents of example_output/simply_formatted_paths.txt
 echo
-echo "Expected contents of example_output/simply_formatted_paths.txt:"
+echo "Expected contents of example_output/simply_formatted_paths.txt (if Python 3):"
 cat <<EOF
 1.1363589537262389 9 10
 1.920042178661312 9 31 10
