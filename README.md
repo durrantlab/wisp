@@ -1,4 +1,4 @@
-WISP 1.1
+WISP 1.2
 ========
 
 WISP is a trajectory analysis tool that calculates and visualizes allosteric
@@ -272,7 +272,7 @@ Notes:
 
 Example:
      python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb
-         -node_definition CA -contact_map_distance_limit 50.0
+         -node_definition CA -contact_map_distance_limit 4.5
          -load_wisp_saved_matrix false -wisp_saved_matrix_filename
          matrix.file -desired_number_of_paths 30 -source_residues
          "X_SER_1 X_LEU_4" -sink_residues X_ARG_37 -number_processors
