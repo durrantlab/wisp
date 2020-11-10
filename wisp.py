@@ -1331,7 +1331,10 @@ class GetCovarianceMatrix:
                         self.average_pdb.load_pdb_from_list(this_frame)
                         first_frame = False
 
-                    multiple_frames.append((params, this_frame))
+                    if len(this_frame) > 0:
+                        # Because sometimes ENDMDL followed by END => empty
+                        # frame.
+                        multiple_frames.append((params, this_frame))
                     this_frame = []  # so deleted for next time
 
                     if (

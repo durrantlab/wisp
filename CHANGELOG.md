@@ -1,6 +1,12 @@
 Changes
 =======
 
+1.3
+---
+
+* Minor updates to deal with PDB files that have both ENDMDL and END tags.
+* Formatting improvements to `README.md`.
+
 1.2
 ---
 

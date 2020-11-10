@@ -1,5 +1,4 @@
-WISP 1.2
-========
+# WISP 1.2
 
 WISP is a trajectory analysis tool that calculates and visualizes allosteric
 pathways. It is licensed under the Academic Free License 3.0. For more
@@ -20,8 +19,7 @@ Votapka, R.E. Amaro. Weighted implementation of suboptimal paths (WISP): An
 optimized algorithm and tool for dynamical network analysis, J. Chem. Theory
 Comput. 10 (2014) 511-517
 
-HOW TO INSTALL THE VMD WISP PLUGIN (UNIX BASED OS: LINUX/MAC)
--------------------------------------------------------------
+## How to Install the VMD WISP Plugin (Linux/Mac)
 
 1. Unzip the file to a directory of your choice using this command: `tar -xzf wisp.tgz <your directory here>`
 2. To use the VMD plugin, add these two lines of code to your `.vmdrc` file
@@ -30,8 +28,7 @@ HOW TO INSTALL THE VMD WISP PLUGIN (UNIX BASED OS: LINUX/MAC)
    * `vmd_install_extension wisp wisp_tk_cb "Analysis/Wisp"`
 3. Now open VMD: Click Extensions > Analysis > WISP
 
-HOW TO USE WISP FROM THE COMMAND LINE
--------------------------------------
+## How to Use WISP from the Command Line
 
 To learn how to use wisp from the command line, see the example in the
 `./example_commandline/` directory. Here is a simple example:
@@ -40,8 +37,7 @@ To learn how to use wisp from the command line, see the example in the
 python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37`
 ```
 
-PROGRAM OUTPUT
---------------
+## Program Output
 
 The output directory contains multiple output files. The best way to visualize
 the output is to use a free program called VMD, which can be downloaded from
@@ -104,8 +100,7 @@ descriptions of each:
   reindexes the residues. See the `visualize.tcl` file instead for a more
   human-readable output.
 
-PARAMETER DESCRIPTION
----------------------
+## Parameter Description
 
 `python wisp.py -help` displays the following text:
 
