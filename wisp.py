@@ -440,7 +440,7 @@ class UserInput:
         """Receives, processes, and stores command-line parameters"""
 
         # Display program information.
-        print("WISP 1.2\n")
+        print("WISP 1.3\n")
         print("The latest version of WISP can be downloaded from\nhttp://git.durrantlab.com/jdurrant/wisp\n")
 
         print("If you use WISP in your work, please cite:\nJ. Chem. Theory Comput. 10 (2014) 511-517.\n")
@@ -621,7 +621,7 @@ class UserInput:
             self.parameters["output_directory"] + "parameters_used.txt", "w"
         ) as parameters_file:
             log(
-                "# Wisp 1.2\n# ========\n",
+                "# Wisp 1.3\n# ========\n",
                 [self.parameters["logfile"], parameters_file],
             )
 

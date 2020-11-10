@@ -6,6 +6,7 @@ Changes
 
 * Minor updates to deal with PDB files that have both ENDMDL and END tags.
 * Formatting improvements to `README.md`.
+* Changed development-branch name to `main`.
 
 1.2
 ---

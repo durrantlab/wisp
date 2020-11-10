@@ -1,4 +1,4 @@
-# WISP 1.2
+# WISP 1.3
 
 WISP is a trajectory analysis tool that calculates and visualizes allosteric
 pathways. It is licensed under the Academic Free License 3.0. For more
