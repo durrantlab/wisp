@@ -1,6 +1,14 @@
 Changes
 =======
 
+1.4 (Jun 30 2023)
+-----------------
+
+* WISP now throws a more user-friendly error when it can't find a given atom in
+  a given residue (e.g., when trying to calculate paths using CA, but some
+  residues do not have CA atoms).
+* Other minor stylistic updates the the code.
+
 1.3
 ---
 

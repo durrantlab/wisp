@@ -87,7 +87,7 @@ class Atom:
         # now get the resid
         try:
             self.resid = int(Line[22:26])
-        except:
+        except Exception:
             self.resid = 0
 
         self.coordinates_numpy = numpy.array(
@@ -99,7 +99,7 @@ class Atom:
             # element specified explicitly at end of life
             self.element = Line[76:79].strip().upper()
         if self.element == "":  # try to guess at element from name
-            two_letters = self.atomname[0:2].strip().upper()
+            two_letters = self.atomname[:2].strip().upper()
             if two_letters == "BR":
                 self.element = "BR"
             elif two_letters == "CL":
@@ -120,7 +120,7 @@ class Atom:
                 self.element = "ZN"
             else:
                 # So, just assume it's the first letter.
-                self.element = self.atomname[0:1].strip().upper()
+                self.element = self.atomname[:1].strip().upper()
 
         # Any number needs to be removed from the element name
         self.element = self.element.replace("0", "")
@@ -161,17 +161,15 @@ class Molecule:
         self.coordinates = []
 
         for line in alist:
-            if len(line) >= 7:
-                if line[0:4] == "ATOM" or line[0:6] == "HETATM":
-                    # Load atom data (coordinates, etc.)
-                    temp_atom = Atom()
-                    temp_atom.read_pdb_line(line)
-                    self.atomnames.append(temp_atom.atomname)
-                    self.chains.append(temp_atom.chain)
-                    self.resids.append(temp_atom.resid)
-                    self.elements.append(temp_atom.element)
-                    self.resnames.append(temp_atom.resname)
-                    self.coordinates.append(temp_atom.coordinates_numpy)
+            if len(line) >= 7 and (line[:4] == "ATOM" or line[:6] == "HETATM"):
+                temp_atom = Atom()
+                temp_atom.read_pdb_line(line)
+                self.atomnames.append(temp_atom.atomname)
+                self.chains.append(temp_atom.chain)
+                self.resids.append(temp_atom.resid)
+                self.elements.append(temp_atom.element)
+                self.resnames.append(temp_atom.resname)
+                self.coordinates.append(temp_atom.coordinates_numpy)
 
         # convert them into numpy arrays
         self.atomnames = numpy.array(self.atomnames)
@@ -190,39 +188,33 @@ class Molecule:
         filename -- a string specifying the file name
         """
 
-        f = open(filename, "w")
-        for index in range(len(self.atomnames)):
-            line = (
-                "ATOM  "
-                + str(index + 1).rjust(5)
-                + self.atomnames[index].rjust(5)
-                + self.resnames[index].strip().rjust(4)
-                + self.chains[index].strip().rjust(2)
-                + str(self.resids[index]).rjust(4)
-                + "    "
-                + ("%.3f" % self.coordinates[index][0]).rjust(8)
-                + ("%.3f" % self.coordinates[index][1]).rjust(8)
-                + ("%.3f" % self.coordinates[index][2]).rjust(8)
-                + " " * 24
-            )
-            f.write(line + "\n")
-
-        f.close()
+        with open(filename, "w") as f:
+            for index in range(len(self.atomnames)):
+                line = (
+                    "ATOM  "
+                    + str(index + 1).rjust(5)
+                    + self.atomnames[index].rjust(5)
+                    + self.resnames[index].strip().rjust(4)
+                    + self.chains[index].strip().rjust(2)
+                    + str(self.resids[index]).rjust(4)
+                    + "    "
+                    + ("%.3f" % self.coordinates[index][0]).rjust(8)
+                    + ("%.3f" % self.coordinates[index][1]).rjust(8)
+                    + ("%.3f" % self.coordinates[index][2]).rjust(8)
+                    + " " * 24
+                )
+                f.write(line + "\n")
 
     def map_atoms_to_residues(self):
         """Sets up self.residue_identifier_to_atom_indices, which matches
         chain_resname_resid to associated atom indices"""
 
-        # each residue is uniquely identified by its chain, resname, resid triplet
-        residue_identifiers_for_all_atoms = []
-        for index in range(len(self.coordinates)):
-            residue_identifiers_for_all_atoms.append(
-                self.chains[index].strip()
-                + "_"
-                + self.resnames[index].strip()
-                + "_"
-                + str(self.resids[index])
-            )
+        # each residue is uniquely identified by its chain, resname, resid
+        # triplet
+        residue_identifiers_for_all_atoms = [
+            f"{self.chains[index].strip()}_{self.resnames[index].strip()}_{str(self.resids[index])}"
+            for index in range(len(self.coordinates))
+        ]
         self.residue_identifiers_in_order = residue_identifiers_for_all_atoms[:]
         for t in range(len(self.residue_identifiers_in_order) - 1, 0, -1):
             if (
@@ -267,10 +259,15 @@ class Molecule:
             if not not_selection:
                 if self.atomnames[indx].strip() in atom_names_list:
                     indices_to_keep.append(indx)
-            else:
-                if not self.atomnames[indx].strip() in atom_names_list:
-                    indices_to_keep.append(indx)
+            elif self.atomnames[indx].strip() not in atom_names_list:
+                indices_to_keep.append(indx)
         indices_to_keep = numpy.array(indices_to_keep, numpy.float64)
+
+        if not indices_to_keep:
+            raise Exception(
+                f"No atoms found in residue {residue_identifier} with atom names {str(atom_names_list)}"
+            )
+
         return indices_to_keep
 
     def get_center_of_mass_from_selection_by_atom_indices(self, indices_selection):
@@ -311,32 +308,32 @@ class Molecule:
 
         element_name = element_name.upper()
 
-        mass = {}
-
-        mass["H"] = 1.00794
-        mass["C"] = 12.0107
-        mass["CL"] = 35.453
-        mass["N"] = 14.0067
-        mass["O"] = 15.9994
-        mass["P"] = 30.973762
-        mass["S"] = 32.065
-        mass["BR"] = 79.904
-        mass["I"] = 126.90447
-        mass["F"] = 18.9984032
-        mass["B"] = 24.3051
-        mass["HG"] = 200.59
-        mass["BI"] = 208.98040
-        mass["AS"] = 74.92160
-        mass["AG"] = 107.8682
-        mass["K"] = 39.0983
-        mass["LI"] = 6.941
-        mass["MG"] = 24.3050
-        mass["RH"] = 102.90550
-        mass["ZN"] = 65.38
+        mass = {
+            "H": 1.00794,
+            "C": 12.0107,
+            "CL": 35.453,
+            "N": 14.0067,
+            "O": 15.9994,
+            "P": 30.973762,
+            "S": 32.065,
+            "BR": 79.904,
+            "I": 126.90447,
+            "F": 18.9984032,
+            "B": 24.3051,
+            "HG": 200.59,
+            "BI": 208.9804,
+            "AS": 74.9216,
+            "AG": 107.8682,
+            "K": 39.0983,
+            "LI": 6.941,
+            "MG": 24.305,
+            "RH": 102.9055,
+            "ZN": 65.38,
+        }
 
         try:
             return mass[element_name]
-        except:
+        except Exception:
             return None
 
     def map_nodes_to_residues(self, node_definition):
@@ -440,10 +437,14 @@ class UserInput:
         """Receives, processes, and stores command-line parameters"""
 
         # Display program information.
-        print("WISP 1.3\n")
-        print("The latest version of WISP can be downloaded from\nhttp://git.durrantlab.com/jdurrant/wisp\n")
+        print("WISP 1.4\n")
+        print(
+            "The latest version of WISP can be downloaded from\nhttp://git.durrantlab.com/jdurrant/wisp\n"
+        )
 
-        print("If you use WISP in your work, please cite:\nJ. Chem. Theory Comput. 10 (2014) 511-517.\n")
+        print(
+            "If you use WISP in your work, please cite:\nJ. Chem. Theory Comput. 10 (2014) 511-517.\n"
+        )
 
         # get the user input
         self.parameters = {}
@@ -487,9 +488,7 @@ class UserInput:
         self.parameters["longest_path_opacity"] = 1.0
         self.parameters["shortest_path_opacity"] = 1.0
         self.parameters["node_sphere_opacity"] = 1.0
-        self.parameters["output_directory"] = "wisp_output__" + time.strftime(
-            "%b_%d_%Y__%I_%M_%p"
-        )
+        self.parameters["output_directory"] = f'wisp_output__{time.strftime("%b_%d_%Y__%I_%M_%p")}'
         self.parameters["pdb_single_frame_filename"] = ""
 
         # first, check if the help file has been requested
@@ -621,7 +620,7 @@ class UserInput:
             self.parameters["output_directory"] + "parameters_used.txt", "w"
         ) as parameters_file:
             log(
-                "# Wisp 1.3\n# ========\n",
+                "# Wisp 1.4\n# ========\n",
                 [self.parameters["logfile"], parameters_file],
             )
 
@@ -883,17 +882,12 @@ class UserInput:
                 print("\n" + item[1])
                 print("-" * len(item[1]))
             else:
-                towrap = item[0] + ": " + item[1]
-                if self.parameters[item[0]] == [] or self.parameters[item[0]] == "":
-                    towrap = towrap + ""
-                else:
-                    towrap = (
-                        towrap
-                        + " The default value is "
-                        + str(self.parameters[item[0]])
-                        + "."
-                    )
-
+                towrap = f"{item[0]}: {item[1]}"
+                towrap = (
+                    f"{towrap}"
+                    if self.parameters[item[0]] in [[], ""]
+                    else f"{towrap} The default value is {str(self.parameters[item[0]])}."
+                )
                 wrapper = textwrap.TextWrapper(
                     initial_indent="", subsequent_indent="    "
                 )
@@ -949,9 +943,7 @@ class multi_threading_to_collect_data_from_frames:
             num_processors = len(inputs)
 
         # now, divide the inputs into the appropriate number of processors
-        inputs_divided = {}
-        for t in range(num_processors):
-            inputs_divided[t] = []
+        inputs_divided = {t: [] for t in range(num_processors)}
 
         for t in range(0, len(inputs), num_processors):
             for t2 in range(num_processors):
@@ -965,7 +957,7 @@ class multi_threading_to_collect_data_from_frames:
 
         arrays = []
         threads = []
-        for i in range(num_processors):
+        for _ in range(num_processors):
             threads.append(collect_data_from_frames())
             arrays.append(multiprocessing.Array("i", [0, 1]))
 
@@ -997,7 +989,7 @@ class multi_threading_to_collect_data_from_frames:
             for key in chunk[1].keys():
                 try:
                     dictionary_of_node_lists[key].extend(chunk[1][key])
-                except:
+                except Exception:
                     dictionary_of_node_lists[key] = chunk[1][key]
 
         self.combined_results = (total_summed_coordinates, dictionary_of_node_lists)
@@ -1093,10 +1085,7 @@ class multi_threading_find_paths:
             num_processors = len(inputs)
 
         # now, divide the inputs into the appropriate number of processors
-        inputs_divided = {}
-        for t in range(num_processors):
-            inputs_divided[t] = []
-
+        inputs_divided = {t: [] for t in range(num_processors)}
         for t in range(0, len(inputs), num_processors):
             for t2 in range(num_processors):
                 index = t + t2
@@ -1109,7 +1098,7 @@ class multi_threading_find_paths:
 
         arrays = []
         threads = []
-        for i in range(num_processors):
+        for _ in range(num_processors):
             threads.append(find_paths())
             arrays.append(multiprocessing.Array("i", [0, 1]))
 
@@ -1301,7 +1290,9 @@ class GetCovarianceMatrix:
             dictionary_of_node_lists = load_frames_data.nodes
 
             # because the previous coordinates belonged to the first frame
-            self.average_pdb.coordinates = total_coordinate_sum / float(number_of_frames)
+            self.average_pdb.coordinates = total_coordinate_sum / float(
+                number_of_frames
+            )
 
         else:
             # so more than one processor. Load in 100 frames, work on those.
@@ -1387,8 +1378,8 @@ class GetCovarianceMatrix:
                     except:
                         dictionary_of_node_lists[key] = tmp[1][key]
 
-            self.average_pdb.coordinates = (
-                total_coordinate_sum / float(number_of_frames)
+            self.average_pdb.coordinates = total_coordinate_sum / float(
+                number_of_frames
             )  # because the previous coordinates belonged to the first frame
 
         afile.close()
@@ -1614,11 +1605,9 @@ class GetPaths:
             corr_matrix, srcs, snks, G
         )
         log(
-            "#           The shortest path has length " + str(shortest_length),
+            f"#           The shortest path has length {str(shortest_length)}",
             params["logfile"],
         )
-
-        num_paths = 1
 
         path = [shortest_length]
         path.extend(shortest_path)
@@ -1638,11 +1627,9 @@ class GetPaths:
             + " paths...",
             params["logfile"],
         )
+        num_paths = 1
         while num_paths < params["desired_number_of_paths"]:
-            log(
-                "#          Testing the cutoff " + str(cutoff) + "...",
-                params["logfile"],
-            )
+            log(f"#          Testing the cutoff {str(cutoff)}...", params["logfile"])
             cutoff_in_array = numpy.array([cutoff], numpy.float64)
             pths = self.remove_redundant_paths(
                 self.get_paths_between_multiple_endpoints(
@@ -1652,11 +1639,7 @@ class GetPaths:
             num_paths = len(pths)
 
             log(
-                "#                The cutoff "
-                + str(cutoff)
-                + " produces "
-                + str(num_paths)
-                + " paths...",
+                f"#                The cutoff {str(cutoff)} produces {num_paths} paths...",
                 params["logfile"],
             )
 
@@ -1703,14 +1686,13 @@ class GetPaths:
             simp = open(params["simply_formatted_paths_filename"], "w")
         for path in pths:
             self.paths_description = (
-                self.paths_description + "#     Path " + str(index) + ":" + "\n"
+                f"{self.paths_description}#     Path {str(index)}:" + "\n"
             )
             self.paths_description = (
-                self.paths_description + "#          Length: " + str(path[0]) + "\n"
+                f"{self.paths_description}#          Length: {str(path[0])}" + "\n"
             )
             self.paths_description = (
-                self.paths_description
-                + "#          Nodes: "
+                f"{self.paths_description}#          Nodes: "
                 + " - ".join([residue_keys[item] for item in path[1:]])
                 + "\n"
             )
@@ -1737,22 +1719,22 @@ class GetPaths:
 
         for indx1 in range(len(pths) - 1):
             path1 = pths[indx1]
-            if not path1 is None:
+            if path1 is not None:
                 for indx2 in range(indx1 + 1, len(pths)):
                     path2 = pths[indx2]
-                    if not path2 is None:
-                        if len(path1) == len(path2):  # paths are same length
+                    if path2 is not None and len(path1) == len(
+                        path2
+                    ):  # paths are the same length
+                        pth1 = copy.deepcopy(path1[1:])
+                        pth2 = copy.deepcopy(path2[1:])
 
-                            pth1 = copy.deepcopy(path1[1:])
-                            pth2 = copy.deepcopy(path2[1:])
+                        if pth1[0] < pth1[-1]:
+                            pth1.reverse()
+                        if pth2[0] < pth2[-1]:
+                            pth2.reverse()
 
-                            if pth1[0] < pth1[-1]:
-                                pth1.reverse()
-                            if pth2[0] < pth2[-1]:
-                                pth2.reverse()
-
-                            if pth1 == pth2:
-                                pths[indx2] = None
+                        if pth1 == pth2:
+                            pths[indx2] = None
 
         while None in pths:
             pths.remove(None)
