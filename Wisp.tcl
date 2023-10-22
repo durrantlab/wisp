@@ -4,7 +4,7 @@
 # WISP GUI
 #Synopsis:
 # A GUI for the allosteric analysis program WISP
-#Version 
+#Version
 # 1.0
 #
 
@@ -22,9 +22,9 @@ namespace eval ::wisp:: {
   variable mainwin
   variable sep "/"
   variable help_url "http://amarolab.ucsd.edu/wisp/"
-  
+
   variable src_selection ""
-  
+
   variable sink_selection ""
   variable load_into_vmd 1
   variable arglist {}
@@ -32,16 +32,16 @@ namespace eval ::wisp:: {
   array set min_array {}
   array set max_array {}
   # wisp options & temporary variables
-  
+
   variable tempdir "${sep}tmp${sep}"
   variable tempdir_temp "${sep}tmp${sep}"
   variable workdir "./"
   variable workdir_temp "$workdir"
-  
+
   variable pdb_trajectory_filename ""
   variable source_residues "";# these three variables are dummy variables that don't actually hold anything, but keep the "other" menu option from appearing when it shouldn't
   variable sink_residues ""
-  
+
   #if {![info exists wisp_directory]} {variable wisp_directory "./wisp.py"} ;# depending on whether the user has set the value in their .vmdrc
   variable wisp_directory_temp ""
   variable wisp_directory_format "file"
@@ -106,14 +106,14 @@ namespace eval ::wisp:: {
   variable path_contrast_temp ""
   variable path_contrast_format "slider 1.0 30.0"
   variable num_paths 0 ;# variable will be modified once a WISP visualization is loaded
-  
+
   variable arglist_files "wisp_directory output_directory"
   variable arglist_covariance "node_definition contact_map_distance_limit load_wisp_saved_matrix wisp_saved_matrix_filename"
   variable arglist_pathsearching "desired_number_of_paths"
   variable arglist_multiprocessor "number_processors num_frames_to_load_before_processing"
   variable arglist_graphics "shortest_path_radius  longest_path_radius spline_smoothness vmd_resolution node_sphere_radius shortest_path_r shortest_path_g shortest_path_b longest_path_r longest_path_g longest_path_b node_sphere_r node_sphere_g node_sphere_b shortest_path_opacity longest_path_opacity node_sphere_opacity pdb_single_frame_filename"
   variable arglist_advanced "seconds_to_wait_before_parallelizing_path_finding user_specified_functionalized_matrix_filename user_specified_contact_map_filename"
-  
+
   variable arglist_other ""
   variable moltxt "(none)"
   variable which_mol 0
@@ -137,15 +137,15 @@ proc ::wisp::UpdateMolecule {args} {
         #puts "Mainwin: $mainwin.mollist.m"
     	#if { [llength $mollist] > 0 } {
        # 	#$w.foot configure -state normal
-       # 	$mainwin.mollist.m configure -state normal 
+       # 	$mainwin.mollist.m configure -state normal
        # 	#puts $mollist
        # 	foreach id $mollist {
-       #     		$mainwin.mollist.m insert end "$id - [molinfo $id get name]"            		
+       #     		$mainwin.mollist.m insert end "$id - [molinfo $id get name]"
        # 	}
 #	}
     if { [llength $mollist] > 0 } {
         #$w.foot configure -state normal
-        $w.mollist.m configure -state normal 
+        $w.mollist.m configure -state normal
         #puts $mollist
         foreach id $mollist {
             $w.mollist.m.menu add radiobutton -value $id \
@@ -157,7 +157,7 @@ proc ::wisp::UpdateMolecule {args} {
               puts "which_mol: $::wisp::which_mol"
               puts "exists: [info exists vmd_molecule($::wisp::which_mol)]"
                 if {[info exists vmd_molecule($::wisp::which_mol)]} {
-                    set ::wisp::moltxt "$::wisp::which_mol:[molinfo $::wisp::which_mol get name]"  
+                    set ::wisp::moltxt "$::wisp::which_mol:[molinfo $::wisp::which_mol get name]"
                 } else {
                     set ::wisp::moltxt "(none)"
                     set ::wisp::which_mol -1
@@ -179,7 +179,7 @@ proc ::wisp::wisp_mainwin {} {
   wm title $w "WISP"
   wm resizable $w 0 0
   set ::wisp::mainwin $w
-	
+
   wm protocol $w WM_DELETE_WINDOW {
     grab release $::wisp::mainwin
     after idle destroy $::wisp::mainwin
@@ -190,7 +190,7 @@ proc ::wisp::wisp_mainwin {} {
   set ::wisp::w $w
   frame $w.menubar -relief raised -bd 2 ;# frame for menubar
   pack $w.menubar -padx 1 -fill x
-	
+
   menubutton $w.menubar.help -text Help -underline 0 -menu $w.menubar.help.menu
   menubutton $w.menubar.settings -text Settings -underline 0 -menu $w.menubar.settings.menu
   menu $w.menubar.settings.menu -tearoff no
@@ -204,14 +204,14 @@ proc ::wisp::wisp_mainwin {} {
   if {$::wisp::arglist_other != ""} { ;# if there are any subsequent settings, put them here
     $w.menubar.settings.menu add command -label "Other..." -command {::wisp::wisp_settings other}
   }
-  
+
   menu $w.menubar.help.menu -tearoff no
   $w.menubar.help.menu add command -label "About.." -command {tk_messageBox -type ok -title "About WISP" -message "VMD GUI plugin for running allosteric network analyses using WISP.\n\nDeveloped in the:\n\tAmaro Laboratory\n\tUniversity of California, San Diego\n\thttp://amarolab.ucsd.edu\n\nDevelopers:\n\tAdam VanWart\n\tJacob Durrant\n\tLane Votapka\n\nPlease see README in the installation directory for additional information"}
   $w.menubar.help.menu add command -label "Help..." -command "vmd_open_url $::wisp::help_url"
   # XXX - set menubutton width to avoid truncation in OS X
   $w.menubar.help config -width 5
   $w.menubar.settings config -width 5
-	
+
   pack $w.menubar.help -side right
   pack $w.menubar.settings -side left
   # Mol List
@@ -291,22 +291,22 @@ proc ::wisp::run_wisp {} {
   update
   grab $dialog
   animate write pdb $::wisp::temp_pdb sel $pdb_struct $selected_mol  ;# this writes the pdb trajectory explicitly
-  
+
   set pdb_trajectory_filename $::wisp::temp_pdb ;#[molinfo $selected_mol get filename]
   set timename [clock format [clock seconds] -format "wisp_output__%h_%d_%Y__%H_%M_%p"]
   if {$::wisp::output_directory == ""} {
     set outdir $timename
   } else {
     set outdir [file join $::wisp::output_directory $timename]
-  }  
+  }
   set curdir [pwd]
   cd $::wisp::workdir
   set command "python $::wisp::wisp_directory -pdb_trajectory_filename $pdb_trajectory_filename -source_residues \"$src_str\" -sink_residues \"$sink_str\" -output_directory $outdir $other_args"
   puts "running command: $command"
   update
-  
+
   set error [catch {exec {*}$command} results options]
-  
+
   destroy $dialog
   puts "WISP std. output: $results"
   if {$error} {tk_messageBox -type ok -title "Failure" -message "Alert: WISP failed to run properly. See VMD standard output for more detailed information."; return}
@@ -353,9 +353,9 @@ proc ::wisp::parse_helpfile {{help_command "-help"}} {
     if {!([info exists "::wisp::$arg"])} { ;# if the variable doesn't already exist, create it
       set ::wisp::$arg ""
       lappend ::wisp::arglist_other $arg
-    } 
+    }
   }
-  
+
 }
 
 proc ::wisp::find_py {} {
@@ -372,7 +372,7 @@ proc ::wisp::find_py {} {
   }
   set ::wisp::wisp_directory "./wisp.py" ;# then we couldn't find it
   return False
-  
+
 }
 
 proc ::wisp::default_args {} { ;# in case there is some sort of problem with parsing the helpfile, this will assign the default arguments
@@ -443,7 +443,7 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 	  set arglist $::wisp::arglist_other
 	  set window_title "WISP Other Settings"
 	}
-	
+
 	variable w
 	variable settings_win
 	set win_name $w.settings_$mode
@@ -459,37 +459,37 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 	}
 	wm title $settings_win "$window_title"
 	wm resizable $settings_win no no
-	
+
 	# temp variables
 	#set ::wisp::workdir_temp $::wisp::workdir
 	#set ::wisp::wispdir_temp $::wisp::wispdir
-	
+
 	# menu widgets
-	
-	
+
+
 	foreach arg $arglist {
           eval "set ::wisp::${arg}_temp \$::wisp::$arg" ;# set all temporary argument variables
         }
 	#puts "shortest_path_opacity: $::wisp::shortest_path_opacity_temp"
 	set len_arglist [llength $arglist] ;# get the length of the argument list
 	set half_len_arglist [expr "([llength $arglist] / 2) + 1"] ;# get half the length of the argument list for the two columns in the settings window
-	
+
 	frame $settings_win.leftcol ;# first do the left column
 	frame $settings_win.rightcol
-	
-	
+
+
 	#frame $settings_win.leftcol.temp_dir
 	#pack [label $settings_win.leftcol.temp_dir.caption -text "Working Directory"] -side top -anchor w ; balloon $settings_win.leftcol.temp_dir.caption "description"
 	#pack [entry $settings_win.leftcol.temp_dir.textbox -width 20 -textvariable ::wisp::workdir_temp] -side top -anchor w
 	#pack $settings_win.leftcol.temp_dir -side top -anchor w -pady 10
-#	
+#
 	#frame $settings_win.leftcol.wisp_dir
 	#pack [label $settings_win.leftcol.wisp_dir.caption -text "WISP location"] -side top -anchor w
 	#pack [entry $settings_win.leftcol.wisp_dir.textbox -width 20 -textvariable ::wisp::wispdir_temp] -side top -anchor w
 	#pack $settings_win.leftcol.wisp_dir -side top -anchor w -pady 10
-	
+
 	#puts "len_arglist: $len_arglist"
-	
+
 	for {set i 0} {$i < $len_arglist} {incr i} {
 	  set arg [lindex $arglist $i]
 	  if {([info exists "::wisp::${arg}_format"])} {
@@ -511,7 +511,7 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 	  }
 	  #if {($i < $half_len_arglist || $len_arglist < 6) } { ;# then we are on the left side
 	    set column $settings_win.leftcol
-	  #} 
+	  #}
 	  if {$i >= $half_len_arglist && $len_arglist > 6} { ;# then we are on the right side
 	    if {$arg_format != "little_slider_middle"} {
 	      if {$i > $half_len_arglist} {set column $settings_win.rightcol} ;# all this is very messy, but I'm trying to keep the little_sliders (which require the same frame) together on the same column
@@ -526,7 +526,7 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 	  if {$arg_format == "little_slider_begin"}  {
 	    set last_str_index [expr "[string length $arg] - 3"] ;# get the index of the third to last character in the string for the title
 	    set widget_name [string range $arg 0 $last_str_index] ;# need a generic name for three subsequent widgets
-	    set our_widget $column.$widget_name 
+	    set our_widget $column.$widget_name
 	    frame $our_widget ;# need to create the frame for the title and entries
 	    pack [label $our_widget.caption -text "$widget_name (RGB)"] -side top -anchor w ; balloon $our_widget.caption ::wisp::descarray($arg) ;# title
 	    frame $our_widget.subframe ;# a subframe for the three entries
@@ -558,12 +558,12 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 	    pack [label $our_widget.caption -text "$arg"] -side top -anchor w ; balloon $our_widget.caption ::wisp::descarray($arg)
 	    frame $our_widget.cutoffslider
 	    #pack [entry $our_widget.cutoffslider.textbox -width 6 -textvariable ::wisp::${arg}_temp] -side left -fill x
-	    
+
 	    if {${arg} == "node_sphere_opacity"} { ;# this means that this argument is node_sphere opacity, and that a structure is loaded
 	      eval "scale $our_widget.cutoffslider.slider -to $arg_max -from $arg_min -orient horizontal -digits 3 -length 150 -showvalue true -resolution 0.01 -command {if {[lsearch [material list] node_spheres] != -1} {material change opacity node_spheres \$::wisp::${arg}_temp}; set ::wisp::${arg}_temp }"
 	    } elseif {${arg} == "shortest_path_opacity" || $arg == "longest_path_opacity"} {
 	      ::wisp::make_scale $our_widget.cutoffslider.slider $arg $arg_max $arg_min
-	    
+
 	    } else { ;# otherwise, just treat it normally
 	      eval "scale $our_widget.cutoffslider.slider -to $arg_max -from $arg_min -orient horizontal -digits 3 -length 150 -showvalue true -resolution 0.01 -command {set ::wisp::${arg}_temp }"
 	    }
@@ -572,7 +572,7 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 	    pack $our_widget.cutoffslider -side left -fill x -expand 1
 	    pack $our_widget -side top -anchor w -pady 10 -padx 10
 	  } elseif {$arg_format == "file" || $arg_format == "directory"} {
-	    if {$arg_format == "file"} { set which_tk_getopen "tk_getOpenFile" 
+	    if {$arg_format == "file"} { set which_tk_getopen "tk_getOpenFile"
 	    } elseif {$arg_format == "directory"} { set which_tk_getopen "tk_chooseDirectory" } ;# two different things the user might choose: files or directories
 	    frame $our_widget -relief groove -bd 2  ;# balloon $our_widget "Test Help"
 	    pack [label $our_widget.caption -text "$arg"] -side top -anchor w ; balloon $our_widget.caption ::wisp::descarray($arg)
@@ -594,7 +594,7 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 	    pack $our_widget -side top -anchor w -pady 10 -padx 10
 	  }
 	}
-	
+
 	if { $mode == "graphics" } { ;# then place the contrast bar
 	  set our_widget "$column.path_contrast"
 	  set arg_max [lindex $::wisp::path_contrast_format 2]
@@ -616,9 +616,9 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 #frame $settings_win.leftcol.checkboxes
 	#pack [checkbutton $settings_win.leftcol.checkboxes.sovereignty -text "No intrastructural clustering" -variable ::wisp::sovereignty_temp -onvalue 1 -offvalue 0] -side top -anchor w
 	#pack [checkbutton $settings_win.leftcol.checkboxes.hydrophobic -text "Hydrophobic calculations" -variable ::wisp::find_hydrophobic_temp -onvalue 1 -offvalue 0] -side top -anchor w
-	
+
 	set arg shortest_path_b
-	
+
 	frame $settings_win.okaycancel
 	# need to use an eval so that the $arglist doesn't have to be global
 	eval "button \$settings_win.okaycancel.okay -text OK -width 6 \
@@ -649,17 +649,17 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 	#  -command {
 	#  	set ::wisp::workdir_temp $::wisp::workdir
 	#  	#...
-	#	
+	#
 	#}
 	pack $settings_win.okaycancel.okay $settings_win.okaycancel.cancel -side left ;# $settings_win.okaycancel.default
 	grid $settings_win.okaycancel -column 0 -row 1
-	
+
 }
 
 proc ::wisp::make_scale {name arg arg_max arg_min} {
   eval "scale $name -to $arg_max -from $arg_min -orient horizontal -digits 3 -length 150 -sliderlength 40 -showvalue true -resolution 0.01 -command {::wisp::adjust_wispmaterial ::wisp::shortest_path_opacity_temp ::wisp::longest_path_opacity_temp ::wisp::shortest_path_r ::wisp::longest_path_r ::wisp::num_paths; set ::wisp::${arg}_temp }"
   #eval "$name set \$::wisp::${arg}_temp"
-  
+
 }
 
 proc ::wisp::adjust_path_contrast {value} {
@@ -676,8 +676,8 @@ proc ::wisp::adjust_wispmaterial {shortest_path_opacity_var longest_path_opacity
   #puts "$shortest_path_opacity $longest_path_opacity $shortest_path_color $longest_path_color $num_paths"
   if {$num_paths == 0} {return} ;# if there are no paths, then get outta here
   set increment [expr "($longest_path_opacity - $shortest_path_opacity)/$num_paths"]
-  
-  
+
+
   foreach mat [material list] { ;# for all the materials in vmd
     #puts "mat: $mat"
     if {[string first wisp_material $mat] == 0} { ;# then this material is one we need to modify
@@ -701,7 +701,7 @@ proc ::wisp::isFile {f w} {
 
 proc ::wisp::wisp_init {} {
   ;# the correct OS directory separator must be defined
-  switch [vmdinfo arch] { 
+  switch [vmdinfo arch] {
     WIN64 -
     WIN32 {
       set ::wisp::sep "\\"
@@ -729,7 +729,7 @@ proc balloon:show {w arg} {
     wm overrideredirect $top 1
     if {[string equal [tk windowingsystem] aqua]}  {
         ::tk::unsupported::MacWindowStyle style $top help none
-    }   
+    }
     pack [message $top.txt -aspect 200 -bg lightyellow \
             -font fixed -text $arg]
     set wmx [winfo rootx $w]
@@ -738,7 +738,7 @@ proc balloon:show {w arg} {
       [winfo reqwidth $top.txt]x[winfo reqheight $top.txt]+$wmx+$wmy
     raise $top
 }
- 
+
 
 #this gets called by VMD the first time the menu is opened
 proc wisp_tk_cb {} {

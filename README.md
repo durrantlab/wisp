@@ -1,31 +1,30 @@
-# WISP 1.4
+# WISP
 
-WISP is a trajectory analysis tool that calculates and visualizes allosteric
-pathways. It is licensed under the Academic Free License 3.0. For more
-information, please see http://opensource.org/licenses/AFL-3.0
+WISP is a trajectory analysis tool that calculates and visualizes allosteric pathways.
+It is licensed under the Academic Free License 3.0.
+For more information, please see http://opensource.org/licenses/AFL-3.0
 
 WISP is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
 
-Copyright 2012 Adam VanWart and Jacob D. Durrant. If you have any questions,
-comments, or suggestions, please contact durrantj [at] pitt [dot] edu.
+Copyright 2012 Adam VanWart and Jacob D. Durrant.
+If you have any questions, comments, or suggestions, please contact durrantj [at] pitt [dot] edu.
 
-The latest version of WISP can be downloaded from
-[http://git.durrantlab.com/jdurrant/wisp](http://git.durrantlab.com/jdurrant/wisp).
+The latest version of WISP can be downloaded from [http://git.durrantlab.com/jdurrant/wisp](http://git.durrantlab.com/jdurrant/wisp).
 
-If you use WISP in your work, please cite: A.T. Van Wart, J.D. Durrant, L.
-Votapka, R.E. Amaro. Weighted implementation of suboptimal paths (WISP): An
-optimized algorithm and tool for dynamical network analysis, J. Chem. Theory
-Comput. 10 (2014) 511-517
+If you use WISP in your work, please cite:
+
+> A.T. Van Wart, J.D. Durrant, L. Votapka, R.E. Amaro. Weighted implementation of suboptimal paths (WISP): An optimized algorithm and tool for dynamical network analysis, J. Chem. Theory Comput. 10 (2014) 511-517
 
 ## How to Install the VMD WISP Plugin (Linux/Mac)
 
 1. Unzip the file to a directory of your choice using this command: `tar -xzf wisp.tgz <your directory here>`
 2. To use the VMD plugin, add these two lines of code to your `.vmdrc` file
    (usually located in your `~/` directory)
-   * `set auto_path "$auto_path <your directory here>"  ; #(NOTE: this may require the full pathname)`
-   * `vmd_install_extension wisp wisp_tk_cb "Analysis/Wisp"`
+   - `set auto_path "$auto_path <your directory here>"  ; #(NOTE: this may require the full pathname)`
+   - `vmd_install_extension wisp wisp_tk_cb "Analysis/Wisp"`
 3. Now open VMD: Click Extensions > Analysis > WISP
 
 ## How to Use WISP from the Command Line
@@ -68,13 +67,13 @@ participate in any path are shown in licorice representation.
 The WISP output directory contains a number of other files as well. Here are
 descriptions of each:
 
-* `log.txt`: Details describing WISP execution.
-* `parameters_used.txt`: The WISP parameters used to generate the output.
-* `average_structure.pdb`: The average structure of your PDB trajectory.
-* `draw_frame.pdb`: If the user requests that a separate single-structure PDB
+- `log.txt`: Details describing WISP execution.
+- `parameters_used.txt`: The WISP parameters used to generate the output.
+- `average_structure.pdb`: The average structure of your PDB trajectory.
+- `draw_frame.pdb`: If the user requests that a separate single-structure PDB
   file be used for calculating node and wisp positions, that file is saved as
   "draw_frame.pdb". Otherwise, the average structure is used.
-* `functionalized_matrix_with_contact_map_applied.pickle`: A python pickle
+- `functionalized_matrix_with_contact_map_applied.pickle`: A python pickle
   file that contains the matrix obtained by multiplying a functionalized
   correlation matrix and a contact map. This file is not human readable but
   can be loaded into WISP for use in subsequent runs with the
@@ -82,18 +81,18 @@ descriptions of each:
   Thus, the matrix needs only to be calculated once for each trajectory,
   rather than every time WISP is executed. Use `python wisp.py -help` for more
   information.
-* `contact_map_matrix.txt`: A human readable representation of the contact
+- `contact_map_matrix.txt`: A human readable representation of the contact
   map. If the user wishes to generate their own contact map rather than
   letting WISP generate one automatically, a custom contact map formatted like
   this one can be loaded into WISP using the
   `-user_specified_contact_map_filename parameter`.
-* `functionalized_correlation_matrix.txt`: A human readable representation of
+- `functionalized_correlation_matrix.txt`: A human readable representation of
   the functionalized correlation matrix, prior to multiplication by the
   contact map. If the user wishes to generate their own functionalized
   correlation matrix rather than letting WISP generate one automatically, a
   custom matrix formatted like this one can be loaded into WISP using the
   `-user_specified_functionalized_matrix_filename parameter`.
-* `simply_formatted_paths.txt`: A simple list of path lengths and nodes. The
+- `simply_formatted_paths.txt`: A simple list of path lengths and nodes. The
   first column contains the lengths, and all following columns contain node
   indices. This file may be helpful for subsequent statistical analyses of the
   WISP output. Note that the `simply_formatted_paths.txt` output file

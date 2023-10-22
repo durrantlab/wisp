@@ -22,8 +22,9 @@ import gc
 import multiprocessing
 import os
 import sys
-import time
 import textwrap
+import time
+
 import networkx
 import numpy
 from scipy import interpolate
@@ -347,8 +348,10 @@ class Molecule:
         self.nodes = numpy.empty((len(self.residue_identifiers_in_order), 3))
         for index, residue_iden in enumerate(self.residue_identifiers_in_order):
             if node_definition == "CA":  # the node is at the alpha carbon
-                indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(
-                    residue_iden, ["CA"]
+                indices_to_consider = (
+                    self.get_indices_of_atoms_in_a_residue_by_atom_name(
+                        residue_iden, ["CA"]
+                    )
                 )
                 node_loc = self.coordinates[int(indices_to_consider[0])]
             elif (
@@ -360,31 +363,33 @@ class Molecule:
             elif (
                 node_definition == "BACKBONE_COM"
             ):  # the node is the residue center of mass
-                indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(
-                    residue_iden,
-                    [
-                        "C",
-                        "CA",
-                        "H",
-                        "H1",
-                        "H2",
-                        "H3",
-                        "HA",
-                        "HA2",
-                        "HH1",
-                        "HN",
-                        "HT1",
-                        "HT2",
-                        "HT3",
-                        "HW",
-                        "N",
-                        "O",
-                        "O1",
-                        "O2",
-                        "OT1",
-                        "OT2",
-                        "OXT",
-                    ],
+                indices_to_consider = (
+                    self.get_indices_of_atoms_in_a_residue_by_atom_name(
+                        residue_iden,
+                        [
+                            "C",
+                            "CA",
+                            "H",
+                            "H1",
+                            "H2",
+                            "H3",
+                            "HA",
+                            "HA2",
+                            "HH1",
+                            "HN",
+                            "HT1",
+                            "HT2",
+                            "HT3",
+                            "HW",
+                            "N",
+                            "O",
+                            "O1",
+                            "O2",
+                            "OT1",
+                            "OT2",
+                            "OXT",
+                        ],
+                    )
                 )
                 node_loc = self.get_center_of_mass_from_selection_by_atom_indices(
                     indices_to_consider
@@ -392,32 +397,34 @@ class Molecule:
             elif (
                 node_definition == "SIDECHAIN_COM"
             ):  # the node is the residue center of mass
-                indices_to_consider = self.get_indices_of_atoms_in_a_residue_by_atom_name(
-                    residue_iden,
-                    [
-                        "C",
-                        "CA",
-                        "H",
-                        "H1",
-                        "H2",
-                        "H3",
-                        "HA",
-                        "HA2",
-                        "HH1",
-                        "HN",
-                        "HT1",
-                        "HT2",
-                        "HT3",
-                        "HW",
-                        "N",
-                        "O",
-                        "O1",
-                        "O2",
-                        "OT1",
-                        "OT2",
-                        "OXT",
-                    ],
-                    True,
+                indices_to_consider = (
+                    self.get_indices_of_atoms_in_a_residue_by_atom_name(
+                        residue_iden,
+                        [
+                            "C",
+                            "CA",
+                            "H",
+                            "H1",
+                            "H2",
+                            "H3",
+                            "HA",
+                            "HA2",
+                            "HH1",
+                            "HN",
+                            "HT1",
+                            "HT2",
+                            "HT3",
+                            "HW",
+                            "N",
+                            "O",
+                            "O1",
+                            "O2",
+                            "OT1",
+                            "OT2",
+                            "OXT",
+                        ],
+                        True,
+                    )
                 )
                 node_loc = self.get_center_of_mass_from_selection_by_atom_indices(
                     indices_to_consider
@@ -488,7 +495,9 @@ class UserInput:
         self.parameters["longest_path_opacity"] = 1.0
         self.parameters["shortest_path_opacity"] = 1.0
         self.parameters["node_sphere_opacity"] = 1.0
-        self.parameters["output_directory"] = f'wisp_output__{time.strftime("%b_%d_%Y__%I_%M_%p")}'
+        self.parameters[
+            "output_directory"
+        ] = f'wisp_output__{time.strftime("%b_%d_%Y__%I_%M_%p")}'
         self.parameters["pdb_single_frame_filename"] = ""
 
         # first, check if the help file has been requested
@@ -916,6 +925,7 @@ class UserInput:
 
 ######################## Objects to Handle Usign Multiple Processors ########################
 
+
 # --- first, to generate a covariance matrix ---#
 class multi_threading_to_collect_data_from_frames:
     """Launch PDB-frame processing on multiple processors"""
@@ -1245,7 +1255,7 @@ class GetCovarianceMatrix:
 
         # first, split the file into frames. ^END matches both VMD and ENDMDL
         # formats.
-        afile = open(params["pdb_trajectory_filename"], "r")
+        afile = open(params["pdb_trajectory_filename"])
         this_frame = []
         first_frame = True
         number_of_frames = 0
@@ -1256,7 +1266,6 @@ class GetCovarianceMatrix:
         )
 
         if params["number_processors"] == 1:
-
             load_frames_data = collect_data_from_frames()
 
             # a pdb object that will eventually contain the average structure
@@ -1270,7 +1279,6 @@ class GetCovarianceMatrix:
                 if line[:4] == "ATOM" or line[:6] == "HETATM":
                     this_frame.append(line)
                 if line[:3] == "END":  # so reached end of frame
-
                     if first_frame:
                         self.average_pdb = Molecule()
                         self.average_pdb.load_pdb_from_list(this_frame)
@@ -1315,7 +1323,6 @@ class GetCovarianceMatrix:
                 if line[:4] == "ATOM" or line[:6] == "HETATM":
                     this_frame.append(line)
                 if line[:3] == "END":  # so reached end of frame
-
                     if first_frame:
                         # self.get_residue_mappings(this_frame)
                         self.average_pdb = Molecule()
@@ -2051,7 +2058,7 @@ class Visualize:
         if params["pdb_single_frame_filename"] != "":  # use a user-specified structure
             molecule_object_to_use = Molecule()
             molecule_object_to_use.load_pdb_from_list(
-                open(params["pdb_single_frame_filename"], "r").readlines()
+                open(params["pdb_single_frame_filename"]).readlines()
             )
             molecule_object_to_use.map_atoms_to_residues()
             molecule_object_to_use.map_nodes_to_residues(params["node_definition"])
@@ -2143,7 +2150,6 @@ class Visualize:
             "set wisp_num_paths %i" % len(pths.paths), log_files
         )  # tell the WISP plugin how many paths there are total
         for path in pths.paths:
-
             log("\n# Draw a new path", log_files)
             log("# \tLength: " + str(path[0]), log_files)
             log("# \tNodes: " + str(path[1:]) + "\n", log_files)
@@ -2196,7 +2202,6 @@ class Visualize:
                 log("draw material " + mat_name, log_files)
 
             try:
-
                 degree = len(x_vals) - 1
                 if degree > 3:
                     # so at most degree 3
