@@ -1,6 +1,7 @@
 SHELL := /usr/bin/env bash
 PYTHON_VERSION := 3.11
 PYTHON_VERSION_CONDENSED := 311
+PACKAGE_NAME := wisp
 REPO_PATH := $(shell git rev-parse --show-toplevel)
 CONDA_PATH := $(REPO_PATH)/.venv
 CONDA := conda run -p $(CONDA_PATH)
@@ -52,3 +53,7 @@ codestyle:
 
 .PHONY: formatting
 formatting: codestyle
+
+.PHONY: test
+test:
+	$(CONDA) pytest -c pyproject.toml --cov=$(PACKAGE_NAME) --cov-report=xml tests/
