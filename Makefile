@@ -44,15 +44,11 @@ install:
 validate:
 	$(CONDA) pre-commit run --all-files
 
-.PHONY: serve
-serve:
-	echo "Served at http://127.0.0.1:8000/"
-	$(CONDA) mkdocs serve
+.PHONY: codestyle
+codestyle:
+	$(CONDA) pyupgrade --exit-zero-even-if-changed --py311-plus **/*.py
+	$(CONDA) isort --settings-path pyproject.toml ./
+	$(CONDA) black --config pyproject.toml ./
 
-.PHONY: build
-build:
-	$(CONDA) mkdocs build
-
-.PHONY: deploy
-deploy:
-	$(CONDA) mkdocs gh-deploy --force
+.PHONY: formatting
+formatting: codestyle
