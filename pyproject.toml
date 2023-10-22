@@ -9,7 +9,7 @@ readme = "README.md"
 license = "AFL-3.0 "
 
 [tool.poetry.scripts]
-wisp-run = "wisp.run:main"
+wisp = "wisp.run:main"
 
 [tool.poetry.dependencies]
 # Scipy restricts max Python version for now (2023-10-21).
@@ -116,3 +116,162 @@ virtualenv = "^20.24.4"
 webencodings = "^0.5.1"
 wheel = "^0.41.2"
 zipp = "^3.17.0"
+
+[tool.pylint.messages_control]
+# https://pylint.readthedocs.io/en/latest/
+good-names = [
+  "i",
+  "j",
+  "k",
+  "e",
+  "_",
+]
+ignore = ["CVS", "_version.py", "conf.py"]
+jobs = 0
+py-version = 3.11
+argument-naming-style = "snake_case"
+attr-naming-style = "snake_case"
+class-const-naming-style = "UPPER_CASE"
+class-naming-style = "PascalCase"
+const-naming-style = "UPPER_CASE"
+function-naming-style = "snake_case"
+disable = [
+  "raw-checker-failed",
+  "bad-inline-option",
+  "locally-disabled",
+  "file-ignored",
+  "suppressed-message",
+  "useless-suppression",
+  "deprecated-pragma",
+  "use-symbolic-message-instead",
+  "too-many-arguments",
+  "too-many-public-methods",
+  "missing-module-docstring",
+  "missing-function-docstring",
+  "too-many-lines",
+  "fixme",
+  "too-many-instance-attributes",
+  "too-few-public-methods",
+  "too-many-locals",
+  "attribute-defined-outside-init",
+  "broad-except",
+  "import-error"
+]
+
+[tool.black]
+# https://github.com/psf/black
+target-version = ["py311"]
+line-length = 88
+color = true
+
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | env
+    | venv
+)/
+'''
+
+
+[tool.isort]
+# https://github.com/timothycrosley/isort/
+py_version = 311
+line_length = 88
+
+known_typing = ["typing", "types", "typing_extensions", "mypy", "mypy_extensions"]
+sections = ["FUTURE", "TYPING", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+profile = "black"
+include_trailing_comma = true
+multi_line_output = 3
+indent = 4
+color_output = true
+skip = [
+  '.bzr',
+  '.direnv',
+  '.eggs',
+  '.git',
+  '.hg',
+  '.mypy_cache',
+  '.nox',
+  '.pants.d',
+  '.svn',
+  '.tox',
+  '.venv',
+  '__pypackages__',
+  '_build',
+  'buck-out',
+  'build',
+  'dist',
+  'node_modules',
+  'venv',
+]
+
+
+[tool.mypy]
+# https://mypy.readthedocs.io/en/latest/config_file.html#using-a-pyproject-toml-file
+python_version = 3.11
+pretty = true
+show_traceback = true
+color_output = true
+
+allow_redefinition = false
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+ignore_missing_imports = true
+implicit_reexport = false
+no_implicit_optional = true
+show_column_numbers = true
+show_error_codes = true
+show_error_context = true
+strict_equality = true
+strict_optional = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+
+[tool.pytest.ini_options]
+# https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
+# Directories that are not visited by pytest collector:
+norecursedirs =["reptar", "hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
+doctest_optionflags = ["NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+
+# Extra options:
+addopts = [
+  "--strict-markers",
+  "--tb=short",
+  "--doctest-modules",
+  "--doctest-continue-on-failure",
+]
+
+
+[tool.coverage.run]
+source = ["tests"]
+
+
+[coverage.paths]
+source = "reptar"
+
+
+[coverage.run]
+branch = true
+omit = [
+  "*/__init__.py",
+  "*/_version.py",
+]
+
+[coverage.report]
+fail_under = 50
+show_missing = true

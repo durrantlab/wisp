@@ -6,8 +6,7 @@ from scipy.spatial.distance import cdist
 
 from .logger import log
 from .structure import Molecule
-from .traj import (collect_data_from_frames,
-                   multi_threading_to_collect_data_from_frames)
+from .traj import collect_data_from_frames, multi_threading_to_collect_data_from_frames
 
 
 class GetCovarianceMatrix:
