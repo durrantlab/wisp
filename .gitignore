@@ -116,6 +116,8 @@ psi.*.clean
 
 # Pytest tmp
 tests/tmp/
+tests/files/tmp/*
+!tests/files/tmp/.gitkeep
 
 # Reptar data
 examples/reptar-data

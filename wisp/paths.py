@@ -194,14 +194,6 @@ class GetPaths:
 
         # populate graph nodes and weighted edges
         G = nx.Graph(incoming_graph_data=corr_matrix)
-        for u, v, data in G.edges(data=True):
-            if "weight" in data:
-                weight = data["weight"]
-                print(f"Edge ({u}, {v}) has weight: {weight}")
-            else:
-                # If the edge has no weight attribute, you can provide a default value
-                print(f"Edge ({u}, {v}) has no weight attribute")
-        exit()
 
         # first calculate length of shortest path between any source and sink
         log("\n# Calculating paths...", params["logfile"])

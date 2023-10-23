@@ -21,6 +21,8 @@ import os
 import pickle
 import time
 
+import numpy as np
+
 from .cli import UserInput
 from .io import output_directory_info
 from .logger import log
@@ -42,6 +44,10 @@ def run_wisp(config):
             config
         )  # so generate the matrix instead of loading it
     correlation_matrix = correlation_matrix_object.correlations
+
+    # Set all negative values to zero, instead we just take the absolute values
+    # See https://github.com/durrantlab/wisp/pull/2#issuecomment-1774429502
+    correlation_matrix = np.abs(correlation_matrix)
 
     # always save a copy of the correlation matrix, regardless of how it was loaded/generated
     pickle.dump(
