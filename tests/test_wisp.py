@@ -4,6 +4,8 @@ import subprocess
 
 import numpy as np
 
+from wisp.run import run_wisp
+
 # Ensures we execute from file directory (for relative paths).
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
@@ -16,70 +18,49 @@ def test_example():
     test_dir = os.path.join(WRITING_DIR, "test_example")
     if os.path.exists(test_dir):
         shutil.rmtree(test_dir)
-    command = [
-        "wisp",
-        "-contact_map_distance_limit",
-        "4.5",
-        "-desired_number_of_paths",
-        "15",
-        "-load_wisp_saved_matrix",
-        "FALSE",
-        "-longest_path_b",
-        "0.0",
-        "-longest_path_g",
-        "0.0",
-        "-longest_path_opacity",
-        "1.0",
-        "-longest_path_r",
-        "1.0",
-        "-longest_path_radius",
-        "0.01",
-        "-node_definition",
-        "RESIDUE_COM",
-        "-node_sphere_b",
-        "1.0",
-        "-node_sphere_g",
-        "1.0",
-        "-node_sphere_opacity",
-        "1.0",
-        "-node_sphere_r",
-        "1.0",
-        "-node_sphere_radius",
-        "1.0",
-        "-num_frames_to_load_before_proceesing",
-        "20",
-        "-number_processors",
-        "4",
-        "-pdb_trajectory_filename",
-        pdb_path,
-        "-seconds_to_wait_before_parallelizing_path_finding",
-        "5.0",
-        "-shortest_path_b",
-        "1.0",
-        "-shortest_path_g",
-        "0.0",
-        "-shortest_path_opacity",
-        "1.0",
-        "-shortest_path_r",
-        "0.0",
-        "-shortest_path_radius",
-        "1.0",
-        "-sink_residues",
-        "C_ASP_11",
-        "-source_residues",
-        "C_LEU_10",
-        "-spline_smoothness",
-        "0.01",
-        "-vmd_resolution",
-        "6",
-        "-output_directory",
-        test_dir,
-    ]
-    subprocess.run(command, check=False)
+    os.makedirs(test_dir, exist_ok=True)
+    config = {
+        "contact_map_distance_limit": 4.5,
+        "desired_number_of_paths": 15,
+        "load_wisp_saved_matrix": "FALSE",
+        "wisp_saved_matrix_filename": "",
+        "longest_path_b": 0.0,
+        "longest_path_g": 0.0,
+        "longest_path_opacity": 1.0,
+        "longest_path_r": 1.0,
+        "longest_path_radius": 0.01,
+        "node_definition": "RESIDUE_COM",
+        "node_sphere_b": 1.0,
+        "node_sphere_g": 1.0,
+        "node_sphere_opacity": 1.0,
+        "node_sphere_r": 1.0,
+        "node_sphere_radius": 1.0,
+        "num_frames_to_load_before_processing": 20,
+        "number_processors": 4,
+        "pdb_trajectory_filename": pdb_path,
+        "seconds_to_wait_before_parallelizing_path_finding": 5.0,
+        "shortest_path_b": 1.0,
+        "shortest_path_g": 0.0,
+        "shortest_path_opacity": 1.0,
+        "shortest_path_r": 0.0,
+        "shortest_path_radius": 1.0,
+        "sink_residues": ["C_ASP_11"],
+        "source_residues": ["C_LEU_10"],
+        "spline_smoothness": 0.01,
+        "vmd_resolution": 6,
+        "output_directory": test_dir,
+        "logfile": open(os.path.join(test_dir, "log.txt"), "w"),
+        "user_specified_contact_map_filename": "",
+        "user_specified_functionalized_matrix_filename": "",
+        "simply_formatted_paths_filename": os.path.join(
+            test_dir, "simply_formatted_paths.txt"
+        ),
+        "pdb_single_frame_filename": "",
+    }
+    paths = run_wisp(config)
+    test_data = np.array([i[0] for i in paths], dtype=np.float64)
 
-    # Check output
-
-    ref_paths = np.array(
+    ref_data = np.array(
         [
             1.1363589537262389,
             2.027418997284591,
@@ -99,10 +80,4 @@ def test_example():
         ],
         dtype=np.float64,
     )
-    test_out_path = os.path.join(test_dir, "simply_formatted_paths.txt")
-    test_paths = []
-    with open(test_out_path, encoding="utf-8") as f:
-        for line in f.readlines():
-            test_paths.append(float(line.strip().split()[0]))
-    test_paths = np.array(test_paths, dtype=np.float64)
-    assert np.allclose(test_paths, ref_paths)
+    assert np.allclose(test_data, ref_data)

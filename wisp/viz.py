@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 from scipy import interpolate
 
@@ -21,8 +23,8 @@ class Visualize:
 
         log_files = [
             params["logfile"],
-            open(params["output_directory"] + "visualize.tcl", "w"),
-            open(params["output_directory"] + "visualize.vmd", "w"),
+            open(os.path.join(params["output_directory"], "visualize.tcl"), "w"),
+            open(os.path.join(params["output_directory"], "visualize.vmd"), "w"),
         ]
 
         # output a easy-to-read-representation of the paths
@@ -106,7 +108,7 @@ class Visualize:
             molecule_object_to_use.map_atoms_to_residues()
             molecule_object_to_use.map_nodes_to_residues(params["node_definition"])
             molecule_object_to_use.save_pdb(
-                params["output_directory"] + "draw_frame.pdb"
+                os.path.join(params["output_directory"], "draw_frame.pdb")
             )
             molecule_filename = "draw_frame.pdb"
         else:  # so use the average structure

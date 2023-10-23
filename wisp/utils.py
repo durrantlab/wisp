@@ -1,3 +1,4 @@
+import os
 import pickle
 import sys
 
@@ -167,7 +168,9 @@ class GetCovarianceMatrix:
         # now get the average location of each node
 
         log("#      Saving the average PDB file...", params["logfile"])
-        self.average_pdb.save_pdb(params["output_directory"] + "average_structure.pdb")
+        self.average_pdb.save_pdb(
+            os.path.join(params["output_directory"], "average_structure.pdb")
+        )
 
         log(
             "#      Calculating the average location of each node...", params["logfile"]
@@ -259,7 +262,9 @@ class GetCovarianceMatrix:
 
         # save the correlation matrix in a human-readable format
         np.savetxt(
-            params["output_directory"] + "functionalized_correlation_matrix.txt",
+            os.path.join(
+                params["output_directory"], "functionalized_correlation_matrix.txt"
+            ),
             self.correlations,
         )
 
@@ -317,7 +322,10 @@ class GetCovarianceMatrix:
             self.correlations = self.correlations * contact_map
 
         # save the contact map in a human-readable format
-        np.savetxt(params["output_directory"] + "contact_map_matrix.txt", contact_map)
+        np.savetxt(
+            os.path.join(params["output_directory"], "contact_map_matrix.txt"),
+            contact_map,
+        )
 
         # now save the matrix if needed
         if (

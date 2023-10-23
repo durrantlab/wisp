@@ -17,6 +17,7 @@ Votapka, R.E. Amaro. Weighted implementation of suboptimal paths (WISP): An
 optimized algorithm and tool for dynamical network analysis, J. Chem. Theory
 Comput. 10 (2014) 511-517."""
 
+import os
 import pickle
 import time
 
@@ -28,20 +29,17 @@ from .utils import GetCovarianceMatrix
 from .viz import Visualize
 
 
-def main():
+def run_wisp(config):
     program_start_time = time.time()
 
-    # get the commandline parameters
-    parameters = UserInput()
-
     # compute the correlation matrix
-    if parameters["load_wisp_saved_matrix"] == "TRUE":
+    if config["load_wisp_saved_matrix"] == "TRUE":
         correlation_matrix_object = pickle.load(
-            open(parameters["wisp_saved_matrix_filename"], "rb")
+            open(config["wisp_saved_matrix_filename"], "rb")
         )  # load the matrix instead of generating
     else:
         correlation_matrix_object = GetCovarianceMatrix(
-            parameters
+            config
         )  # so generate the matrix instead of loading it
     correlation_matrix = correlation_matrix_object.correlations
 
@@ -49,18 +47,20 @@ def main():
     pickle.dump(
         correlation_matrix_object,
         open(
-            parameters["output_directory"]
-            + "functionalized_matrix_with_contact_map_applied.pickle",
+            os.path.join(
+                config["output_directory"],
+                "functionalized_matrix_with_contact_map_applied.pickle",
+            ),
             "wb",
         ),
     )
 
     # now get the source and sink locations from the parameters
     sources = correlation_matrix_object.convert_list_of_residue_keys_to_residue_indices(
-        parameters["source_residues"]
+        config["source_residues"]
     )
     sinks = correlation_matrix_object.convert_list_of_residue_keys_to_residue_indices(
-        parameters["sink_residues"]
+        config["sink_residues"]
     )
 
     # compute the paths
@@ -68,24 +68,31 @@ def main():
         correlation_matrix,
         sources,
         sinks,
-        parameters,
+        config,
         correlation_matrix_object.average_pdb.residue_identifiers_in_order,
     )
 
     # create the visualization
-    vis = Visualize(parameters, correlation_matrix_object, paths)
+    Visualize(config, correlation_matrix_object, paths)
 
     # provide the user information about the generated files
-    output_directory_info(parameters)
+    output_directory_info(config)
 
     log(
         "\n# Program execution time: "
         + str(time.time() - program_start_time)
         + " seconds",
-        parameters["logfile"],
+        config["logfile"],
     )
 
-    parameters["logfile"].close()
+    config["logfile"].close()
+
+    return paths.paths
+
+
+def main():
+    config = UserInput()
+    run_wisp(config)
 
 
 if __name__ == "__main__":
