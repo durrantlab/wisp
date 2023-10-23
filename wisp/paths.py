@@ -2,7 +2,7 @@ import copy
 import multiprocessing as mp
 import time
 
-import networkx
+import networkx as nx
 import numpy as np
 
 from .logger import log
@@ -102,7 +102,7 @@ class find_paths:  # other, more specific classes with inherit this one
         item -- a tuple containing required information.
              The first is a numpy array containing a single float, the path-length cutoff
              The second is an index corresponding to the ultimate path sink
-             The third is a networkx.Graph object describing the connectivity of the different nodes
+             The third is a nx.Graph object describing the connectivity of the different nodes
              The fourth is a list corresponding to a path. The first item is the length of the path (float).
                   The remaining items are the indices of the nodes in the path (int).
         results_queue -- where the results will be stored [mp.Queue()]
@@ -146,7 +146,7 @@ class find_paths:  # other, more specific classes with inherit this one
         cutoff -- a numpy array containing a single element (float), the length cutoff. Paths with lengths greater than the cutoff
              will be ignored.
         sink -- the index of the sink (int)
-        G -- a networkx.Graph object describing the connectivity of the different nodes
+        G -- a nx.Graph object describing the connectivity of the different nodes
         """
 
         for i, path_growing_out_from_source in enumerate(paths_growing_out_from_source):
@@ -193,7 +193,15 @@ class GetPaths:
         """
 
         # populate graph nodes and weighted edges
-        G = networkx.Graph(incoming_graph_data=corr_matrix)
+        G = nx.Graph(incoming_graph_data=corr_matrix)
+        for u, v, data in G.edges(data=True):
+            if "weight" in data:
+                weight = data["weight"]
+                print(f"Edge ({u}, {v}) has weight: {weight}")
+            else:
+                # If the edge has no weight attribute, you can provide a default value
+                print(f"Edge ({u}, {v}) has no weight attribute")
+        exit()
 
         # first calculate length of shortest path between any source and sink
         log("\n# Calculating paths...", params["logfile"])
@@ -350,7 +358,7 @@ class GetPaths:
         corr_matrix -- a np.array, the calculated correlation matrix
         srcs -- a list of ints, the indices of the sources for path finding
         snks -- a list of ints, the indices of the sinks for path finding
-        G -- a networkx.Graph object describing the connectivity of the different nodes
+        G -- a nx.Graph object describing the connectivity of the different nodes
 
         Returns a float, the length of the shortest path, and a list of ints corresponding to
              the nodes of the shortest path
@@ -362,9 +370,7 @@ class GetPaths:
         for source in srcs:
             for sink in snks:
                 if source != sink:  # important to avoid this situation
-                    short_path = networkx.dijkstra_path(
-                        G, source, sink, weight="weight"
-                    )
+                    short_path = nx.dijkstra_path(G, source, sink, weight="weight")
                     length = self.get_length_of_path(short_path, corr_matrix)
                     if length < shortest_length:
                         shortest_length = length
@@ -396,7 +402,7 @@ class GetPaths:
         corr_matrix -- a np.array, the calculated correlation matrix
         srcs -- a list of ints, the indices of the sources for path finding
         snks -- a list of ints, the indices of the sinks for path finding
-        G -- a networkx.Graph object describing the connectivity of the different nodes
+        G -- a nx.Graph object describing the connectivity of the different nodes
         params -- the user-specified command-line parameters, a UserInput object
 
         Returns a list of paths, where each path is represented by a list. The first item in each path is the length
@@ -422,7 +428,7 @@ class GetPaths:
         corr_matrix -- a np.array, the calculated correlation matrix
         source -- the index of the source for path finding
         sink -- the index of the sink for path finding
-        G -- a networkx.Graph object describing the connectivity of the different nodes
+        G -- a nx.Graph object describing the connectivity of the different nodes
         params -- the user-specified command-line parameters, a UserInput object
 
         Returns a list of paths, where each path is represented by a list. The first item in each path is the length
@@ -432,10 +438,10 @@ class GetPaths:
         if source == sink:
             return []
 
-        source_lengths, source_paths = networkx.single_source_dijkstra(
+        source_lengths, source_paths = nx.single_source_dijkstra(
             G, source, target=None, cutoff=None, weight="weight"
         )
-        sink_lengths, sink_paths = networkx.single_source_dijkstra(
+        sink_lengths, sink_paths = nx.single_source_dijkstra(
             G, sink, target=None, cutoff=None, weight="weight"
         )
 
@@ -481,7 +487,7 @@ class GetPaths:
                 ][unique_nodes[j]]
 
         corr_matrix = new_matrix
-        G = networkx.Graph(incoming_graph_data=corr_matrix, labels=unique_nodes)
+        G = nx.Graph(incoming_graph_data=corr_matrix, labels=unique_nodes)
 
         length = 0.0
         paths_growing_out_from_source = [[length, source]]

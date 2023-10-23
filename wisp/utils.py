@@ -334,12 +334,12 @@ class GetCovarianceMatrix:
             pickle.dump(self, open(params["wisp_saved_matrix_filename"], "wb"))
 
     def convert_list_of_residue_keys_to_residue_indices(self, list_residue_keys):
-        """Identify the indices in a networkx.Graph object corresponding to the identified residue string ids (CHAIN_RESNAME_RESID).
+        """Identify the indices in a nx.Graph object corresponding to the identified residue string ids (CHAIN_RESNAME_RESID).
 
         Arguments:
         list_residue_keys -- a list of strings representing protein residues (format: CHAIN_RESNAME_RESID)
 
-        Returns a list of ints, the networkx.Graph indices corresponding to the residue string ids in list_residue_keys
+        Returns a list of ints, the nx.Graph indices corresponding to the residue string ids in list_residue_keys
         """
 
         networkx_residue_indices = []
