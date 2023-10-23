@@ -43,6 +43,11 @@ def run_wisp(config):
         )  # so generate the matrix instead of loading it
     correlation_matrix = correlation_matrix_object.correlations
 
+    # Sometimes there would be -0.0 in the matrix diagonal.
+    # I think this is causing an error in some versions of networkx graphs, because
+    # there would be negative weights.
+    correlation_matrix[correlation_matrix == -0.0] = 0.0
+
     # always save a copy of the correlation matrix, regardless of how it was loaded/generated
     pickle.dump(
         correlation_matrix_object,
