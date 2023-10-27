@@ -1,3 +1,4 @@
+name: wisp-dev
 channels:
   - conda-forge
   - defaults

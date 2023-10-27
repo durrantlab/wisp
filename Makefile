@@ -3,21 +3,23 @@ PYTHON_VERSION := 3.11
 PYTHON_VERSION_CONDENSED := 311
 PACKAGE_NAME := wisp
 REPO_PATH := $(shell git rev-parse --show-toplevel)
-CONDA_PATH := $(REPO_PATH)/.venv
-CONDA := conda run -p $(CONDA_PATH)
+CONDA_NAME := $(PACKAGE_NAME)-dev
+CONDA_BASE_PATH = $(shell conda info --base)
+CONDA_PATH := $(CONDA_BASE_PATH)/envs/$(CONDA_NAME)
+CONDA := conda run -n $(CONDA_NAME)
 
 ###   ENVIRONMENT   ###
 
 .PHONY: conda-setup
 conda-setup:
-	conda create -y -p $(CONDA_PATH) python=$(PYTHON_VERSION)
-	conda install -y conda-lock -p $(CONDA_PATH)
-	conda install -y -c conda-forge poetry pre-commit tomli tomli-w -p $(CONDA_PATH)
+	conda create -y -n $(CONDA_NAME) python=$(PYTHON_VERSION)
+	conda install -y conda-lock -n $(CONDA_NAME)
+	conda install -y -c conda-forge poetry pre-commit tomli tomli-w -n $(CONDA_NAME)
 	$(CONDA) pip install conda_poetry_liaison
 
 .PHONY: write-conda-lock
 write-conda-lock:
-	$(CONDA) conda env export --from-history | grep -v "^prefix" | grep -v "^name" > environment.yml
+	$(CONDA) conda env export --from-history | grep -v "^prefix" > environment.yml
 	$(CONDA) conda-lock -f environment.yml -p linux-64 -p osx-64 -p win-64
 	$(CONDA) cpl-deps $(REPO_PATH)/pyproject.toml --env_path $(CONDA_PATH)
 	$(CONDA) cpl-clean $(CONDA_PATH)
