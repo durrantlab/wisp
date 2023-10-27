@@ -25,6 +25,7 @@ write-conda-lock:
 .PHONY: from-conda-lock
 from-conda-lock:
 	$(CONDA) conda-lock install --prefix $(REPO_PATH)/.venv $(REPO_PATH)/conda-lock.yml
+	$(CONDA) pip install conda_poetry_liaison
 	$(CONDA) cpl-clean $(CONDA_PATH)
 
 # notify_poetry_of_conda.py
