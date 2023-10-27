@@ -1332,7 +1332,7 @@ package:
   category: main
   optional: false
 - name: pydantic-core
-  version: 2.10.1
+  version: 2.3.0
   manager: conda
   platform: linux-64
   dependencies:
@@ -1340,10 +1340,10 @@ package:
     python: '>=3.11,<3.12.0a0'
     python_abi: 3.11.*
     typing-extensions: '>=4.6.0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/pydantic-core-2.10.1-py311h46250e7_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/pydantic-core-2.3.0-py311h46250e7_0.conda
   hash:
-    md5: 36ee4237f8f9f97adb057974e8fee4c5
-    sha256: 871ec291dd2be9a38768c63ac94f3f959a9084aa75dd09b5657fc1c6a7a73e2f
+    md5: 99ca132ca705de6765df5e3c4c346572
+    sha256: 263149c465df875858a8cd5cf85362e3466d03862900ca0fa4570daf29826e0d
   category: main
   optional: false
 - name: python-build
@@ -1439,34 +1439,33 @@ package:
   category: main
   optional: false
 - name: pydantic
-  version: 2.4.2
+  version: 2.0.3
   manager: conda
   platform: linux-64
   dependencies:
     annotated-types: '>=0.4.0'
-    pydantic-core: 2.10.1
+    pydantic-core: 2.3.0
     python: '>=3.7'
     typing-extensions: '>=4.6.1'
-  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.4.2-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.0.3-pyhd8ed1ab_1.conda
   hash:
-    md5: aad1d187156725d52e1f8ee7756c20f6
-    sha256: dc6330364f92de95a315a19e842a26605d6ca5c7d346e77811d42ad0438e32d8
+    md5: 77753c350c42e70dd3e9919dd8099fc7
+    sha256: d2d10c858233da9ac531e734308e14e18806dac4f7ce66a70e66a2bbc798eb30
   category: main
   optional: false
 - name: rapidfuzz
-  version: 2.15.2
+  version: 2.13.7
   manager: conda
   platform: linux-64
   dependencies:
-    libgcc-ng: '>=12'
-    libstdcxx-ng: '>=12'
-    numpy: ''
+    libgcc-ng: '>=11.2.0'
+    libstdcxx-ng: '>=11.2.0'
+    numpy: '>=1.23.5,<2.0a0'
     python: '>=3.11,<3.12.0a0'
-    python_abi: 3.11.*
-  url: https://conda.anaconda.org/conda-forge/linux-64/rapidfuzz-2.15.2-py311hb755f60_0.conda
+  url: https://repo.anaconda.com/pkgs/main/linux-64/rapidfuzz-2.13.7-py311ha02d727_0.conda
   hash:
-    md5: 33be49e0d80bb1ae294e48559d0e1e6f
-    sha256: 545c6b56f58cf7fbad2b694fbc22b347e89bd3036d1d65eb6ff448d044579aae
+    md5: 209432afe26a55b1eeffe8e392186f23
+    sha256: 407d072e0e2a06e724a8fa333a3e83785ece8b3d9df96445aecc3863835c8688
   category: main
   optional: false
 - name: requests-toolbelt
@@ -2724,17 +2723,17 @@ package:
   category: main
   optional: false
 - name: pydantic-core
-  version: 2.10.1
+  version: 2.3.0
   manager: conda
   platform: osx-64
   dependencies:
     python: '>=3.11,<3.12.0a0'
     python_abi: 3.11.*
     typing-extensions: '>=4.6.0'
-  url: https://conda.anaconda.org/conda-forge/osx-64/pydantic-core-2.10.1-py311h299eb51_0.conda
+  url: https://conda.anaconda.org/conda-forge/osx-64/pydantic-core-2.3.0-py311h299eb51_0.conda
   hash:
-    md5: 580ad4783a19b4d9ec0640dc4d81f28e
-    sha256: 56fc2f264b078de740ae087fee48b9d32eb045da5676a2d4ef085080c243e727
+    md5: 4d627a3cb4e813bcc47256c9a01bf90f
+    sha256: 82c5d31f662a0509f28d2b2d0cbb1a30dd84300bf8de506683124fa63e49515e
   category: main
   optional: false
 - name: python-build
@@ -2875,18 +2874,18 @@ package:
   category: main
   optional: false
 - name: pydantic
-  version: 2.4.2
+  version: 2.0.3
   manager: conda
   platform: osx-64
   dependencies:
     annotated-types: '>=0.4.0'
-    pydantic-core: 2.10.1
+    pydantic-core: 2.3.0
     python: '>=3.7'
     typing-extensions: '>=4.6.1'
-  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.4.2-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.0.3-pyhd8ed1ab_1.conda
   hash:
-    md5: aad1d187156725d52e1f8ee7756c20f6
-    sha256: dc6330364f92de95a315a19e842a26605d6ca5c7d346e77811d42ad0438e32d8
+    md5: 77753c350c42e70dd3e9919dd8099fc7
+    sha256: d2d10c858233da9ac531e734308e14e18806dac4f7ce66a70e66a2bbc798eb30
   category: main
   optional: false
 - name: requests-toolbelt
@@ -2949,19 +2948,17 @@ package:
   category: main
   optional: false
 - name: rapidfuzz
-  version: 2.15.2
+  version: 2.13.7
   manager: conda
   platform: osx-64
   dependencies:
-    __osx: '>=10.9'
-    libcxx: '>=16.0.6'
-    numpy: ''
+    libcxx: '>=14.0.6'
+    numpy: '>=1.23.5,<2.0a0'
     python: '>=3.11,<3.12.0a0'
-    python_abi: 3.11.*
-  url: https://conda.anaconda.org/conda-forge/osx-64/rapidfuzz-2.15.2-py311hd39e593_0.conda
+  url: https://repo.anaconda.com/pkgs/main/osx-64/rapidfuzz-2.13.7-py311hdb55bb0_0.conda
   hash:
-    md5: 53814ad696e35b2f4701bcec020b45e9
-    sha256: 56be083dcb8a2d83a4ee706caa5da9889fd78238d8cc191e228042f7e90cf368
+    md5: 6d4202ec0ec4909b01f6ec485a2f7b6c
+    sha256: b556ad9f78a6e307edd0604de79707c4814ec8f7ca7934bc51a92c9c7140215d
   category: main
   optional: false
 - name: cleo
@@ -4192,7 +4189,7 @@ package:
   category: main
   optional: false
 - name: pydantic-core
-  version: 2.10.1
+  version: 2.3.0
   manager: conda
   platform: win-64
   dependencies:
@@ -4202,10 +4199,10 @@ package:
     ucrt: '>=10.0.20348.0'
     vc: '>=14.2,<15'
     vc14_runtime: '>=14.29.30139'
-  url: https://conda.anaconda.org/conda-forge/win-64/pydantic-core-2.10.1-py311hc37eb10_0.conda
+  url: https://conda.anaconda.org/conda-forge/win-64/pydantic-core-2.3.0-py311hc37eb10_0.conda
   hash:
-    md5: 03f6bd3dfa06738a8b1d23c34bd80395
-    sha256: 0434aa3f7dc0f9bb9ec31f91398d10a1f73fa23fa05fb5052f483a6a3a20d19d
+    md5: 9259b7da3dde8b3c247e944cfbe13b87
+    sha256: 12135c4ff6ffd54966d60f7d41cb7fc8a458ce08ff7ee630ca0bfc3e64afc475
   category: main
   optional: false
 - name: python-build
@@ -4315,18 +4312,18 @@ package:
   category: main
   optional: false
 - name: pydantic
-  version: 2.4.2
+  version: 2.0.3
   manager: conda
   platform: win-64
   dependencies:
     annotated-types: '>=0.4.0'
-    pydantic-core: 2.10.1
+    pydantic-core: 2.3.0
     python: '>=3.7'
     typing-extensions: '>=4.6.1'
-  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.4.2-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.0.3-pyhd8ed1ab_1.conda
   hash:
-    md5: aad1d187156725d52e1f8ee7756c20f6
-    sha256: dc6330364f92de95a315a19e842a26605d6ca5c7d346e77811d42ad0438e32d8
+    md5: 77753c350c42e70dd3e9919dd8099fc7
+    sha256: d2d10c858233da9ac531e734308e14e18806dac4f7ce66a70e66a2bbc798eb30
   category: main
   optional: false
 - name: requests
@@ -4513,20 +4510,18 @@ package:
   category: main
   optional: false
 - name: rapidfuzz
-  version: 2.15.2
+  version: 2.13.7
   manager: conda
   platform: win-64
   dependencies:
-    numpy: ''
+    numpy: '>=1.23.5,<2.0a0'
     python: '>=3.11,<3.12.0a0'
-    python_abi: 3.11.*
-    ucrt: '>=10.0.20348.0'
-    vc: '>=14.2,<15'
-    vc14_runtime: '>=14.29.30139'
-  url: https://conda.anaconda.org/conda-forge/win-64/rapidfuzz-2.15.2-py311h12c1d0e_0.conda
+    vc: '>=14.2,<15.0a0'
+    vs2015_runtime: '>=14.27.29016,<15.0a0'
+  url: https://repo.anaconda.com/pkgs/main/win-64/rapidfuzz-2.13.7-py311hea22821_0.conda
   hash:
-    md5: c6febd2e8ea7eb8045ebec6d1892fe1e
-    sha256: a18dd92d3205ccda24830654099d5f6d0d1ba2c4f3ed16f5964e1ed428430f15
+    md5: 45ad08954844ceb37bb057fed8c9ff1f
+    sha256: 01ea24fab109e2ee55d0143e11621c6474e9e54862fb31e8be095e8f4c352e66
   category: main
   optional: false
 - name: cleo

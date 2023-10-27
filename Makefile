@@ -61,3 +61,6 @@ formatting: codestyle
 .PHONY: test
 test:
 	$(CONDA) pytest -c pyproject.toml --cov=$(PACKAGE_NAME) --cov-report=xml tests/
+
+.PHONY: refresh
+refresh: conda-setup write-conda-lock pre-commit-install poetry-lock install formatting validate
