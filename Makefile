@@ -13,18 +13,19 @@ conda-setup:
 	conda create -y -p $(CONDA_PATH) python=$(PYTHON_VERSION)
 	conda install -y conda-lock -p $(CONDA_PATH)
 	conda install -y -c conda-forge poetry pre-commit tomli tomli-w -p $(CONDA_PATH)
+	$(CONDA) pip install conda_poetry_liaison
 
 .PHONY: write-conda-lock
 write-conda-lock:
 	$(CONDA) conda env export --from-history | grep -v "^prefix" | grep -v "^name" > environment.yml
 	$(CONDA) conda-lock -f environment.yml -p linux-64 -p osx-64 -p win-64
-	$(CONDA) $(REPO_PATH)/notify_poetry_of_conda.py
-	find $(CONDA_PATH) -name direct_url.json -delete
+	$(CONDA) cpl-deps $(REPO_PATH)/pyproject.toml --env_path $(CONDA_PATH)
+	$(CONDA) cpl-clean $(CONDA_PATH)
 
 .PHONY: from-conda-lock
 from-conda-lock:
 	$(CONDA) conda-lock install --prefix $(REPO_PATH)/.venv $(REPO_PATH)/conda-lock.yml
-	find $(CONDA_PATH) -name direct_url.json -delete
+	$(CONDA) cpl-clean $(CONDA_PATH)
 
 # notify_poetry_of_conda.py
 .PHONY: pre-commit-install
