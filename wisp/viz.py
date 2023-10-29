@@ -1,9 +1,9 @@
 import os
 
 import numpy as np
+from loguru import logger
 from scipy import interpolate
 
-from .logger import log
 from .structure import Molecule
 
 
@@ -28,7 +28,7 @@ class Visualize:
         ]
 
         # output a easy-to-read-representation of the paths
-        log(pths.paths_description, log_files)
+        logger.info(pths.paths_description, log_files)
 
         if (
             params["longest_path_opacity"] == params["shortest_path_opacity"]
@@ -38,8 +38,8 @@ class Visualize:
         else:
             opacity_required = True
 
-        log("", params["logfile"])
-        log("# Creating VMD state (TCL) file for visualization...", log_files)
+        logger.info("", params["logfile"])
+        logger.info("# Creating VMD state (TCL) file for visualization...", log_files)
 
         # get the color range
         lengths = [t[:1][0] for t in pths.paths]
@@ -134,49 +134,53 @@ class Visualize:
             ]
         )[:-4]
 
-        log("\n# Load in the protein structure", log_files)
-        log(
+        logger.info("\n# Load in the protein structure", log_files)
+        logger.info(
             "mol new "
             + molecule_filename
             + " type pdb first 0 last -1 step 1 filebonds 1 autobonds 1 waitfor all",
             log_files,
         )
-        log("mol delrep 0 top", log_files)
-        log("mol representation NewCartoon 0.300000 10.000000 4.100000 0", log_files)
-        log("mol color Name", log_files)
-        log("mol selection {all}", log_files)
-        log("mol material Opaque", log_files)
-        log("mol addrep top", log_files)
-        log("mol representation Licorice 0.300000 10.000000 10.000000", log_files)
-        log("mol color Name", log_files)
-        log("mol selection {" + selection + "}", log_files)
-        log("mol material Opaque", log_files)
-        log("mol addrep top", log_files)
-        log("mol rename top " + molecule_filename, log_files)
+        logger.info("mol delrep 0 top", log_files)
+        logger.info(
+            "mol representation NewCartoon 0.300000 10.000000 4.100000 0", log_files
+        )
+        logger.info("mol color Name", log_files)
+        logger.info("mol selection {all}", log_files)
+        logger.info("mol material Opaque", log_files)
+        logger.info("mol addrep top", log_files)
+        logger.info(
+            "mol representation Licorice 0.300000 10.000000 10.000000", log_files
+        )
+        logger.info("mol color Name", log_files)
+        logger.info("mol selection {" + selection + "}", log_files)
+        logger.info("mol material Opaque", log_files)
+        logger.info("mol addrep top", log_files)
+        logger.info("mol rename top " + molecule_filename, log_files)
 
         if (
             params["node_sphere_radius"] != 0.0
         ):  # if the radius is 0.0, don't even draw the spheres
             # draw spheres
-            log("\n# Draw spheres at the nodes", log_files)
+            logger.info("\n# Draw spheres at the nodes", log_files)
             if opacity_required:
-                log(
+                logger.info(
                     "if {[lsearch [material list] node_spheres] == -1} {material add node_spheres}",
                     log_files,
                 )
-                log(
+                logger.info(
                     "material change opacity node_spheres "
                     + str(params["node_sphere_opacity"]),
                     log_files,
                 )
-                log("draw material node_spheres", log_files)
-                log('mol rename top "Node Spheres"', log_files)
+                logger.info("draw material node_spheres", log_files)
+                logger.info('mol rename top "Node Spheres"', log_files)
 
             nodes = [molecule_object_to_use.nodes[i] for i in nodes_used]
-            log("graphics top color 22", log_files)
+            logger.info("graphics top color 22", log_files)
 
             for node in nodes:
-                log(
+                logger.info(
                     "draw sphere {"
                     + str(node[0])
                     + " "
@@ -191,13 +195,13 @@ class Visualize:
                 )
 
         color_index = 0
-        log(
+        logger.info(
             "set wisp_num_paths %i" % len(pths.paths), log_files
         )  # tell the WISP plugin how many paths there are total
         for path in pths.paths:
-            log("\n# Draw a new path", log_files)
-            log("# \tLength: " + str(path[0]), log_files)
-            log("# \tNodes: " + str(path[1:]) + "\n", log_files)
+            logger.info("\n# Draw a new path", log_files)
+            logger.info("# \tLength: " + str(path[0]), log_files)
+            logger.info("# \tNodes: " + str(path[1:]) + "\n", log_files)
 
             # make the spline from the paths
 
@@ -228,23 +232,25 @@ class Visualize:
             )
 
             if opacity_required:
-                log("mol new", log_files)
-            log(color_defs[color], log_files)
-            log("graphics top color " + str(int(color)), log_files)
+                logger.info("mol new", log_files)
+            logger.info(color_defs[color], log_files)
+            logger.info("graphics top color " + str(int(color)), log_files)
 
             mat_name = "wisp_material" + str(color_index)
             if opacity_required:
-                log(
+                logger.info(
                     "if {[lsearch [material list] %s] == -1} {material add %s}"
                     % (mat_name, mat_name),
                     log_files,
                 )
-                log(
+                logger.info(
                     "material change opacity " + mat_name + " " + str(opacity),
                     log_files,
                 )
-                log('mol rename top "Path Length: ' + str(path[0]) + '"', log_files)
-                log("draw material " + mat_name, log_files)
+                logger.info(
+                    'mol rename top "Path Length: ' + str(path[0]) + '"', log_files
+                )
+                logger.info("draw material " + mat_name, log_files)
 
             try:
                 degree = len(x_vals) - 1
@@ -268,7 +274,7 @@ class Visualize:
                     y2 = str(out[1][t + 1])
                     z2 = str(out[2][t + 1])
 
-                    log(
+                    logger.info(
                         "draw cylinder {"
                         + x1
                         + " "
@@ -290,7 +296,7 @@ class Visualize:
                     )
 
             except:  # so just draw a single cylinder as a backup
-                log(
+                logger.info(
                     "draw cylinder {"
                     + str(x_vals[0])
                     + " "

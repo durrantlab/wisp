@@ -1,5 +1,7 @@
 import multiprocessing as mp
 
+from loguru import logger
+
 from .structure import Molecule
 
 
@@ -24,6 +26,7 @@ class multi_threading_to_collect_data_from_frames:
         # use programatically
         if num_processors <= 0:
             num_processors = mp.cpu_count()
+            logger.debug("Setting `num_processors` to %s", num_processors)
 
         # reduce the number of processors if too many have been specified
         if len(inputs) < num_processors:

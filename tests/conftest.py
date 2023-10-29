@@ -1,5 +1,7 @@
 import os
 
+from wisp import enable_logging
+
 
 def pytest_sessionstart(session):  # pytest_configure(config)
     r"""Called after the Session object has been created and
@@ -8,3 +10,6 @@ def pytest_sessionstart(session):  # pytest_configure(config)
     # Creates a tmp directory for writing files.
     test_tmp_path = "./tests/tmp"
     os.makedirs(test_tmp_path, exist_ok=True)
+
+    # Activate logs
+    enable_logging()

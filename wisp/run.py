@@ -22,10 +22,10 @@ import pickle
 import time
 
 import numpy as np
+from loguru import logger
 
 from .cli import UserInput
 from .io import output_directory_info
-from .logger import log
 from .paths import GetPaths
 from .utils import GetCovarianceMatrix
 from .viz import Visualize
@@ -84,7 +84,7 @@ def run_wisp(config):
     # provide the user information about the generated files
     output_directory_info(config)
 
-    log(
+    logger.info(
         "\n# Program execution time: "
         + str(time.time() - program_start_time)
         + " seconds",

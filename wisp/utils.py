@@ -3,9 +3,9 @@ import pickle
 import sys
 
 import numpy as np
+from loguru import logger
 from scipy.spatial.distance import cdist
 
-from .logger import log
 from .structure import Molecule
 from .traj import collect_data_from_frames, multi_threading_to_collect_data_from_frames
 
@@ -27,7 +27,7 @@ class GetCovarianceMatrix:
         first_frame = True
         number_of_frames = 0
 
-        log(
+        logger.info(
             "\n# Loading frames from the PDB file and building the covariance matrix...",
             params["logfile"],
         )
@@ -55,10 +55,7 @@ class GetCovarianceMatrix:
 
                     this_frame = []  # so deleted for next time
 
-                    log(
-                        "#      Loading frame " + str(number_of_frames) + "...",
-                        params["logfile"],
-                    )
+                    logger.info("Loading frame {}", str(number_of_frames))
                     number_of_frames = number_of_frames + 1
 
             total_coordinate_sum = load_frames_data.summed_coordinates
@@ -129,13 +126,13 @@ class GetCovarianceMatrix:
                         # with the next 100
                         multiple_frames = []
 
-                    log(
+                    logger.info(
                         "#      Loading frame " + str(number_of_frames) + "...",
                         params["logfile"],
                     )
                     number_of_frames = number_of_frames + 1
 
-            log("\n# Analyzing frames...", params["logfile"])
+            logger.info("\n# Analyzing frames...", params["logfile"])
 
             # you need to get the last chunck
             tmp = multi_threading_to_collect_data_from_frames(
@@ -167,12 +164,12 @@ class GetCovarianceMatrix:
         # now process the data that has been loaded
         # now get the average location of each node
 
-        log("#      Saving the average PDB file...", params["logfile"])
+        logger.info("#      Saving the average PDB file...", params["logfile"])
         self.average_pdb.save_pdb(
             os.path.join(params["output_directory"], "average_structure.pdb")
         )
 
-        log(
+        logger.info(
             "#      Calculating the average location of each node...", params["logfile"]
         )
         self.average_pdb.map_atoms_to_residues()
@@ -180,7 +177,7 @@ class GetCovarianceMatrix:
 
         # now compute a set of deltas for each node, stored in a big array. delta = distance from node to average node location
         # so note that the nodes do need to be computed for each frame
-        log(
+        logger.info(
             "#      Calculating the correlation for each node-node pair...",
             params["logfile"],
         )
@@ -204,7 +201,7 @@ class GetCovarianceMatrix:
 
         # now build the correlation matrix
         if params["user_specified_functionalized_matrix_filename"] == "":
-            log("#      Building the correlation matrix...", params["logfile"])
+            logger.info("#      Building the correlation matrix...", params["logfile"])
             self.correlations = np.empty(
                 (
                     len(self.average_pdb.residue_identifiers_in_order),
@@ -222,7 +219,7 @@ class GetCovarianceMatrix:
                     residue2_deltas = set_of_deltas[residue2_key]
 
                     if len(residue1_deltas) != len(residue2_deltas):
-                        log(
+                        logger.info(
                             "ERROR: There were "
                             + str(len(residue1_deltas))
                             + ' residues that matched "'
@@ -247,11 +244,11 @@ class GetCovarianceMatrix:
                         0.5,
                     )
 
-                    self.correlations[x][y] = -np.log(
+                    self.correlations[x][y] = -np.logger.info(
                         np.fabs(C)
                     )  # functionalizing the covariances
         else:  # so the user has specified a filename containing the covariance matrix
-            log(
+            logger.info(
                 "#      Loading the user-specified functionalized correlation matrix from the file "
                 + params["user_specified_functionalized_matrix_filename"],
                 params["logfile"],
@@ -272,7 +269,7 @@ class GetCovarianceMatrix:
         contact_map = np.ones(self.correlations.shape)
         if params["user_specified_contact_map_filename"] == "":
             if params["contact_map_distance_limit"] != 999999.999:
-                log(
+                logger.info(
                     "#      Applying the default WISP distance-based contact-map filter to the matrix so that distant residues will never be considered correlated...",
                     params["logfile"],
                 )
@@ -311,7 +308,7 @@ class GetCovarianceMatrix:
                             contact_map[index1][index1] = 0.0
                             contact_map[index2][index1] = 0.0
         else:  # so the user has specified a contact map
-            log(
+            logger.info(
                 "#      Loading and applying the user-specified contact map from the file "
                 + params["user_specified_contact_map_filename"],
                 params["logfile"],
