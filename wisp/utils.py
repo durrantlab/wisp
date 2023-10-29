@@ -130,7 +130,7 @@ class GetCovarianceMatrix:
 
             logger.info("Analyzing frames...")
 
-            # you need to get the last chunck
+            # you need to get the last chunk
             tmp = multi_threading_to_collect_data_from_frames(
                 multiple_frames, params["number_processors"]
             ).combined_results  # note that the results are cumulative within the object
@@ -186,12 +186,12 @@ class GetCovarianceMatrix:
             )
 
         # now compute the ensemble average of the deltas dot-producted with themselves
-        ensmeble_average_deltas_self_dotproducted = {}
+        ensemble_average_deltas_self_dotproducted = {}
         for residue_iden in self.average_pdb.residue_identifiers_in_order:
             dot_products = (
                 set_of_deltas[residue_iden] * set_of_deltas[residue_iden]
             ).sum(axis=1)
-            ensmeble_average_deltas_self_dotproducted[residue_iden] = np.average(
+            ensemble_average_deltas_self_dotproducted[residue_iden] = np.average(
                 dot_products
             )
 
@@ -235,8 +235,8 @@ class GetCovarianceMatrix:
                     ensemble_average_dot_products = np.average(dot_products)
 
                     C = ensemble_average_dot_products / np.power(
-                        ensmeble_average_deltas_self_dotproducted[residue1_key]
-                        * ensmeble_average_deltas_self_dotproducted[residue2_key],
+                        ensemble_average_deltas_self_dotproducted[residue1_key]
+                        * ensemble_average_deltas_self_dotproducted[residue2_key],
                         0.5,
                     )
 

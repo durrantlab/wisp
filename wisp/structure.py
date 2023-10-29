@@ -85,7 +85,7 @@ class Atom:
 
 
 class Molecule:
-    """Loads, saves, and manupulates molecuar models."""
+    """Loads, saves, and manipulates molecular models."""
 
     def load_pdb_from_list(self, alist):
         """Loads a list of PDB ATOM/HETATM lines into the current Molecule object

@@ -83,7 +83,7 @@ def test_example():
     assert np.allclose(test_data, ref_data)
 
 
-def test_issue_1():
+def test_issue_1_serial():
     pdb_path = os.path.join(FILE_DIR, "sample-issue-1.pdb")
     test_dir = os.path.join(WRITING_DIR, "test_issue_1")
     if os.path.exists(test_dir):
@@ -106,7 +106,7 @@ def test_issue_1():
         "node_sphere_r": 1.0,
         "node_sphere_radius": 1.0,
         "num_frames_to_load_before_processing": 20,
-        "number_processors": 4,
+        "number_processors": 1,
         "pdb_trajectory_filename": pdb_path,
         "seconds_to_wait_before_parallelizing_path_finding": 5.0,
         "shortest_path_b": 1.0,

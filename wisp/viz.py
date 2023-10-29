@@ -23,6 +23,7 @@ def log(astring, fileobjects):  # prints to screen and to log file
     for fileobject in fileobjects:
         fileobject.write(astring + "\n")
 
+
 class Visualize:
     """A class to facilitate the visualization of the identified paths in VMD"""
 

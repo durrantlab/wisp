@@ -19,18 +19,17 @@ class multi_threading_to_collect_data_from_frames:
         num_processors -- the number of processors to use to process this data, an integer
 
         """
-
         self.results = []
 
         # first, if num_processors <= 0, determine the number of processors to
         # use programatically
         if num_processors <= 0:
             num_processors = mp.cpu_count()
-            logger.debug("Setting `num_processors` to %s", num_processors)
 
         # reduce the number of processors if too many have been specified
         if len(inputs) < num_processors:
             num_processors = len(inputs)
+        logger.debug("Setting num_processors to {}", num_processors)
 
         # now, divide the inputs into the appropriate number of processors
         inputs_divided = {t: [] for t in range(num_processors)}
