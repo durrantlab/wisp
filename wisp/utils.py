@@ -240,7 +240,7 @@ class GetCovarianceMatrix:
                         0.5,
                     )
 
-                    self.correlations[x][y] = -np.logger.info(
+                    self.correlations[x][y] = -np.log(
                         np.fabs(C)
                     )  # functionalizing the covariances
         else:  # so the user has specified a filename containing the covariance matrix
