@@ -576,15 +576,15 @@ package:
   category: main
   optional: false
 - name: filelock
-  version: 3.12.4
+  version: 3.13.0
   manager: conda
   platform: linux-64
   dependencies:
     python: '>=3.7'
-  url: https://conda.anaconda.org/conda-forge/noarch/filelock-3.12.4-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/filelock-3.13.0-pyhd8ed1ab_0.conda
   hash:
-    md5: 5173d4b8267a0699a43d73231e0b6596
-    sha256: 7463c64364c14b34a7a69a7550a880ccd1ec6d3014001e55913e6e4e8b0c7395
+    md5: 182e12e7e01591d831485e18fbf008ce
+    sha256: b26fb8c446773268a7ec8c33bc5e39fc9ff4679b76f214aa44596b4e666569a0
   category: main
   optional: false
 - name: idna
@@ -1332,7 +1332,7 @@ package:
   category: main
   optional: false
 - name: pydantic-core
-  version: 2.3.0
+  version: 2.10.1
   manager: conda
   platform: linux-64
   dependencies:
@@ -1340,10 +1340,10 @@ package:
     python: '>=3.11,<3.12.0a0'
     python_abi: 3.11.*
     typing-extensions: '>=4.6.0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/pydantic-core-2.3.0-py311h46250e7_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/pydantic-core-2.10.1-py311h46250e7_0.conda
   hash:
-    md5: 99ca132ca705de6765df5e3c4c346572
-    sha256: 263149c465df875858a8cd5cf85362e3466d03862900ca0fa4570daf29826e0d
+    md5: 36ee4237f8f9f97adb057974e8fee4c5
+    sha256: 871ec291dd2be9a38768c63ac94f3f959a9084aa75dd09b5657fc1c6a7a73e2f
   category: main
   optional: false
 - name: python-build
@@ -1426,46 +1426,47 @@ package:
   category: main
   optional: false
 - name: identify
-  version: 2.5.30
+  version: 2.5.31
   manager: conda
   platform: linux-64
   dependencies:
     python: '>=3.6'
     ukkonen: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/identify-2.5.30-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/identify-2.5.31-pyhd8ed1ab_0.conda
   hash:
-    md5: b7a2e3bb89bda8c69839485c20aabadf
-    sha256: dc9901654af0556209bb5b4194ef2deb643bc641ac859a31f13c41b945b60150
+    md5: fea10604a45e974b110ea15a88913ebc
+    sha256: a56ec678a4e58d0a450174fd813581e961829def274453e093c9dae836b80cee
   category: main
   optional: false
 - name: pydantic
-  version: 2.0.3
+  version: 2.4.2
   manager: conda
   platform: linux-64
   dependencies:
     annotated-types: '>=0.4.0'
-    pydantic-core: 2.3.0
+    pydantic-core: 2.10.1
     python: '>=3.7'
     typing-extensions: '>=4.6.1'
-  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.0.3-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.4.2-pyhd8ed1ab_1.conda
   hash:
-    md5: 77753c350c42e70dd3e9919dd8099fc7
-    sha256: d2d10c858233da9ac531e734308e14e18806dac4f7ce66a70e66a2bbc798eb30
+    md5: aad1d187156725d52e1f8ee7756c20f6
+    sha256: dc6330364f92de95a315a19e842a26605d6ca5c7d346e77811d42ad0438e32d8
   category: main
   optional: false
 - name: rapidfuzz
-  version: 2.13.7
+  version: 2.15.2
   manager: conda
   platform: linux-64
   dependencies:
-    libgcc-ng: '>=11.2.0'
-    libstdcxx-ng: '>=11.2.0'
-    numpy: '>=1.23.5,<2.0a0'
+    libgcc-ng: '>=12'
+    libstdcxx-ng: '>=12'
+    numpy: ''
     python: '>=3.11,<3.12.0a0'
-  url: https://repo.anaconda.com/pkgs/main/linux-64/rapidfuzz-2.13.7-py311ha02d727_0.conda
+    python_abi: 3.11.*
+  url: https://conda.anaconda.org/conda-forge/linux-64/rapidfuzz-2.15.2-py311hb755f60_0.conda
   hash:
-    md5: 209432afe26a55b1eeffe8e392186f23
-    sha256: 407d072e0e2a06e724a8fa333a3e83785ece8b3d9df96445aecc3863835c8688
+    md5: 33be49e0d80bb1ae294e48559d0e1e6f
+    sha256: 545c6b56f58cf7fbad2b694fbc22b347e89bd3036d1d65eb6ff448d044579aae
   category: main
   optional: false
 - name: requests-toolbelt
@@ -1575,7 +1576,7 @@ package:
   category: main
   optional: false
 - name: conda-lock
-  version: 2.4.1
+  version: 2.4.2
   manager: conda
   platform: linux-64
   dependencies:
@@ -1603,10 +1604,10 @@ package:
     typing_extensions: ''
     urllib3: '>=1.26.5,<2.0'
     virtualenv: '>=20.0.26'
-  url: https://conda.anaconda.org/conda-forge/noarch/conda-lock-2.4.1-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/conda-lock-2.4.2-pyhd8ed1ab_0.conda
   hash:
-    md5: deb6e2f8d8b4de933563cc681165b833
-    sha256: 08cd768d033db260e043982ba91de007213adbde5210a76fd2decad3c135e666
+    md5: 068b8ae6928d477a0d216254f6eacd34
+    sha256: c3a684affc774d45e6bef61306d1005a3fab75862bbe4f2adceb995e14a07193
   category: main
   optional: false
 - name: poetry
@@ -2007,15 +2008,15 @@ package:
   category: main
   optional: false
 - name: filelock
-  version: 3.12.4
+  version: 3.13.0
   manager: conda
   platform: osx-64
   dependencies:
     python: '>=3.7'
-  url: https://conda.anaconda.org/conda-forge/noarch/filelock-3.12.4-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/filelock-3.13.0-pyhd8ed1ab_0.conda
   hash:
-    md5: 5173d4b8267a0699a43d73231e0b6596
-    sha256: 7463c64364c14b34a7a69a7550a880ccd1ec6d3014001e55913e6e4e8b0c7395
+    md5: 182e12e7e01591d831485e18fbf008ce
+    sha256: b26fb8c446773268a7ec8c33bc5e39fc9ff4679b76f214aa44596b4e666569a0
   category: main
   optional: false
 - name: idna
@@ -2723,17 +2724,17 @@ package:
   category: main
   optional: false
 - name: pydantic-core
-  version: 2.3.0
+  version: 2.10.1
   manager: conda
   platform: osx-64
   dependencies:
     python: '>=3.11,<3.12.0a0'
     python_abi: 3.11.*
     typing-extensions: '>=4.6.0'
-  url: https://conda.anaconda.org/conda-forge/osx-64/pydantic-core-2.3.0-py311h299eb51_0.conda
+  url: https://conda.anaconda.org/conda-forge/osx-64/pydantic-core-2.10.1-py311h299eb51_0.conda
   hash:
-    md5: 4d627a3cb4e813bcc47256c9a01bf90f
-    sha256: 82c5d31f662a0509f28d2b2d0cbb1a30dd84300bf8de506683124fa63e49515e
+    md5: 580ad4783a19b4d9ec0640dc4d81f28e
+    sha256: 56fc2f264b078de740ae087fee48b9d32eb045da5676a2d4ef085080c243e727
   category: main
   optional: false
 - name: python-build
@@ -2829,16 +2830,16 @@ package:
   category: main
   optional: false
 - name: identify
-  version: 2.5.30
+  version: 2.5.31
   manager: conda
   platform: osx-64
   dependencies:
     python: '>=3.6'
     ukkonen: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/identify-2.5.30-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/identify-2.5.31-pyhd8ed1ab_0.conda
   hash:
-    md5: b7a2e3bb89bda8c69839485c20aabadf
-    sha256: dc9901654af0556209bb5b4194ef2deb643bc641ac859a31f13c41b945b60150
+    md5: fea10604a45e974b110ea15a88913ebc
+    sha256: a56ec678a4e58d0a450174fd813581e961829def274453e093c9dae836b80cee
   category: main
   optional: false
 - name: keyring
@@ -2874,18 +2875,18 @@ package:
   category: main
   optional: false
 - name: pydantic
-  version: 2.0.3
+  version: 2.4.2
   manager: conda
   platform: osx-64
   dependencies:
     annotated-types: '>=0.4.0'
-    pydantic-core: 2.3.0
+    pydantic-core: 2.10.1
     python: '>=3.7'
     typing-extensions: '>=4.6.1'
-  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.0.3-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.4.2-pyhd8ed1ab_1.conda
   hash:
-    md5: 77753c350c42e70dd3e9919dd8099fc7
-    sha256: d2d10c858233da9ac531e734308e14e18806dac4f7ce66a70e66a2bbc798eb30
+    md5: aad1d187156725d52e1f8ee7756c20f6
+    sha256: dc6330364f92de95a315a19e842a26605d6ca5c7d346e77811d42ad0438e32d8
   category: main
   optional: false
 - name: requests-toolbelt
@@ -2948,17 +2949,19 @@ package:
   category: main
   optional: false
 - name: rapidfuzz
-  version: 2.13.7
+  version: 2.15.2
   manager: conda
   platform: osx-64
   dependencies:
-    libcxx: '>=14.0.6'
-    numpy: '>=1.23.5,<2.0a0'
+    __osx: '>=10.9'
+    libcxx: '>=16.0.6'
+    numpy: ''
     python: '>=3.11,<3.12.0a0'
-  url: https://repo.anaconda.com/pkgs/main/osx-64/rapidfuzz-2.13.7-py311hdb55bb0_0.conda
+    python_abi: 3.11.*
+  url: https://conda.anaconda.org/conda-forge/osx-64/rapidfuzz-2.15.2-py311hd39e593_0.conda
   hash:
-    md5: 6d4202ec0ec4909b01f6ec485a2f7b6c
-    sha256: b556ad9f78a6e307edd0604de79707c4814ec8f7ca7934bc51a92c9c7140215d
+    md5: 53814ad696e35b2f4701bcec020b45e9
+    sha256: 56be083dcb8a2d83a4ee706caa5da9889fd78238d8cc191e228042f7e90cf368
   category: main
   optional: false
 - name: cleo
@@ -2976,7 +2979,7 @@ package:
   category: main
   optional: false
 - name: conda-lock
-  version: 2.4.1
+  version: 2.4.2
   manager: conda
   platform: osx-64
   dependencies:
@@ -3004,10 +3007,10 @@ package:
     typing_extensions: ''
     urllib3: '>=1.26.5,<2.0'
     virtualenv: '>=20.0.26'
-  url: https://conda.anaconda.org/conda-forge/noarch/conda-lock-2.4.1-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/conda-lock-2.4.2-pyhd8ed1ab_0.conda
   hash:
-    md5: deb6e2f8d8b4de933563cc681165b833
-    sha256: 08cd768d033db260e043982ba91de007213adbde5210a76fd2decad3c135e666
+    md5: 068b8ae6928d477a0d216254f6eacd34
+    sha256: c3a684affc774d45e6bef61306d1005a3fab75862bbe4f2adceb995e14a07193
   category: main
   optional: false
 - name: poetry
@@ -3447,15 +3450,15 @@ package:
   category: main
   optional: false
 - name: filelock
-  version: 3.12.4
+  version: 3.13.0
   manager: conda
   platform: win-64
   dependencies:
     python: '>=3.7'
-  url: https://conda.anaconda.org/conda-forge/noarch/filelock-3.12.4-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/filelock-3.13.0-pyhd8ed1ab_0.conda
   hash:
-    md5: 5173d4b8267a0699a43d73231e0b6596
-    sha256: 7463c64364c14b34a7a69a7550a880ccd1ec6d3014001e55913e6e4e8b0c7395
+    md5: 182e12e7e01591d831485e18fbf008ce
+    sha256: b26fb8c446773268a7ec8c33bc5e39fc9ff4679b76f214aa44596b4e666569a0
   category: main
   optional: false
 - name: idna
@@ -4189,7 +4192,7 @@ package:
   category: main
   optional: false
 - name: pydantic-core
-  version: 2.3.0
+  version: 2.10.1
   manager: conda
   platform: win-64
   dependencies:
@@ -4199,10 +4202,10 @@ package:
     ucrt: '>=10.0.20348.0'
     vc: '>=14.2,<15'
     vc14_runtime: '>=14.29.30139'
-  url: https://conda.anaconda.org/conda-forge/win-64/pydantic-core-2.3.0-py311hc37eb10_0.conda
+  url: https://conda.anaconda.org/conda-forge/win-64/pydantic-core-2.10.1-py311hc37eb10_0.conda
   hash:
-    md5: 9259b7da3dde8b3c247e944cfbe13b87
-    sha256: 12135c4ff6ffd54966d60f7d41cb7fc8a458ce08ff7ee630ca0bfc3e64afc475
+    md5: 03f6bd3dfa06738a8b1d23c34bd80395
+    sha256: 0434aa3f7dc0f9bb9ec31f91398d10a1f73fa23fa05fb5052f483a6a3a20d19d
   category: main
   optional: false
 - name: python-build
@@ -4271,16 +4274,16 @@ package:
   category: main
   optional: false
 - name: identify
-  version: 2.5.30
+  version: 2.5.31
   manager: conda
   platform: win-64
   dependencies:
     python: '>=3.6'
     ukkonen: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/identify-2.5.30-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/identify-2.5.31-pyhd8ed1ab_0.conda
   hash:
-    md5: b7a2e3bb89bda8c69839485c20aabadf
-    sha256: dc9901654af0556209bb5b4194ef2deb643bc641ac859a31f13c41b945b60150
+    md5: fea10604a45e974b110ea15a88913ebc
+    sha256: a56ec678a4e58d0a450174fd813581e961829def274453e093c9dae836b80cee
   category: main
   optional: false
 - name: keyring
@@ -4312,18 +4315,18 @@ package:
   category: main
   optional: false
 - name: pydantic
-  version: 2.0.3
+  version: 2.4.2
   manager: conda
   platform: win-64
   dependencies:
     annotated-types: '>=0.4.0'
-    pydantic-core: 2.3.0
+    pydantic-core: 2.10.1
     python: '>=3.7'
     typing-extensions: '>=4.6.1'
-  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.0.3-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.4.2-pyhd8ed1ab_1.conda
   hash:
-    md5: 77753c350c42e70dd3e9919dd8099fc7
-    sha256: d2d10c858233da9ac531e734308e14e18806dac4f7ce66a70e66a2bbc798eb30
+    md5: aad1d187156725d52e1f8ee7756c20f6
+    sha256: dc6330364f92de95a315a19e842a26605d6ca5c7d346e77811d42ad0438e32d8
   category: main
   optional: false
 - name: requests
@@ -4475,7 +4478,7 @@ package:
   category: main
   optional: false
 - name: conda-lock
-  version: 2.4.1
+  version: 2.4.2
   manager: conda
   platform: win-64
   dependencies:
@@ -4503,25 +4506,27 @@ package:
     typing_extensions: ''
     urllib3: '>=1.26.5,<2.0'
     virtualenv: '>=20.0.26'
-  url: https://conda.anaconda.org/conda-forge/noarch/conda-lock-2.4.1-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/conda-lock-2.4.2-pyhd8ed1ab_0.conda
   hash:
-    md5: deb6e2f8d8b4de933563cc681165b833
-    sha256: 08cd768d033db260e043982ba91de007213adbde5210a76fd2decad3c135e666
+    md5: 068b8ae6928d477a0d216254f6eacd34
+    sha256: c3a684affc774d45e6bef61306d1005a3fab75862bbe4f2adceb995e14a07193
   category: main
   optional: false
 - name: rapidfuzz
-  version: 2.13.7
+  version: 2.15.2
   manager: conda
   platform: win-64
   dependencies:
-    numpy: '>=1.23.5,<2.0a0'
+    numpy: ''
     python: '>=3.11,<3.12.0a0'
-    vc: '>=14.2,<15.0a0'
-    vs2015_runtime: '>=14.27.29016,<15.0a0'
-  url: https://repo.anaconda.com/pkgs/main/win-64/rapidfuzz-2.13.7-py311hea22821_0.conda
+    python_abi: 3.11.*
+    ucrt: '>=10.0.20348.0'
+    vc: '>=14.2,<15'
+    vc14_runtime: '>=14.29.30139'
+  url: https://conda.anaconda.org/conda-forge/win-64/rapidfuzz-2.15.2-py311h12c1d0e_0.conda
   hash:
-    md5: 45ad08954844ceb37bb057fed8c9ff1f
-    sha256: 01ea24fab109e2ee55d0143e11621c6474e9e54862fb31e8be095e8f4c352e66
+    md5: c6febd2e8ea7eb8045ebec6d1892fe1e
+    sha256: a18dd92d3205ccda24830654099d5f6d0d1ba2c4f3ed16f5964e1ed428430f15
   category: main
   optional: false
 - name: cleo

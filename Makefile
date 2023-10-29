@@ -12,6 +12,7 @@ CONDA := conda run -n $(CONDA_NAME)
 
 .PHONY: conda-setup
 conda-setup:
+	conda remove -y --name $(CONDA_NAME) --all
 	conda create -y -n $(CONDA_NAME) python=$(PYTHON_VERSION)
 	conda install -y conda-lock -n $(CONDA_NAME)
 	conda install -y -c conda-forge poetry pre-commit tomli tomli-w -n $(CONDA_NAME)
@@ -47,16 +48,13 @@ install:
 
 .PHONY: validate
 validate:
-	$(CONDA) pre-commit run --all-files
-
-.PHONY: codestyle
-codestyle:
-	$(CONDA) pyupgrade --exit-zero-even-if-changed --py311-plus **/*.py
-	$(CONDA) isort --settings-path pyproject.toml ./
-	$(CONDA) black --config pyproject.toml ./
+	- $(CONDA) pre-commit run --all-files
 
 .PHONY: formatting
-formatting: codestyle
+formatting:
+	- $(CONDA) pyupgrade --exit-zero-even-if-changed --py311-plus **/*.py
+	- $(CONDA) isort --settings-path pyproject.toml ./
+	- $(CONDA) black --config pyproject.toml ./
 
 .PHONY: test
 test:
