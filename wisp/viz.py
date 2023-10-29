@@ -134,7 +134,7 @@ class Visualize:
             ]
         )[:-4]
 
-        logger.info("\n# Load in the protein structure", log_files)
+        logger.info("Load in the protein structure")
         logger.info(
             "mol new "
             + molecule_filename
@@ -162,7 +162,7 @@ class Visualize:
             params["node_sphere_radius"] != 0.0
         ):  # if the radius is 0.0, don't even draw the spheres
             # draw spheres
-            logger.info("\n# Draw spheres at the nodes", log_files)
+            logger.info("Draw spheres at the nodes")
             if opacity_required:
                 logger.info(
                     "if {[lsearch [material list] node_spheres] == -1} {material add node_spheres}",
@@ -199,9 +199,9 @@ class Visualize:
             "set wisp_num_paths %i" % len(pths.paths), log_files
         )  # tell the WISP plugin how many paths there are total
         for path in pths.paths:
-            logger.info("\n# Draw a new path", log_files)
-            logger.info("# \tLength: " + str(path[0]), log_files)
-            logger.info("# \tNodes: " + str(path[1:]) + "\n", log_files)
+            logger.info("Draw a new path")
+            logger.info("\tLength: " + str(path[0]), log_files)
+            logger.info("\tNodes: " + str(path[1:]) + "\n", log_files)
 
             # make the spline from the paths
 

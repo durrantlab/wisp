@@ -85,9 +85,7 @@ def run_wisp(config):
     output_directory_info(config)
 
     logger.info(
-        "\n# Program execution time: "
-        + str(time.time() - program_start_time)
-        + " seconds",
+        "Program execution time: " + str(time.time() - program_start_time) + " seconds",
         config["logfile"],
     )
 

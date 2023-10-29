@@ -28,8 +28,7 @@ class GetCovarianceMatrix:
         number_of_frames = 0
 
         logger.info(
-            "\n# Loading frames from the PDB file and building the covariance matrix...",
-            params["logfile"],
+            "Loading frames from the PDB file and building the covariance matrix"
         )
 
         if params["number_processors"] == 1:
@@ -126,13 +125,10 @@ class GetCovarianceMatrix:
                         # with the next 100
                         multiple_frames = []
 
-                    logger.info(
-                        "#      Loading frame " + str(number_of_frames) + "...",
-                        params["logfile"],
-                    )
+                    logger.debug("Loading frame " + str(number_of_frames))
                     number_of_frames = number_of_frames + 1
 
-            logger.info("\n# Analyzing frames...", params["logfile"])
+            logger.info("Analyzing frames...")
 
             # you need to get the last chunck
             tmp = multi_threading_to_collect_data_from_frames(

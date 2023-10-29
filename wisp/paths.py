@@ -174,7 +174,7 @@ class find_paths:  # other, more specific classes with inherit this one
                 paths_growing_out_from_source.pop(i)
                 break
             else:
-                print("SOMETHING IS WRONG")
+                logger.critical("SOMETHING IS WRONG")
 
 
 class GetPaths:
@@ -465,7 +465,7 @@ class GetPaths:
                     if (so_l[i] + si_l[i]) > upper_minimum_length:
                         upper_minimum_length = temp_length
         else:
-            print("paths do not match up")
+            logger.critical("paths do not match up")
 
         unique_nodes = list(set(node_list))
         unique_nodes.sort()

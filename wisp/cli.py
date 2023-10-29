@@ -5,6 +5,8 @@ import time
 
 from loguru import logger
 
+from . import __version__
+
 
 class UserInput:
     """Process and store user-specified command-line parameters"""
@@ -13,13 +15,9 @@ class UserInput:
         """Receives, processes, and stores command-line parameters"""
 
         # Display program information.
-        print("WISP 1.4\n")
-        print(
-            "The latest version of WISP can be downloaded from\nhttp://git.durrantlab.com/jdurrant/wisp\n"
-        )
-
-        print(
-            "If you use WISP in your work, please cite:\nJ. Chem. Theory Comput. 10 (2014) 511-517.\n"
+        logger.info("WISP v{}", __version__)
+        logger.info(
+            "If you use WISP in your work, please cite: https://doi.org/10.1021/ct4008603"
         )
 
         # get the user input
@@ -157,15 +155,8 @@ class UserInput:
             or self.parameters["source_residues"] == []
             or self.parameters["sink_residues"] == []
         ):
-            print(
-                "\nYou have failed to provide all the required parameters. In its simplest form, WISP can be used like this:"
-            )
-            print(
-                '     python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37'
-            )
-            print("")
-            print(
-                "For more detailed help, use the -help command-line parameter: python wisp.py -help\n"
+            logger.critical(
+                "You have failed to provide all the required parameters. In its simplest form, WISP can be used like this:"
             )
             sys.exit(0)
 
@@ -175,7 +166,7 @@ class UserInput:
                 self.parameters["output_directory"] + os.sep
             )
         if os.path.exists(self.parameters["output_directory"]):
-            print(
+            logger.critical(
                 "The output directory, "
                 + self.parameters["output_directory"]
                 + ", already exists. Please delete this directory or select a different one for output before proceeding."
@@ -197,10 +188,7 @@ class UserInput:
         with open(
             self.parameters["output_directory"] + "parameters_used.txt", "w"
         ) as parameters_file:
-            logger.info(
-                "# Wisp 1.4\n# ========\n",
-                [self.parameters["logfile"], parameters_file],
-            )
+            logger.info("Wisp {}", __version__)
 
             logger.info(
                 "# Command-line Parameters:",
@@ -216,7 +204,7 @@ class UserInput:
                     )
 
             logger.info(
-                "\n# A command like the following should regenerate this output:",
+                "# A command like the following should regenerate this output:",
                 [self.parameters["logfile"], parameters_file],
             )
             prog = "# " + sys.executable + " " + os.path.basename(sys.argv[0]) + " "
@@ -457,8 +445,8 @@ class UserInput:
 
         for item in description:
             if item[0] == "title":
-                print("\n" + item[1])
-                print("-" * len(item[1]))
+                logger.info(item[1])
+                logger.info("-" * len(item[1]))
             else:
                 towrap = f"{item[0]}: {item[1]}"
                 towrap = (
@@ -469,24 +457,24 @@ class UserInput:
                 wrapper = textwrap.TextWrapper(
                     initial_indent="", subsequent_indent="    "
                 )
-                print(wrapper.fill(towrap))
-        print("")
-        print("Notes:")
-        print(
+                logger.info(wrapper.fill(towrap))
+        logger.info("")
+        logger.info("Notes:")
+        logger.info(
             "1) To visualize in VMD, first load the output TCL file, then load the PDB file."
         )
-        print(
+        logger.info(
             "2) WISP ignores PDB segnames. Every residue in your PDB trajectory must be uniquely identifiable by the combination of its chain, resname, and resid."
         )
-        print("")
-        print("Example:")
+        logger.info("")
+        logger.info("Example:")
         wrapper = textwrap.TextWrapper(
             initial_indent="     ", subsequent_indent="         "
         )
-        print(
+        logger.info(
             wrapper.fill(
                 'python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -node_definition CA -contact_map_distance_limit 4.5 -load_wisp_saved_matrix false -wisp_saved_matrix_filename matrix.file -desired_number_of_paths 30 -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37 -number_processors 24 -num_frames_to_load_before_processing 96 -seconds_to_wait_before_parallelizing_path_finding 10.0 -shortest_path_radius 0.2 -longest_path_radius 0.05 -spline_smoothness 0.05 -vmd_resolution 6 -node_sphere_radius 1.0'
             )
         )
-        print("")
+        logger.info("")
         sys.exit(0)
