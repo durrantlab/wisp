@@ -21,6 +21,8 @@ jobs:
     steps:
     - name: Checkout wisp
       uses: actions/checkout@v4
+      with:
+        lfs: true
 
     - name: Install miniconda
       uses: conda-incubator/setup-miniconda@v2
