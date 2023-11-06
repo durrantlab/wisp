@@ -3,35 +3,49 @@ PYTHON_VERSION := 3.11
 PYTHON_VERSION_CONDENSED := 311
 PACKAGE_NAME := wisp
 REPO_PATH := $(shell git rev-parse --show-toplevel)
+PACKAGE_PATH := $(REPO_PATH)/$(PACKAGE_NAME)
+TESTS_PATH := $(REPO_PATH)/tests
 CONDA_NAME := $(PACKAGE_NAME)-dev
-CONDA_BASE_PATH = $(shell conda info --base)
-CONDA_PATH := $(CONDA_BASE_PATH)/envs/$(CONDA_NAME)
+CONDA := conda run -n $(CONDA_NAME)
 CONDA := conda run -n $(CONDA_NAME)
 
 ###   ENVIRONMENT   ###
 
+.PHONY: conda-create
+conda-create:
+	- conda deactivate
+	conda remove -y -n $(CONDA_NAME) --all
+	conda create -y -n $(CONDA_NAME)
+	$(CONDA) conda install -y python=$(PYTHON_VERSION)
+	$(CONDA) conda install -y conda-lock
+
+# Default packages that we always need.
 .PHONY: conda-setup
 conda-setup:
-	conda remove -y --name $(CONDA_NAME) --all
-	conda create -y -n $(CONDA_NAME) python=$(PYTHON_VERSION)
-	conda install -y conda-lock -n $(CONDA_NAME)
-	conda install -y -c conda-forge poetry pre-commit tomli tomli-w -n $(CONDA_NAME)
-	$(CONDA) pip install conda_poetry_liaison
+	$(CONDA) conda install -y -c conda-forge poetry
+	$(CONDA) conda install -y -c conda-forge pre-commit
+	$(CONDA) conda install -y -c conda-forge tomli tomli-w
+	$(CONDA) conda install -y -c conda-forge conda-poetry-liaison
 
-.PHONY: write-conda-lock
-write-conda-lock:
+# Conda-only packages specific to this project.
+.PHONY: conda-dependencies
+conda-dependencies:
+	echo "No conda-only packages are required."
+
+.PHONY: conda-lock
+conda-lock:
+	- rm $(REPO_PATH)/conda-lock.yml
 	$(CONDA) conda env export --from-history | grep -v "^prefix" > environment.yml
 	$(CONDA) conda-lock -f environment.yml -p linux-64 -p osx-64 -p win-64
-	$(CONDA) cpl-deps $(REPO_PATH)/pyproject.toml --env_path $(CONDA_PATH)
-	$(CONDA) cpl-clean $(CONDA_PATH)
+	rm $(REPO_PATH)/environment.yml
+	$(CONDA) cpl-deps $(REPO_PATH)/pyproject.toml --env_name $(CONDA_NAME)
+	$(CONDA) cpl-clean --env_name $(CONDA_NAME)
 
 .PHONY: from-conda-lock
 from-conda-lock:
-	$(CONDA) conda-lock install --prefix $(REPO_PATH)/.venv $(REPO_PATH)/conda-lock.yml
-	$(CONDA) pip install conda_poetry_liaison
-	$(CONDA) cpl-clean $(CONDA_PATH)
+	$(CONDA) conda-lock install -n $(CONDA_NAME) $(REPO_PATH)/conda-lock.yml
+	$(CONDA) cpl-clean --env_name $(CONDA_NAME)
 
-# notify_poetry_of_conda.py
 .PHONY: pre-commit-install
 pre-commit-install:
 	$(CONDA) pre-commit install
@@ -40,11 +54,16 @@ pre-commit-install:
 .PHONY: poetry-lock
 poetry-lock:
 	$(CONDA) poetry lock --no-interaction
-	$(CONDA) poetry export --without-hashes > requirements.txt
 
 .PHONY: install
 install:
 	$(CONDA) poetry install --no-interaction
+
+.PHONY: refresh
+refresh: conda-create from-conda-lock pre-commit-install install
+
+.PHONY: refresh-locks
+refresh-locks: conda-create conda-setup conda-lock pre-commit-install poetry-lock install
 
 .PHONY: validate
 validate:
@@ -59,6 +78,3 @@ formatting:
 .PHONY: test
 test:
 	$(CONDA) pytest -c pyproject.toml --cov=$(PACKAGE_NAME) --cov-report=xml tests/
-
-.PHONY: refresh
-refresh: conda-setup write-conda-lock pre-commit-install poetry-lock install formatting validate
