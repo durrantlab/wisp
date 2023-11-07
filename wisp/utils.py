@@ -44,11 +44,15 @@ class GetCovarianceMatrix:
 
                 if line[:4] == "ATOM" or line[:6] == "HETATM":
                     this_frame.append(line)
-                if line[:3] == "END":  # so reached end of frame
+                if line.startswith(("END", "ENDMDL")):  # so reached end of frame
                     if first_frame:
                         self.average_pdb = Molecule()
                         self.average_pdb.load_pdb_from_list(this_frame)
                         first_frame = False
+
+                    # Happens when you have ENDMDL and then END.
+                    if len(this_frame) == 0:
+                        break
 
                     load_frames_data.value_func((params, this_frame))
 

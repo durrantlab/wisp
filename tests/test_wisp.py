@@ -105,7 +105,7 @@ def test_issue_1_serial():
         "node_sphere_opacity": 1.0,
         "node_sphere_r": 1.0,
         "node_sphere_radius": 1.0,
-        "num_frames_to_load_before_processing": 20,
+        "num_frames_to_load_before_processing": 1,
         "number_processors": 1,
         "pdb_trajectory_filename": pdb_path,
         "seconds_to_wait_before_parallelizing_path_finding": 5.0,
