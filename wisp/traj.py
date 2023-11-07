@@ -113,13 +113,14 @@ class collect_data_from_frames:
         """Process a single PDB frame: identify the relevant nodes
 
         Arguments:
-        params_and_res_keys_and_pdb_lines_and_res_maps -- a tuple containing required information.
-             The first item contains user-defined parameters (a UserInput object)
-             The second item is a list containing string representations of each residue ("CHAIN_RESNAME_RESID")
-             The third item is a list of strings representing the PDB frame to be processed, where each string
-                  contains a PDB ATOM or HETATM entry
-             The fourth item is a dictionary that maps residue string identifiers ("CHAIN_RESNAME_RESID") to a list
-                  of the indices of the atoms that correspond to that residue
+            params_and_res_keys_and_pdb_lines_and_res_maps: a tuple containing required
+                information.
+                The first item contains user-defined parameters (a UserInput object)
+                The second item is a list containing string representations of each residue ("CHAIN_RESNAME_RESID")
+                The third item is a list of strings representing the PDB frame to be processed, where each string
+                    contains a PDB ATOM or HETATM entry
+                The fourth item is a dictionary that maps residue string identifiers ("CHAIN_RESNAME_RESID") to a list
+                    of the indices of the atoms that correspond to that residue
         """
 
         params = params_and_res_keys_and_pdb_lines_and_res_maps[

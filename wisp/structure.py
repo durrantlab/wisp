@@ -28,6 +28,10 @@ class Atom:
         # now get the chain
         self.chain = Line[21:22]
 
+        # If chain is not filled out in PDB, we make it "A"
+        if self.chain == " ":
+            self.chain = "A"
+
         # now get the resid
         try:
             self.resid = int(Line[22:26])

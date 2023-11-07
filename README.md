@@ -150,6 +150,7 @@ source_residues: This parameter specifies the source residues for path
     "CHAIN_RESNAME_RESID," separated by spaces. For example: "X_SER_1
     X_LEU_4." For unix to treat a space-containing command-line
     parameter as a single parameter, it must be enclosed in quotes.
+    If your PDB file does not have a chain, use `A`: `A_LEU_4`.
 sink_residues: This parameter specifies the sink residues for path
     generation. The format is the same as for the source_residues
     parameter.
