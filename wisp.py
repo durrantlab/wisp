@@ -1051,12 +1051,15 @@ class collect_data_from_frames:
                   of the indices of the atoms that correspond to that residue
         """
 
+        # user-defined parameters
         params = params_and_res_keys_and_pdb_lines_and_res_maps[
             0
-        ]  # user-defined parameters
+        ]
+
+        # make sure this is not empty
         pdb_lines = params_and_res_keys_and_pdb_lines_and_res_maps[
             1
-        ]  # make sure this is not empty
+        ]
 
         # now load the frame into its own Molecule object
         pdb = Molecule()
@@ -1182,25 +1185,25 @@ class find_paths:  # other, more specific classes with inherit this one
         sink = item[1]
         G = item[2]
 
-        paths_growing_out_from_source = [item[3]]
-        full_paths_from_start_to_sink = []
+        pths_growing_frm_src = [item[3]]
+        full_pth_strt_to_snk = []
 
-        while paths_growing_out_from_source:
-            self.expand_growing_paths_one_step(
-                paths_growing_out_from_source,
-                full_paths_from_start_to_sink,
+        while pths_growing_frm_src:
+            pths_growing_frm_src, full_pth_strt_to_snk = self.expand_pths_one_step(
+                pths_growing_frm_src,
+                full_pth_strt_to_snk,
                 cutoff,
                 sink,
                 G,
             )
 
         # here save the results for later compilation
-        self.results.append(full_paths_from_start_to_sink)
+        self.results.append(full_pth_strt_to_snk)
 
-    def expand_growing_paths_one_step(
+    def expand_pths_one_step(
         self,
-        paths_growing_out_from_source,
-        full_paths_from_start_to_sink,
+        pths_growing_frm_src,
+        full_pth_strt_to_snk,
         cutoff,
         sink,
         G,
@@ -1209,9 +1212,9 @@ class find_paths:  # other, more specific classes with inherit this one
            (to the neighbors of the terminal node) of the expanding paths
 
         Arguments:
-        paths_growing_out_from_source -- a list of paths, where each path is represented by a list. The first item in each path
+        pths_growing_frm_src -- a list of paths, where each path is represented by a list. The first item in each path
              is the length of the path (float). The remaining items are the indices of the nodes in the path (int).
-        full_paths_from_start_to_sink -- a growing list of identified paths that connect the source and the sink, where each
+        full_pth_strt_to_snk -- a growing list of identified paths that connect the source and the sink, where each
              path is formatted as above.
         cutoff -- a numpy array containing a single element (float), the length cutoff. Paths with lengths greater than the cutoff
              will be ignored.
@@ -1219,33 +1222,126 @@ class find_paths:  # other, more specific classes with inherit this one
         G -- a networkx.Graph object describing the connectivity of the different nodes
         """
 
-        for i, path_growing_out_from_source in enumerate(paths_growing_out_from_source):
-            if path_growing_out_from_source[0] > cutoff:
+        for i, pth_growing_frm_src in enumerate(pths_growing_frm_src):
+            if pth_growing_frm_src[0] > cutoff:
                 # Because if the path is already greater than the cutoff, no
                 # use continuing to branch out, since subsequent branhes will
                 # be longer.
-                paths_growing_out_from_source.pop(i)
+                pths_growing_frm_src.pop(i)
                 break
-            elif path_growing_out_from_source[-1] == sink:
+            elif pth_growing_frm_src[-1] == sink:
                 # so the sink has been reached
-                full_paths_from_start_to_sink.append(path_growing_out_from_source)
-                paths_growing_out_from_source.pop(i)
+                full_pth_strt_to_snk.append(pth_growing_frm_src)
+                pths_growing_frm_src.pop(i)
                 break
-            elif path_growing_out_from_source[-1] != sink:
+            elif pth_growing_frm_src[-1] != sink:
                 # sink not yet reached, but paths still short enough. So add
                 # new paths, same as old, but with neighboring element
                 # appended.
-                node_neighbors = list(G.neighbors(path_growing_out_from_source[-1]))
+                # print("====================")
+                # # print(pths_growing_frm_src)
+                # print("\n".join([str(p) for p in pths_growing_frm_src]))
+                node_neighbors = list(G.neighbors(pth_growing_frm_src[-1]))
                 for j, node_neighbor in enumerate(node_neighbors):
-                    if not node_neighbor in path_growing_out_from_source:
-                        temp = path_growing_out_from_source[:]
+                    if not node_neighbor in pth_growing_frm_src:
+                        temp = pth_growing_frm_src[:]
                         temp.append(node_neighbor)
                         temp[0] = temp[0] + G.edges[temp[-2], temp[-1]]["weight"]
-                        paths_growing_out_from_source.insert((i + j + 1), temp)
-                paths_growing_out_from_source.pop(i)
+                        pths_growing_frm_src.insert((i + j + 1), temp)
+                pths_growing_frm_src.pop(i)
+                # print("")
+                # # print(pths_growing_frm_src)
+                # print("\n".join([str(p) for p in pths_growing_frm_src]))
+                # print("")
+                # print("")
+                # import pdb; pdb.set_trace()
                 break
             else:
                 print("SOMETHING IS WRONG")
+
+        # print(sorted(pths_growing_frm_src, reverse=True)[0])
+        # import pdb; pdb.set_trace()
+        return pths_growing_frm_src, full_pth_strt_to_snk
+
+    # def expand_pths_one_step(
+    #     self,
+    #     pths_growing_frm_src,
+    #     full_pth_strt_to_snk,
+    #     cutoff,
+    #     sink,
+    #     G,
+    # ):
+    #     """Expand the paths growing out from the source to the sink by one step
+    #        (to the neighbors of the terminal node) of the expanding paths
+
+    #     Arguments:
+    #     pths_growing_frm_src -- a list of paths, where each path is represented by a list. The first item in each path
+    #          is the length of the path (float). The remaining items are the indices of the nodes in the path (int).
+    #     full_pth_strt_to_snk -- a growing list of identified paths that connect the source and the sink, where each
+    #          path is formatted as above.
+    #     cutoff -- a numpy array containing a single element (float), the length cutoff. Paths with lengths greater than the cutoff
+    #          will be ignored.
+    #     sink -- the index of the sink (int)
+    #     G -- a networkx.Graph object describing the connectivity of the different nodes
+    #     """
+
+    #     # ****
+
+    #     # First, remove all paths that are already greater thanthe cutoff. No
+    #     # use contrinuing to branch out, since subsequent branches will be
+    #     # longer.
+    #     pths_growing_frm_src = [
+    #         path for path in pths_growing_frm_src if path[0] <= cutoff
+    #     ]
+
+    #     # Now, remove all paths that have already reached the sink. Add these
+    #     # to the full paths list.
+    #     full_pth_strt_to_snk.extend(
+    #         [path for path in pths_growing_frm_src if path[-1] == sink]
+    #     )
+    #     pths_growing_frm_src = [
+    #         path for path in pths_growing_frm_src if path[-1] != sink
+    #     ]
+
+    #     # Now, add new paths, same as old, but with neighboring element
+    #     # appended.
+    #     expanded_pths = []
+    #     for pth_growing_frm_src in pths_growing_frm_src:
+    #         # sink not yet reached, but paths still short enough. So add
+    #         # new paths, same as old, but with neighboring element
+    #         # appended.
+    #         # print("====================")
+    #         # # print(pths_growing_frm_src)
+    #         # print("\n".join([str(p) for p in pths_growing_frm_src]))
+    #         last_node_in_pth = pth_growing_frm_src[-1]
+    #         node_neighbors = list(G.neighbors(last_node_in_pth))
+    #         for node_neighbor in node_neighbors:
+    #             if node_neighbor not in pth_growing_frm_src:
+    #                 # It's a copy
+    #                 updated_pth = pth_growing_frm_src[:]
+
+    #                 # Add the neighbor
+    #                 updated_pth.append(node_neighbor)
+
+    #                 # Update the path length
+    #                 updated_pth[0] = updated_pth[0] + G.edges[updated_pth[-2], updated_pth[-1]]["weight"]
+
+    #                 # Insert this new path into the list of growing paths
+    #                 # insert_idx = path_idx + neighbor_idx + 1
+
+    #                 # print(insert_idx, len(pths_growing_frm_src))
+    #                 # pths_growing_frm_src.insert(insert_idx, updated_pth)
+    #                 expanded_pths.append(updated_pth)
+
+    #         # print("")
+    #         # # print(pths_growing_frm_src)
+    #         # print("\n".join([str(p) for p in pths_growing_frm_src]))
+    #         # print("")
+    #         # print("")
+    #         # import pdb; pdb.set_trace()
+
+    #     # print(len(expanded_pths))
+    #     return expanded_pths, full_pth_strt_to_snk
 
 
 ######################## To Generate Covariant Matrix ########################
@@ -1288,6 +1384,10 @@ class GetCovarianceMatrix:
                 if line[:4] == "ATOM" or line[:6] == "HETATM":
                     this_frame.append(line)
                 if line[:3] == "END":  # so reached end of frame
+                    if len(this_frame) == 0:
+                        # Happens sometimes with VMD-formatted files that end in
+                        # ENDMDL, then END, so a frame has no coordinates in it.
+                        continue
 
                     if first_frame:
                         self.average_pdb = Molecule()
@@ -1583,9 +1683,16 @@ class GetCovarianceMatrix:
 
         networkx_residue_indices = []
         for key in list_residue_keys:
-            index_of_key = numpy.nonzero(
-                self.average_pdb.residue_identifiers_in_order == key
-            )[0][0]
+            try:
+                index_of_key = numpy.nonzero(
+                    self.average_pdb.residue_identifiers_in_order == key
+                )[0][0]
+            except:
+                raise Exception(
+                    "ERROR: The residue "
+                    + key
+                    + " was not found in the average structure. Are you sure that the residue is present in the PDB file?"
+                )
             networkx_residue_indices.append(index_of_key)
         return networkx_residue_indices
 
@@ -1629,16 +1736,17 @@ class GetPaths:
 
         path = [shortest_length]
         path.extend(shortest_path)
-        pths = [
-            path
-        ]  # need to create this initial path in case only one path is requrested
+        
+        # need to create this initial path in case only one path is requrested
+        pths = [path]  
 
         cutoff = shortest_length
 
         cutoff_yields_max_num_paths_below_target = 0
         cutoff_yields_min_num_paths_above_target = 1000000.0
 
-        # first step, keep incrementing a little until you have more than the desired number of paths
+        # first step, keep incrementing a little until you have more than the
+        # desired number of paths
         log(
             "#      Identifying the cutoff required to produce "
             + str(params["desired_number_of_paths"])
@@ -1649,11 +1757,10 @@ class GetPaths:
         while num_paths < params["desired_number_of_paths"]:
             log(f"#          Testing the cutoff {str(cutoff)}...", params["logfile"])
             cutoff_in_array = numpy.array([cutoff], numpy.float64)
-            pths = self.remove_redundant_paths(
-                self.get_paths_between_multiple_endpoints(
-                    cutoff_in_array, corr_matrix, srcs, snks, G, params
-                )
+            pths_redundant = self.get_paths_between_multiple_endpoints(
+                cutoff_in_array, corr_matrix, srcs, snks, G, params
             )
+            pths = self.remove_redundant_paths(pths_redundant)
             num_paths = len(pths)
 
             log(
@@ -1825,11 +1932,10 @@ class GetPaths:
         for source in srcs:
             for sink in snks:
                 if source != sink:  # avoid this situation
-                    pths.extend(
-                        self.get_paths_fixed_endpoints(
-                            cutoff, corr_matrix, source, sink, G, params
-                        )
+                    pths_to_add = self.get_paths_fixed_endpoints(
+                        cutoff, corr_matrix, source, sink, G, params
                     )
+                    pths.extend(pths_to_add)
         return pths
 
     def get_paths_fixed_endpoints(self, cutoff, corr_matrix, source, sink, G, params):
@@ -1902,18 +2008,20 @@ class GetPaths:
         G = networkx.Graph(incoming_graph_data=corr_matrix, labels=unique_nodes)
 
         length = 0.0
-        paths_growing_out_from_source = [[length, source]]
-        full_paths_from_start_to_sink = []
+        pths_growing_frm_src = [[length, source]]
+        full_pth_strt_to_snk = []
 
-        # This is essentially this list-addition replacement for a recursive algorithm you've envisioned.
-        # To parallelize, just get the first N branches, and send them off to each node. Rest of branches filled out in separate processes.
+        # This is essentially this list-addition replacement for a recursive
+        # algorithm you've envisioned. To parallelize, just get the first N
+        # branches, and send them off to each node. Rest of branches filled out
+        # in separate processes.
 
         find_paths_object = find_paths()
         if params["number_processors"] == 1:
-            while paths_growing_out_from_source:
-                find_paths_object.expand_growing_paths_one_step(
-                    paths_growing_out_from_source,
-                    full_paths_from_start_to_sink,
+            while pths_growing_frm_src:
+                pths_growing_frm_src, full_pth_strt_to_snk = find_paths_object.expand_pths_one_step(
+                    pths_growing_frm_src,
+                    full_pth_strt_to_snk,
                     cutoff,
                     sink,
                     G,
@@ -1928,34 +2036,34 @@ class GetPaths:
             )
             atime = time.time()
             while (
-                paths_growing_out_from_source
+                pths_growing_frm_src
                 and time.time() - atime
                 < params["seconds_to_wait_before_parallelizing_path_finding"]
             ):
-                find_paths_object.expand_growing_paths_one_step(
-                    paths_growing_out_from_source,
-                    full_paths_from_start_to_sink,
+                pths_growing_frm_src, full_pth_strt_to_snk = find_paths_object.expand_pths_one_step(
+                    pths_growing_frm_src,
+                    full_pth_strt_to_snk,
                     cutoff,
                     sink,
                     G,
                 )
 
             # ok, so having generated just a first few, divy up those among multiple processors
-            if paths_growing_out_from_source:  # in case you've already finished
+            if pths_growing_frm_src:  # in case you've already finished
                 log(
                     "#                Starting parallel portion of path-finding algorithm running on "
                     + str(params["number_processors"])
                     + " processors...",
                     params["logfile"],
                 )
-                paths_growing_out_from_source = [
-                    (cutoff, sink, G, path) for path in paths_growing_out_from_source
+                pths_growing_frm_src = [
+                    (cutoff, sink, G, path) for path in pths_growing_frm_src
                 ]
-                additional_full_paths_from_start_to_sink = multi_threading_find_paths(
-                    paths_growing_out_from_source, params["number_processors"]
+                additional_full_pth_strt_to_snk = multi_threading_find_paths(
+                    pths_growing_frm_src, params["number_processors"]
                 )
-                full_paths_from_start_to_sink.extend(
-                    additional_full_paths_from_start_to_sink.results
+                full_pth_strt_to_snk.extend(
+                    additional_full_pth_strt_to_snk.results
                 )
             else:
                 log(
@@ -1963,11 +2071,11 @@ class GetPaths:
                     params["logfile"],
                 )
 
-        full_paths_from_start_to_sink.sort()
+        full_pth_strt_to_snk.sort()
 
         pths = []
 
-        for full_path_from_start_to_sink in full_paths_from_start_to_sink:
+        for full_path_from_start_to_sink in full_pth_strt_to_snk:
             pths.append(full_path_from_start_to_sink)
 
         return pths
