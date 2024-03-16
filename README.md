@@ -5,8 +5,8 @@ pathways. It is licensed under the Academic Free License 3.0. For more
 information, please see http://opensource.org/licenses/AFL-3.0
 
 WISP is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 Copyright 2012 Adam VanWart and Jacob D. Durrant. If you have any questions,
 comments, or suggestions, please contact durrantj [at] pitt [dot] edu.
@@ -21,10 +21,12 @@ Comput. 10 (2014) 511-517
 
 ## How to Install the VMD WISP Plugin (Linux/Mac)
 
-1. Unzip the file to a directory of your choice using this command: `tar -xzf wisp.tgz <your directory here>`
+1. Unzip the file to a directory of your choice using this command: `tar -xzf
+   wisp.tgz <your directory here>`
 2. To use the VMD plugin, add these two lines of code to your `.vmdrc` file
    (usually located in your `~/` directory)
-   * `set auto_path "$auto_path <your directory here>"  ; #(NOTE: this may require the full pathname)`
+   * `set auto_path "$auto_path <your directory here>"  ; #(NOTE: this may
+     require the full pathname)`
    * `vmd_install_extension wisp wisp_tk_cb "Analysis/Wisp"`
 3. Now open VMD: Click Extensions > Analysis > WISP
 
@@ -43,27 +45,27 @@ The output directory contains multiple output files. The best way to visualize
 the output is to use a free program called VMD, which can be downloaded from
 [http://www.ks.uiuc.edu/Research/vmd/](http://www.ks.uiuc.edu/Research/vmd/).
 
-The WISP output can be automatically loaded into VMD using the TCL script
-named `visualize.tcl`. Assuming `vmd` is the full path to your installed VMD
+The WISP output can be automatically loaded into VMD using the TCL script named
+`visualize.tcl`. Assuming `vmd` is the full path to your installed VMD
 executable, just run the following from the command line:
 
 `vmd -e visualize.tcl`
 
 If you prefer not to use the command line, simply run the `vmd` executable and
-load the `visualize.vmd` file using "File->Load Visualization State..." from
-the main menu.
+load the `visualize.vmd` file using "File->Load Visualization State..." from the
+main menu.
 
-The above methods are very slow. If your output is so large that a faster
-option is required, the Tk Console can be used. Use "Extensions->Tk Console"
-from the VMD main menu to pull up the Tk Console. Then run the following
-command, with the full path to `visualize.tcl` included if necessary:
+The above methods are very slow. If your output is so large that a faster option
+is required, the Tk Console can be used. Use "Extensions->Tk Console" from the
+VMD main menu to pull up the Tk Console. Then run the following command, with
+the full path to `visualize.tcl` included if necessary:
 
 `source visualize.tcl`
 
 Regardless of the method you use to load in the WISP output, the visualization
 will be the same. Individual pathways are shown as tubes (i.e., "wisps"), the
-protein is shown in ribbon representation, and protein residues that
-participate in any path are shown in licorice representation.
+protein is shown in ribbon representation, and protein residues that participate
+in any path are shown in licorice representation.
 
 The WISP output directory contains a number of other files as well. Here are
 descriptions of each:
@@ -74,31 +76,30 @@ descriptions of each:
 * `draw_frame.pdb`: If the user requests that a separate single-structure PDB
   file be used for calculating node and wisp positions, that file is saved as
   "draw_frame.pdb". Otherwise, the average structure is used.
-* `functionalized_matrix_with_contact_map_applied.pickle`: A python pickle
-  file that contains the matrix obtained by multiplying a functionalized
-  correlation matrix and a contact map. This file is not human readable but
-  can be loaded into WISP for use in subsequent runs with the
-  `-load_wisp_saved_matrix` and `-wisp_saved_matrix_filename` parameters.
-  Thus, the matrix needs only to be calculated once for each trajectory,
-  rather than every time WISP is executed. Use `python wisp.py -help` for more
-  information.
-* `contact_map_matrix.txt`: A human readable representation of the contact
-  map. If the user wishes to generate their own contact map rather than
-  letting WISP generate one automatically, a custom contact map formatted like
-  this one can be loaded into WISP using the
-  `-user_specified_contact_map_filename parameter`.
+* `functionalized_matrix_with_contact_map_applied.pickle`: A python pickle file
+  that contains the matrix obtained by multiplying a functionalized correlation
+  matrix and a contact map. This file is not human readable but can be loaded
+  into WISP for use in subsequent runs with the `-load_wisp_saved_matrix` and
+  `-wisp_saved_matrix_filename` parameters. Thus, the matrix needs only to be
+  calculated once for each trajectory, rather than every time WISP is executed.
+  Use `python wisp.py -help` for more information.
+* `contact_map_matrix.txt`: A human readable representation of the contact map.
+  If the user wishes to generate their own contact map rather than letting WISP
+  generate one automatically, a custom contact map formatted like this one can
+  be loaded into WISP using the `-user_specified_contact_map_filename
+  parameter`.
 * `functionalized_correlation_matrix.txt`: A human readable representation of
-  the functionalized correlation matrix, prior to multiplication by the
-  contact map. If the user wishes to generate their own functionalized
-  correlation matrix rather than letting WISP generate one automatically, a
-  custom matrix formatted like this one can be loaded into WISP using the
+  the functionalized correlation matrix, prior to multiplication by the contact
+  map. If the user wishes to generate their own functionalized correlation
+  matrix rather than letting WISP generate one automatically, a custom matrix
+  formatted like this one can be loaded into WISP using the
   `-user_specified_functionalized_matrix_filename parameter`.
 * `simply_formatted_paths.txt`: A simple list of path lengths and nodes. The
   first column contains the lengths, and all following columns contain node
   indices. This file may be helpful for subsequent statistical analyses of the
-  WISP output. Note that the `simply_formatted_paths.txt` output file
-  reindexes the residues. See the `visualize.tcl` file instead for a more
-  human-readable output.
+  WISP output. Note that the `simply_formatted_paths.txt` output file reindexes
+  the residues. See the `visualize.tcl` file instead for a more human-readable
+  output.
 
 ## Parameter Description
 

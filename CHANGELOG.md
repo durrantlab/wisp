@@ -33,8 +33,8 @@ Changes
   though it is possible that similar differences may arise when running on
   different operating systems, etc. Regardless, the top-ranked paths are the
   same, but lower-ranked paths sometimes aren't. After some investigation and
-  test updates to the code, we now believe subtle rounding-error differences
-  to be the cause. For consistency's sake, we recommend using the same
+  test updates to the code, we now believe subtle rounding-error differences to
+  be the cause. For consistency's sake, we recommend using the same
   Python/OS/dependencies when comparing multiple WISP analyses.
 
 1.1
