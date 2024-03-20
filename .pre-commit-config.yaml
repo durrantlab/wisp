@@ -8,35 +8,24 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
-      - id: check-added-large-files
-      - id: check-executables-have-shebangs
-      - id: detect-private-key
-      - id: end-of-file-fixer
       - id: mixed-line-ending
-        args: [--fix=lf]
       - id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+        exclude: "mkdocs.yml"
+      - id: detect-private-key
 
-  - repo: local
-    hooks:
-      - id: pyupgrade
-        name: pyupgrade
-        entry: poetry run pyupgrade --py311-plus
-        types: [python]
-        language: system
-
-  - repo: local
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
     hooks:
       - id: isort
-        name: isort
-        entry: poetry run isort --settings-path pyproject.toml
-        types: [python]
-        language: system
+        name: isort (python)
 
-  # - repo: local
-  #   hooks:
-  #     - id: black
-  #       name: black
-  #       entry: poetry run black --config pyproject.toml
-  #       types: [python]
-  #       language: system
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 23.11.0
+    hooks:
+      - id: black
+        language_version: python3.11

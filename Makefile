@@ -2,14 +2,16 @@ SHELL := /usr/bin/env bash
 PYTHON_VERSION := 3.11
 PYTHON_VERSION_CONDENSED := 311
 PACKAGE_NAME := wisp
-REPO_PATH := $(shell git rev-parse --show-toplevel)
-PACKAGE_PATH := $(REPO_PATH)/$(PACKAGE_NAME)
-TESTS_PATH := $(REPO_PATH)/tests
+PACKAGE_PATH := $(PACKAGE_NAME)/
+TESTS_PATH := tests/
 CONDA_NAME := $(PACKAGE_NAME)-dev
 CONDA := conda run -n $(CONDA_NAME)
-CONDA := conda run -n $(CONDA_NAME)
+CONDA_LOCK_OPTIONS := -p linux-64 -p osx-64 -p win-64 --channel conda-forge
 
 ###   ENVIRONMENT   ###
+
+# See https://github.com/pypa/pip/issues/7883#issuecomment-643319919
+export PYTHON_KEYRING_BACKEND := keyring.backends.null.Keyring
 
 .PHONY: conda-create
 conda-create:
@@ -24,7 +26,6 @@ conda-create:
 conda-setup:
 	$(CONDA) conda install -y -c conda-forge poetry
 	$(CONDA) conda install -y -c conda-forge pre-commit
-	$(CONDA) conda install -y -c conda-forge tomli tomli-w
 	$(CONDA) conda install -y -c conda-forge conda-poetry-liaison
 
 # Conda-only packages specific to this project.
@@ -34,16 +35,15 @@ conda-dependencies:
 
 .PHONY: conda-lock
 conda-lock:
-	- rm $(REPO_PATH)/conda-lock.yml
+	- rm conda-lock.yml
 	$(CONDA) conda env export --from-history | grep -v "^prefix" > environment.yml
-	$(CONDA) conda-lock -f environment.yml -p linux-64 -p osx-64 -p win-64
-	rm $(REPO_PATH)/environment.yml
-	$(CONDA) cpl-deps $(REPO_PATH)/pyproject.toml --env_name $(CONDA_NAME)
+	$(CONDA) conda-lock -f environment.yml $(CONDA_LOCK_OPTIONS)
+	$(CONDA) cpl-deps pyproject.toml --env_name $(CONDA_NAME)
 	$(CONDA) cpl-clean --env_name $(CONDA_NAME)
 
 .PHONY: from-conda-lock
 from-conda-lock:
-	$(CONDA) conda-lock install -n $(CONDA_NAME) $(REPO_PATH)/conda-lock.yml
+	$(CONDA) conda-lock install -n $(CONDA_NAME) conda-lock.yml
 	$(CONDA) cpl-clean --env_name $(CONDA_NAME)
 
 .PHONY: pre-commit-install
@@ -58,12 +58,14 @@ poetry-lock:
 .PHONY: install
 install:
 	$(CONDA) poetry install --no-interaction
+	- mkdir .mypy_cache
+	- $(CONDA) mypy --install-types --non-interactive --explicit-package-bases $(PACKAGE_NAME)
 
-.PHONY: refresh
-refresh: conda-create from-conda-lock pre-commit-install install
+.PHONY: environment
+environment: conda-create from-conda-lock pre-commit-install install
 
-.PHONY: refresh-locks
-refresh-locks: conda-create conda-setup conda-lock pre-commit-install poetry-lock install
+.PHONY: locks
+locks: conda-create conda-setup conda-dependencies conda-lock pre-commit-install poetry-lock install
 
 .PHONY: validate
 validate:
@@ -71,10 +73,84 @@ validate:
 
 .PHONY: formatting
 formatting:
-	- $(CONDA) pyupgrade --exit-zero-even-if-changed --py311-plus **/*.py
 	- $(CONDA) isort --settings-path pyproject.toml ./
 	- $(CONDA) black --config pyproject.toml ./
 
 .PHONY: test
 test:
-	$(CONDA) pytest -c pyproject.toml --cov=$(PACKAGE_NAME) --cov-report=xml tests/
+	$(CONDA) pytest -c pyproject.toml --cov=$(PACKAGE_NAME) --cov-report=xml --junit-xml=report.xml --color=yes $(TESTS_PATH)
+
+.PHONY: coverage
+coverage:
+	$(CONDA) coverage report
+
+###   BUILDING   ###
+
+.PHONY: build
+build:
+	$(CONDA) poetry build
+
+###   CLEANING   ###
+
+.PHONY: pycache-remove
+pycache-remove:
+	find . | grep -E "(__pycache__|\.pyc|\.pyo$$)" | xargs rm -rf
+
+.PHONY: dsstore-remove
+dsstore-remove:
+	find . | grep -E ".DS_Store" | xargs rm -rf
+
+.PHONY: mypycache-remove
+mypycache-remove:
+	find . | grep -E ".mypy_cache" | xargs rm -rf
+
+.PHONY: ipynbcheckpoints-remove
+ipynbcheckpoints-remove:
+	find . | grep -E ".ipynb_checkpoints" | xargs rm -rf
+
+.PHONY: pytestcache-remove
+pytestcache-remove:
+	find . | grep -E ".pytest_cache" | xargs rm -rf
+
+.PHONY: pytest-coverage
+pytest-coverage:
+	rm report.xml coverage.xml .coverage
+
+.PHONY: build-remove
+build-remove:
+	rm -rf build/
+
+.PHONY: cleanup
+cleanup: pycache-remove dsstore-remove mypycache-remove ipynbcheckpoints-remove pytestcache-remove
+
+###   DOCS   ###
+
+mkdocs_port := $(shell \
+	start_port=3000; \
+	max_attempts=100; \
+	for i in $$(seq 0 $$(($$max_attempts - 1))); do \
+		current_port=$$(($$start_port + i)); \
+		if ! lsof -i :$$current_port > /dev/null; then \
+			echo $$current_port; \
+			break; \
+		fi; \
+		if [ $$i -eq $$(($$max_attempts - 1)) ]; then \
+			echo "Error: Unable to find an available port after $$max_attempts attempts."; \
+			exit 1; \
+		fi; \
+	done \
+)
+
+.PHONY: serve
+serve:
+	echo "Served at http://127.0.0.1:$(mkdocs_port)/"
+	$(CONDA) mkdocs serve -a localhost:$(mkdocs_port)
+
+.PHONY: docs
+docs:
+	$(CONDA) mkdocs build -d public/
+	- rm -f public/gen_ref_pages.py
+
+.PHONY: open-docs
+open-docs:
+	xdg-open public/index.html 2>/dev/null
