@@ -42,27 +42,22 @@ The output directory contains multiple output files. The best way to visualize
 the output is to use a free program called VMD, which can be downloaded from
 [http://www.ks.uiuc.edu/Research/vmd/](http://www.ks.uiuc.edu/Research/vmd/).
 
-The WISP output can be automatically loaded into VMD using the TCL script
-named `visualize.tcl`. Assuming `vmd` is the full path to your installed VMD
+The WISP output can be automatically loaded into VMD using the TCL script named `visualize.tcl`. Assuming `vmd` is the full path to your installed VMD
 executable, just run the following from the command line:
 
 `vmd -e visualize.tcl`
 
 If you prefer not to use the command line, simply run the `vmd` executable and
-load the `visualize.vmd` file using "File->Load Visualization State..." from
-the main menu.
+load the `visualize.vmd` file using "File->Load Visualization State..." from the main menu.
 
-The above methods are very slow. If your output is so large that a faster
-option is required, the Tk Console can be used. Use "Extensions->Tk Console"
-from the VMD main menu to pull up the Tk Console. Then run the following
-command, with the full path to `visualize.tcl` included if necessary:
+The above methods are very slow. If your output is so large that a faster option is required, the Tk Console can be used. Use "Extensions->Tk Console" from the VMD main menu to pull up the Tk Console. Then run the following command, with
+the full path to `visualize.tcl` included if necessary:
 
 `source visualize.tcl`
 
 Regardless of the method you use to load in the WISP output, the visualization
 will be the same. Individual pathways are shown as tubes (i.e., "wisps"), the
-protein is shown in ribbon representation, and protein residues that
-participate in any path are shown in licorice representation.
+protein is shown in ribbon representation, and protein residues that participate in any path are shown in licorice representation.
 
 The WISP output directory contains a number of other files as well. Here are
 descriptions of each:
@@ -95,9 +90,7 @@ descriptions of each:
 - `simply_formatted_paths.txt`: A simple list of path lengths and nodes. The
   first column contains the lengths, and all following columns contain node
   indices. This file may be helpful for subsequent statistical analyses of the
-  WISP output. Note that the `simply_formatted_paths.txt` output file
-  reindexes the residues. See the `visualize.tcl` file instead for a more
-  human-readable output.
+  WISP output. Note that the `simply_formatted_paths.txt` output file reindexes the residues. See the `visualize.tcl` file instead for a more human-readable output.
 
 ## Parameter Description
 
