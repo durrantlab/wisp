@@ -1,0 +1,9 @@
+name: wisp-dev
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - conda-lock
+  - poetry
+  - pre-commit
+  - conda-poetry-liaison
