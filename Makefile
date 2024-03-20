@@ -67,14 +67,19 @@ environment: conda-create from-conda-lock pre-commit-install install
 .PHONY: locks
 locks: conda-create conda-setup conda-dependencies conda-lock pre-commit-install poetry-lock install
 
+###   FORMATTING   ###
+
 .PHONY: validate
 validate:
+	- $(CONDA) markdownlint-cli2-fix docs/*
 	- $(CONDA) pre-commit run --all-files
 
 .PHONY: formatting
 formatting:
 	- $(CONDA) isort --settings-path pyproject.toml ./
 	- $(CONDA) black --config pyproject.toml ./
+
+###   TESTING   ###
 
 .PHONY: test
 test:
@@ -83,6 +88,21 @@ test:
 .PHONY: coverage
 coverage:
 	$(CONDA) coverage report
+
+###   LINTING   ###
+
+.PHONY: check-codestyle
+check-codestyle:
+	$(CONDA) isort --diff --check-only $(PACKAGE_PATH)
+	$(CONDA) black --diff --check --config pyproject.toml $(PACKAGE_PATH)
+	- $(CONDA) pylint --rcfile pyproject.toml $(PACKAGE_PATH)
+
+.PHONY: mypy
+mypy:
+	- $(CONDA) mypy --config-file pyproject.toml $(PACKAGE_PATH)
+
+.PHONY: lint
+lint: check-codestyle mypy
 
 ###   BUILDING   ###
 
