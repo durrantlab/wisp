@@ -4,7 +4,7 @@ WISP is a trajectory analysis tool that calculates and visualizes allosteric pat
 
 ## Installation
 
-First, you must obtain the WISP code from [GitHub](https://github.com/durrantlab/wisp) either by cloning the repository or downloaded and extracting as a ZIP file.
+First, you must obtain the WISP code from [GitHub](https://github.com/durrantlab/wisp) either by cloning the repository or downloading and extracting as a ZIP file.
 Move into the `wisp` directory and run `pip install .`.
 This will install the `wisp` Python package in addition to the `wisp` command-line tool.
 
