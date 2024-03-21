@@ -37,11 +37,7 @@ class GetCovarianceMatrix:
             # a pdb object that will eventually contain the average structure
             self.average_pdb = None
 
-            while 1:
-                line = afile.readline()
-                if not line:
-                    break  # until eof
-
+            for line in afile:
                 if line[:4] == "ATOM" or line[:6] == "HETATM":
                     this_frame.append(line)
                 if line.startswith(("END", "ENDMDL")):  # so reached end of frame
