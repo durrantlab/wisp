@@ -7,10 +7,11 @@ class Atom:
     """A class containing atomic information."""
 
     def read_pdb_line(self, Line):
-        """Reads atomic information from a string formatted according to the PDB standard.
+        """Reads atomic information from a string formatted according to the PDB
+        standard.
 
-        Arguments:
-        Line -- A string formatted according to the PDB standard.
+        Args:
+            Line: A string formatted according to the PDB standard.
         """
 
         self.line = Line
@@ -94,8 +95,8 @@ class Molecule:
     def load_pdb_from_list(self, alist):
         """Loads a list of PDB ATOM/HETATM lines into the current Molecule object
 
-        Arguments:
-        alist -- the list of PDB lines
+        Args:
+            alist: the list of PDB lines
         """
 
         gc.disable()
@@ -132,8 +133,8 @@ class Molecule:
     def save_pdb(self, filename):
         """Saves a pdb file
 
-        Arguments:
-        filename -- a string specifying the file name
+        Args:
+            filename: a string specifying the file name
         """
 
         with open(filename, "w") as f:
@@ -185,13 +186,14 @@ class Molecule:
     ):
         """Gets the indices of atoms in a specified residue
 
-        Arguments:
-        residue_identifier -- a string (chain_resname_resid) specifying the residue
-        atom_names_list -- a list of strings containing the names of the atoms to keep
-        not_selection -- a optional boolean. if False, match the atom_names_list items.
-                         if True, match the items not in atom_names_list
+        Args:
+            residue_identifier: a string (chain_resname_resid) specifying the residue
+            atom_names_list: a list of strings containing the names of the atoms to keep
+            not_selection: a optional boolean. if False, match the atom_names_list items.
+                if True, match the items not in atom_names_list
 
-        Returns a numpy array containing the indices of the atoms to keep
+        Returns:
+            a numpy array containing the indices of the atoms to keep
         """
 
         # first, get the indices of the residue
@@ -217,9 +219,9 @@ class Molecule:
     def get_center_of_mass_from_selection_by_atom_indices(self, indices_selection):
         """Gets the center of mass of a set of atoms
 
-        Arguments:
-        indices_selection -- a numpy array containing the indices of the
-                             atoms to consider
+        Args:
+            indices_selection: a numpy array containing the indices of the
+                atoms to consider
 
         Returns a numpy array containing the 3D coordinates of the center of
         mass of those atoms
@@ -243,11 +245,12 @@ class Molecule:
     def get_mass(self, element_name):
         """A library to provide the mass of a given element
 
-        Arguments:
-        element_name -- a string that specifies the element
+        Args:
+            element_name: a string that specifies the element
 
-        Returns a float, the mass of the specified element. If the element is
-        not in the library, returns None.
+        Returns:
+            a float, the mass of the specified element. If the element is not in the
+            library, returns None.
         """
 
         element_name = element_name.upper()
@@ -283,9 +286,9 @@ class Molecule:
     def map_nodes_to_residues(self, node_definition):
         """For each residue in the molecule, define the node
 
-        Arguments:
-        node_definition -- a string describing the definition of the node: CA,
-                           RESIDUE_COM, BACKBONE_COM, or SIDECHAIN_COM
+        Args:
+            node_definition: a string describing the definition of the node: `CA`,
+                `RESIDUE_COM`, `BACKBONE_COM`, or `SIDECHAIN_COM`
         """
 
         self.nodes = np.empty((len(self.residue_identifiers_in_order), 3))

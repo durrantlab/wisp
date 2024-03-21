@@ -2,13 +2,16 @@ import os
 
 
 def output_directory_info(params):
-    """Create a README.txt file in the output directory describing the directory contents
+    """Create a README.txt file in the output directory describing the directory
+    contents.
 
-    Arguments:
-    params -- the user-specified command-line parameters, a UserInput object
+    Args:
+        params: The user-specified command-line parameters, a UserInput object
     """
 
-    f = open(os.path.join(params["output_directory"], "README.txt"), "w")
+    f = open(
+        os.path.join(params["output_directory"], "README.txt"), "w", encoding="utf-8"
+    )
     f.write(
         "This directory contains output from the program WISP. The best way to visualize the output is to use a free program called VMD, which can be downloaded from http://www.ks.uiuc.edu/Research/vmd/ ."
         + "\n\n"
