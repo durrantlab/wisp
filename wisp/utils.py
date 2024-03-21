@@ -14,15 +14,14 @@ class GetCovarianceMatrix:
     """Calculate and store the covariance matrix"""
 
     def __init__(self, params):
-        """Calculates a covariance matrix
-
-        Arguments:
-        params -- user-specified command-line parameters (a UserInput object)
+        """
+        Args:
+            params: user-specified command-line parameters (a UserInput object)
         """
 
         # first, split the file into frames. ^END matches both VMD and ENDMDL
         # formats.
-        afile = open(params["pdb_trajectory_filename"])
+        afile = open(params["pdb_trajectory_filename"], mode="r", encoding="utf-8")
         this_frame = []
         first_frame = True
         number_of_frames = 0
@@ -54,7 +53,7 @@ class GetCovarianceMatrix:
 
                     this_frame = []  # so deleted for next time
 
-                    logger.info("Loading frame {}", str(number_of_frames))
+                    logger.trace("Loading frame {}", str(number_of_frames))
                     number_of_frames = number_of_frames + 1
 
             total_coordinate_sum = load_frames_data.summed_coordinates
@@ -78,11 +77,7 @@ class GetCovarianceMatrix:
             # a pdb object that will eventually contain the average structure
             self.average_pdb = None
 
-            while 1:
-                line = afile.readline()
-                if not line:
-                    break  # until eof
-
+            for line in afile:
                 if line[:4] == "ATOM" or line[:6] == "HETATM":
                     this_frame.append(line)
                 if line[:3] == "END":  # so reached end of frame
@@ -118,14 +113,14 @@ class GetCovarianceMatrix:
                             for key in tmp[1]:
                                 try:
                                     dictionary_of_node_lists[key].extend(tmp[1][key])
-                                except:
+                                except Exception:
                                     dictionary_of_node_lists[key] = tmp[1][key]
 
                         # so you're done processing the 100 frames, start over
                         # with the next 100
                         multiple_frames = []
 
-                    logger.debug("Loading frame " + str(number_of_frames))
+                    logger.trace("Loading frame " + str(number_of_frames))
                     number_of_frames = number_of_frames + 1
 
             logger.info("Analyzing frames...")
@@ -142,7 +137,7 @@ class GetCovarianceMatrix:
                 for key in tmp[1]:
                     try:
                         dictionary_of_node_lists[key].extend(tmp[1][key])
-                    except:
+                    except Exception:
                         dictionary_of_node_lists[key] = tmp[1][key]
 
             self.average_pdb.coordinates = total_coordinate_sum / float(

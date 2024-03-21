@@ -309,7 +309,7 @@ class Visualize:
                         log_files,
                     )
 
-            except:  # so just draw a single cylinder as a backup
+            except Exception:  # so just draw a single cylinder as a backup
                 log(
                     "draw cylinder {"
                     + str(x_vals[0])

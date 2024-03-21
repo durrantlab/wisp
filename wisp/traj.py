@@ -145,5 +145,5 @@ class collect_data_from_frames:
         for index, residue_iden in enumerate(pdb.residue_identifiers_in_order):
             try:
                 self.nodes[residue_iden].append(pdb.nodes[index])
-            except:
+            except Exception:
                 self.nodes[residue_iden] = [pdb.nodes[index]]
