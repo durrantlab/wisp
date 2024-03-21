@@ -160,13 +160,13 @@ class GetCovarianceMatrix:
         # now process the data that has been loaded
         # now get the average location of each node
 
-        logger.info("#      Saving the average PDB file...", params["logfile"])
+        logger.info("Saving the average PDB file...", params["logfile"])
         self.average_pdb.save_pdb(
             os.path.join(params["output_directory"], "average_structure.pdb")
         )
 
         logger.info(
-            "#      Calculating the average location of each node...", params["logfile"]
+            "Calculating the average location of each node...", params["logfile"]
         )
         self.average_pdb.map_atoms_to_residues()
         self.average_pdb.map_nodes_to_residues(params["node_definition"])
@@ -174,7 +174,7 @@ class GetCovarianceMatrix:
         # now compute a set of deltas for each node, stored in a big array. delta = distance from node to average node location
         # so note that the nodes do need to be computed for each frame
         logger.info(
-            "#      Calculating the correlation for each node-node pair...",
+            "Calculating the correlation for each node-node pair...",
             params["logfile"],
         )
         set_of_deltas = {}
@@ -197,7 +197,7 @@ class GetCovarianceMatrix:
 
         # now build the correlation matrix
         if params["user_specified_functionalized_matrix_filename"] == "":
-            logger.info("#      Building the correlation matrix...", params["logfile"])
+            logger.info("Building the correlation matrix...", params["logfile"])
             self.correlations = np.empty(
                 (
                     len(self.average_pdb.residue_identifiers_in_order),
@@ -245,7 +245,7 @@ class GetCovarianceMatrix:
                     )  # functionalizing the covariances
         else:  # so the user has specified a filename containing the covariance matrix
             logger.info(
-                "#      Loading the user-specified functionalized correlation matrix from the file "
+                "Loading the user-specified functionalized correlation matrix from the file "
                 + params["user_specified_functionalized_matrix_filename"],
                 params["logfile"],
             )
@@ -266,7 +266,7 @@ class GetCovarianceMatrix:
         if params["user_specified_contact_map_filename"] == "":
             if params["contact_map_distance_limit"] != 999999.999:
                 logger.info(
-                    "#      Applying the default WISP distance-based contact-map filter to the matrix so that distant residues will never be considered correlated...",
+                    "Applying the default WISP distance-based contact-map filter to the matrix so that distant residues will never be considered correlated...",
                     params["logfile"],
                 )
                 for index1 in range(
@@ -305,7 +305,7 @@ class GetCovarianceMatrix:
                             contact_map[index2][index1] = 0.0
         else:  # so the user has specified a contact map
             logger.info(
-                "#      Loading and applying the user-specified contact map from the file "
+                "Loading and applying the user-specified contact map from the file "
                 + params["user_specified_contact_map_filename"],
                 params["logfile"],
             )

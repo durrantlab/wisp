@@ -197,16 +197,16 @@ class GetPaths:
         G = nx.Graph(incoming_graph_data=corr_matrix)
 
         # first calculate length of shortest path between any source and sink
-        logger.info("# Calculating paths...", params["logfile"])
+        logger.info("Calculating paths...", params["logfile"])
         logger.info(
-            "#       Calculating the shortest path between any of the specified sources and any of the specified sinks...",
+            "Calculating the shortest path between any of the specified sources and any of the specified sinks...",
             params["logfile"],
         )
         shortest_length, shortest_path = self.get_shortest_path_length(
             corr_matrix, srcs, snks, G
         )
         logger.info(
-            f"#           The shortest path has length {str(shortest_length)}",
+            f"The shortest path has length {str(shortest_length)}",
             params["logfile"],
         )
 
@@ -223,16 +223,14 @@ class GetPaths:
 
         # first step, keep incrementing a little until you have more than the desired number of paths
         logger.info(
-            "#      Identifying the cutoff required to produce "
+            "Identifying the cutoff required to produce "
             + str(params["desired_number_of_paths"])
             + " paths...",
             params["logfile"],
         )
         num_paths = 1
         while num_paths < params["desired_number_of_paths"]:
-            logger.info(
-                f"#          Testing the cutoff {str(cutoff)}...", params["logfile"]
-            )
+            logger.info(f"Testing the cutoff {str(cutoff)}...", params["logfile"])
             cutoff_in_array = np.array([cutoff], np.float64)
             pths = self.remove_redundant_paths(
                 self.get_paths_between_multiple_endpoints(
@@ -242,7 +240,7 @@ class GetPaths:
             num_paths = len(pths)
 
             logger.info(
-                f"#                The cutoff {str(cutoff)} produces {num_paths} paths...",
+                f"The cutoff {str(cutoff)} produces {num_paths} paths...",
                 params["logfile"],
             )
 
@@ -272,7 +270,7 @@ class GetPaths:
         ):  # so further refinement is needed
             pths = pths[: params["desired_number_of_paths"]]
             logger.info(
-                "#          Keeping the first "
+                "Keeping the first "
                 + str(params["desired_number_of_paths"])
                 + " of these paths...",
                 params["logfile"],
@@ -289,13 +287,13 @@ class GetPaths:
             simp = open(params["simply_formatted_paths_filename"], "w")
         for path in pths:
             self.paths_description = (
-                f"{self.paths_description}#     Path {str(index)}:" + "\n"
+                f"{self.paths_description}Path {str(index)}:" + "\n"
             )
             self.paths_description = (
-                f"{self.paths_description}#          Length: {str(path[0])}" + "\n"
+                f"{self.paths_description}   Length: {str(path[0])}" + "\n"
             )
             self.paths_description = (
-                f"{self.paths_description}#          Nodes: "
+                f"{self.paths_description}   Nodes: "
                 + " - ".join([residue_keys[item] for item in path[1:]])
                 + "\n"
             )
@@ -504,7 +502,7 @@ class GetPaths:
         else:
             # just get some of the initial paths on a single processor
             logger.info(
-                "#                Starting serial portion of path-finding algorithm (will run for "
+                "Starting serial portion of path-finding algorithm (will run for "
                 + str(params["seconds_to_wait_before_parallelizing_path_finding"])
                 + " seconds)...",
                 params["logfile"],
@@ -526,7 +524,7 @@ class GetPaths:
             # ok, so having generated just a first few, divy up those among multiple processors
             if paths_growing_out_from_source:  # in case you've already finished
                 logger.info(
-                    "#                Starting parallel portion of path-finding algorithm running on "
+                    "Starting parallel portion of path-finding algorithm running on "
                     + str(params["number_processors"])
                     + " processors...",
                     params["logfile"],
@@ -542,7 +540,7 @@ class GetPaths:
                 )
             else:
                 logger.info(
-                    "#                     (All paths found during serial path finding; parallelization not required)",
+                    "(All paths found during serial path finding; parallelization not required)",
                     params["logfile"],
                 )
 
