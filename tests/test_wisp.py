@@ -81,6 +81,7 @@ def test_example():
         dtype=np.float64,
     )
     assert np.allclose(test_data, ref_data)
+    exit()
 
 
 def test_issue_1_serial():
