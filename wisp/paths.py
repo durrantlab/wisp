@@ -1,6 +1,7 @@
 import copy
 import multiprocessing as mp
 import time
+from collections.abc import Collection
 
 import networkx as nx
 import numpy as np
@@ -12,24 +13,25 @@ class multi_threading_find_paths:
 
     results = []
 
-    def __init__(self, inputs, num_processors):
-        """Launches path finding on multiple processors
-
-        Arguments:
-        inputs -- the data to be processed, in a list
-        num_processors -- the number of processors to use to process this data, an integer
+    def __init__(self, inputs: Collection, num_processors: int | None = None):
+        """
+        Args:
+            inputs: the data to be processed, in a list
+            num_processors: the number of processors to use to process this data.
         """
 
         self.results = []
 
-        # first, if num_processors <= 0, determine the number of processors to
-        # use programatically
-        if num_processors <= 0:
+        # First, we determine the number of available cores.
+        if num_processors is None:
             num_processors = mp.cpu_count()
+            logger.debug("Setting the number of cores to ", num_processors)
 
         # reduce the number of processors if too many have been specified
         if len(inputs) < num_processors:
+            logger.debug("Number of cores is higher than number of inputs.")
             num_processors = len(inputs)
+            logger.debug("Setting number of cores to ", num_processors)
 
         # now, divide the inputs into the appropriate number of processors
         inputs_divided = {t: [] for t in range(num_processors)}
@@ -79,10 +81,10 @@ class find_paths:  # other, more specific classes with inherit this one
         """Path-finding data processing on a single processor
 
         Arguments:
-        running -- a mp.Value() object
-        mutex -- a mp.Lock() object
-        results_queue -- where the results will be stored [mp.Queue()]
-        items -- the data to be processed, in a list
+        running: a mp.Value() object
+        mutex: a mp.Lock() object
+        results_queue: where the results will be stored [mp.Queue()]
+        items: the data to be processed, in a list
         """
 
         for item in items:
@@ -98,13 +100,13 @@ class find_paths:  # other, more specific classes with inherit this one
         """Process a single path-finding "branch"
 
         Arguments:
-        item -- a tuple containing required information.
+        item: a tuple containing required information.
              The first is a numpy array containing a single float, the path-length cutoff
              The second is an index corresponding to the ultimate path sink
              The third is a nx.Graph object describing the connectivity of the different nodes
              The fourth is a list corresponding to a path. The first item is the length of the path (float).
                   The remaining items are the indices of the nodes in the path (int).
-        results_queue -- where the results will be stored [mp.Queue()]
+        results_queue: where the results will be stored [mp.Queue()]
         """
 
         cutoff = item[0]
@@ -138,14 +140,14 @@ class find_paths:  # other, more specific classes with inherit this one
            (to the neighbors of the terminal node) of the expanding paths
 
         Arguments:
-        paths_growing_out_from_source -- a list of paths, where each path is represented by a list. The first item in each path
+        paths_growing_out_from_source: a list of paths, where each path is represented by a list. The first item in each path
              is the length of the path (float). The remaining items are the indices of the nodes in the path (int).
-        full_paths_from_start_to_sink -- a growing list of identified paths that connect the source and the sink, where each
+        full_paths_from_start_to_sink: a growing list of identified paths that connect the source and the sink, where each
              path is formatted as above.
-        cutoff -- a numpy array containing a single element (float), the length cutoff. Paths with lengths greater than the cutoff
+        cutoff: a numpy array containing a single element (float), the length cutoff. Paths with lengths greater than the cutoff
              will be ignored.
-        sink -- the index of the sink (int)
-        G -- a nx.Graph object describing the connectivity of the different nodes
+        sink: the index of the sink (int)
+        G: a nx.Graph object describing the connectivity of the different nodes
         """
 
         for i, path_growing_out_from_source in enumerate(paths_growing_out_from_source):
@@ -184,11 +186,11 @@ class GetPaths:
         """Identify paths that link the source and the sink and order them by their lengths
 
         Arguments:
-        corr_matrix -- a np.array, the calculated correlation matrix
-        srcs -- a list of ints, the indices of the sources for path finding
-        snks -- a list of ints, the indices of the sinks for path finding
-        params -- the user-specified command-line parameters, a UserInput object
-        residue_keys -- a list containing string representations of each residue
+        corr_matrix: a np.array, the calculated correlation matrix
+        srcs: a list of ints, the indices of the sources for path finding
+        snks: a list of ints, the indices of the sinks for path finding
+        params: the user-specified command-line parameters, a UserInput object
+        residue_keys: a list containing string representations of each residue
         """
 
         # populate graph nodes and weighted edges
@@ -309,7 +311,7 @@ class GetPaths:
         """Removes redundant paths
 
         Arguments:
-        pths -- a list of paths
+        pths: a list of paths
 
         Returns a list of paths with the redundant ones eliminated
         """
@@ -348,10 +350,10 @@ class GetPaths:
         """Identify the length of the shortest path connecting any of the sources and any of the sinks
 
         Arguments:
-        corr_matrix -- a np.array, the calculated correlation matrix
-        srcs -- a list of ints, the indices of the sources for path finding
-        snks -- a list of ints, the indices of the sinks for path finding
-        G -- a nx.Graph object describing the connectivity of the different nodes
+        corr_matrix: a np.array, the calculated correlation matrix
+        srcs: a list of ints, the indices of the sources for path finding
+        snks: a list of ints, the indices of the sinks for path finding
+        G: a nx.Graph object describing the connectivity of the different nodes
 
         Returns a float, the length of the shortest path, and a list of ints corresponding to
              the nodes of the shortest path
@@ -374,8 +376,8 @@ class GetPaths:
         """Calculate the length of a path
 
         Arguments:
-        path -- a list of ints, the indices of the path
-        corr_matrix -- a np.array, the calculated correlation matrix
+        path: a list of ints, the indices of the path
+        corr_matrix: a np.array, the calculated correlation matrix
 
         Returns a float, the length of the path
         """
@@ -391,12 +393,12 @@ class GetPaths:
         """Get paths between sinks and sources
 
         Arguments:
-        cutoff -- a np.array containing a single float, the cutoff specifying the maximum permissible path length
-        corr_matrix -- a np.array, the calculated correlation matrix
-        srcs -- a list of ints, the indices of the sources for path finding
-        snks -- a list of ints, the indices of the sinks for path finding
-        G -- a nx.Graph object describing the connectivity of the different nodes
-        params -- the user-specified command-line parameters, a UserInput object
+        cutoff: a np.array containing a single float, the cutoff specifying the maximum permissible path length
+        corr_matrix: a np.array, the calculated correlation matrix
+        srcs: a list of ints, the indices of the sources for path finding
+        snks: a list of ints, the indices of the sinks for path finding
+        G: a nx.Graph object describing the connectivity of the different nodes
+        params: the user-specified command-line parameters, a UserInput object
 
         Returns a list of paths, where each path is represented by a list. The first item in each path is the length
              of the path (float). The remaining items are the indices of the nodes in the path (int).
@@ -417,12 +419,12 @@ class GetPaths:
         """Get paths between a single sink and a single source
 
         Arguments:
-        cutoff -- a np.array containing a single float, the cutoff specifying the maximum permissible path length
-        corr_matrix -- a np.array, the calculated correlation matrix
-        source -- the index of the source for path finding
-        sink -- the index of the sink for path finding
-        G -- a nx.Graph object describing the connectivity of the different nodes
-        params -- the user-specified command-line parameters, a UserInput object
+        cutoff: a np.array containing a single float, the cutoff specifying the maximum permissible path length
+        corr_matrix: a np.array, the calculated correlation matrix
+        source: the index of the source for path finding
+        sink: the index of the sink for path finding
+        G: a nx.Graph object describing the connectivity of the different nodes
+        params: the user-specified command-line parameters, a UserInput object
 
         Returns a list of paths, where each path is represented by a list. The first item in each path is the length
              of the path (float). The remaining items are the indices of the nodes in the path (int).
