@@ -109,6 +109,7 @@ ENV/
 docs/source/_build
 docs/html
 docs/source/doc
+public/
 
 # psi4
 timer.dat
@@ -118,8 +119,3 @@ psi.*.clean
 tests/tmp/
 tests/files/tmp/*
 !tests/files/tmp/.gitkeep
-
-# Reptar data
-examples/reptar-data
-
-docs/source/autoapi
