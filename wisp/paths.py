@@ -1,11 +1,32 @@
 import copy
 import multiprocessing as mp
+import sys
 import time
 from collections.abc import Collection
 
 import networkx as nx
 import numpy as np
 from loguru import logger
+
+
+def get_log_n_paths(graph, cutoff_length):
+    # Calculate the average branching factor
+    total_edges = graph.number_of_edges()
+    total_nodes = graph.number_of_nodes()
+    avg_branching_factor = total_edges / total_nodes if total_nodes else 0
+
+    # Use logarithms to avoid overflow
+    # Check if avg_branching_factor is greater than 1 to avoid log(0) or negative values
+    if avg_branching_factor > 1:
+        log_estimated_paths = cutoff_length * np.log(avg_branching_factor)
+    else:
+        # If the avg_branching_factor is 1 or less, the growth is linear or
+        # non-existent, not exponential
+        log_estimated_paths = 0
+
+    logger.debug(f"log(estimated_n_paths) = {log_estimated_paths}")
+
+    return log_estimated_paths
 
 
 class multi_threading_find_paths:
@@ -184,7 +205,9 @@ class find_paths:  # other, more specific classes with inherit this one
 class GetPaths:
     """Get the paths from a list of sources to a list of sinks"""
 
-    def __init__(self, corr_matrix, srcs, snks, params, residue_keys):
+    def __init__(
+        self, corr_matrix, srcs, snks, params, residue_keys, n_paths_max=10000
+    ):
         """Identify paths that link the source and the sink and order them by their
         lengths.
 
@@ -194,7 +217,12 @@ class GetPaths:
             snks: a list of ints, the indices of the sinks for path finding
             params: the user-specified command-line parameters, a UserInput object
             residue_keys: a list containing string representations of each residue
+            n_paths_cutoff: Specifies the maximum number of paths to proceed. If we
+                estimate the number of paths to be larger than this number, we will
+                terminate the calculation.
         """
+        if "n_paths_max" in params.keys():
+            n_paths_max = params["n_paths_max"]
 
         # populate graph nodes and weighted edges
         G = nx.Graph(incoming_graph_data=corr_matrix)
@@ -220,6 +248,14 @@ class GetPaths:
         ]  # need to create this initial path in case only one path is requrested
 
         cutoff = shortest_length
+
+        # Check for comb explosion
+        log_n_paths = get_log_n_paths(G, cutoff)
+        if log_n_paths > np.log(n_paths_max):
+            logger.error(f"Estimated number of paths is greater than {n_paths_max}")
+            logger.error("Please increase n_paths_max to proceed.")
+            logger.error("Terminating calculation.")
+            sys.exit(1)
 
         cutoff_yields_max_num_paths_below_target = 0
         cutoff_yields_min_num_paths_above_target = 1000000.0
@@ -424,7 +460,8 @@ class GetPaths:
         """Get paths between a single sink and a single source
 
         Args:
-            cutoff: a np.array containing a single float, the cutoff specifying the maximum permissible path length
+            cutoff: a np.array containing a single float, the cutoff specifying the
+                maximum permissible path length
             corr_matrix: a np.array, the calculated correlation matrix
             source: the index of the source for path finding
             sink: the index of the sink for path finding
@@ -495,8 +532,10 @@ class GetPaths:
         paths_growing_out_from_source = [[length, source]]
         full_paths_from_start_to_sink = []
 
-        # This is essentially this list-addition replacement for a recursive algorithm you've envisioned.
-        # To parallelize, just get the first N branches, and send them off to each node. Rest of branches filled out in separate processes.
+        # This is essentially this list-addition replacement for a recursive
+        # algorithm you've envisioned.
+        # To parallelize, just get the first N branches, and send them off to each node.
+        # Rest of branches filled out in separate processes.
 
         find_paths_object = find_paths()
         if params["number_processors"] == 1:
