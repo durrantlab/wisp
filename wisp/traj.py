@@ -11,7 +11,7 @@ class multi_threading_to_collect_data_from_frames:
 
     combined_results = None
 
-    def __init__(self, inputs, num_processors):
+    def __init__(self, inputs, num_processors: int | None = None):
         """
         Args:
             inputs: the data to be processed, in a list
@@ -21,15 +21,18 @@ class multi_threading_to_collect_data_from_frames:
         """
         self.results = []
 
-        # first, if num_processors <= 0, determine the number of processors to
-        # use programatically
-        if num_processors <= 0:
+        # First, we determine the number of available cores.
+        if num_processors is None:
             num_processors = mp.cpu_count()
+            logger.debug("Setting the number of cores to ", num_processors)
 
         # reduce the number of processors if too many have been specified
         if len(inputs) < num_processors:
+            logger.debug("Number of cores is higher than number of inputs.")
             num_processors = len(inputs)
-        logger.debug("Setting num_processors to {}", num_processors)
+            if num_processors == 0:
+                num_processors = 1
+            logger.debug("Setting number of cores to ", num_processors)
 
         # now, divide the inputs into the appropriate number of processors
         inputs_divided = {t: [] for t in range(num_processors)}
