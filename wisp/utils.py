@@ -14,15 +14,14 @@ class GetCovarianceMatrix:
     """Calculate and store the covariance matrix"""
 
     def __init__(self, params):
-        """Calculates a covariance matrix
-
-        Arguments:
-        params -- user-specified command-line parameters (a UserInput object)
+        """
+        Args:
+            params: user-specified command-line parameters (a UserInput object)
         """
 
         # first, split the file into frames. ^END matches both VMD and ENDMDL
         # formats.
-        afile = open(params["pdb_trajectory_filename"])
+        afile = open(params["pdb_trajectory_filename"], mode="r", encoding="utf-8")
         this_frame = []
         first_frame = True
         number_of_frames = 0
@@ -37,12 +36,8 @@ class GetCovarianceMatrix:
             # a pdb object that will eventually contain the average structure
             self.average_pdb = None
 
-            while 1:
-                line = afile.readline()
-                if not line:
-                    break  # until eof
-
-                if line[:4] == "ATOM" or line[:6] == "HETATM":
+            for line in afile:
+                if line[:4] == "ATOM" or line[:6] == "HETATM" or line[:3] == "TER":
                     this_frame.append(line)
                 if line.startswith(("END", "ENDMDL")):  # so reached end of frame
                     if first_frame:
@@ -58,7 +53,7 @@ class GetCovarianceMatrix:
 
                     this_frame = []  # so deleted for next time
 
-                    logger.info("Loading frame {}", str(number_of_frames))
+                    logger.trace("Loading frame {}", str(number_of_frames))
                     number_of_frames = number_of_frames + 1
 
             total_coordinate_sum = load_frames_data.summed_coordinates
@@ -82,11 +77,7 @@ class GetCovarianceMatrix:
             # a pdb object that will eventually contain the average structure
             self.average_pdb = None
 
-            while 1:
-                line = afile.readline()
-                if not line:
-                    break  # until eof
-
+            for line in afile:
                 if line[:4] == "ATOM" or line[:6] == "HETATM":
                     this_frame.append(line)
                 if line[:3] == "END":  # so reached end of frame
@@ -122,14 +113,14 @@ class GetCovarianceMatrix:
                             for key in tmp[1]:
                                 try:
                                     dictionary_of_node_lists[key].extend(tmp[1][key])
-                                except:
+                                except Exception:
                                     dictionary_of_node_lists[key] = tmp[1][key]
 
                         # so you're done processing the 100 frames, start over
                         # with the next 100
                         multiple_frames = []
 
-                    logger.debug("Loading frame " + str(number_of_frames))
+                    logger.trace("Loading frame " + str(number_of_frames))
                     number_of_frames = number_of_frames + 1
 
             logger.info("Analyzing frames...")
@@ -146,7 +137,7 @@ class GetCovarianceMatrix:
                 for key in tmp[1]:
                     try:
                         dictionary_of_node_lists[key].extend(tmp[1][key])
-                    except:
+                    except Exception:
                         dictionary_of_node_lists[key] = tmp[1][key]
 
             self.average_pdb.coordinates = total_coordinate_sum / float(
@@ -164,13 +155,13 @@ class GetCovarianceMatrix:
         # now process the data that has been loaded
         # now get the average location of each node
 
-        logger.info("#      Saving the average PDB file...", params["logfile"])
+        logger.info("Saving the average PDB file...", params["logfile"])
         self.average_pdb.save_pdb(
             os.path.join(params["output_directory"], "average_structure.pdb")
         )
 
         logger.info(
-            "#      Calculating the average location of each node...", params["logfile"]
+            "Calculating the average location of each node...", params["logfile"]
         )
         self.average_pdb.map_atoms_to_residues()
         self.average_pdb.map_nodes_to_residues(params["node_definition"])
@@ -178,7 +169,7 @@ class GetCovarianceMatrix:
         # now compute a set of deltas for each node, stored in a big array. delta = distance from node to average node location
         # so note that the nodes do need to be computed for each frame
         logger.info(
-            "#      Calculating the correlation for each node-node pair...",
+            "Calculating the correlation for each node-node pair...",
             params["logfile"],
         )
         set_of_deltas = {}
@@ -201,7 +192,7 @@ class GetCovarianceMatrix:
 
         # now build the correlation matrix
         if params["user_specified_functionalized_matrix_filename"] == "":
-            logger.info("#      Building the correlation matrix...", params["logfile"])
+            logger.info("Building the correlation matrix...", params["logfile"])
             self.correlations = np.empty(
                 (
                     len(self.average_pdb.residue_identifiers_in_order),
@@ -249,7 +240,7 @@ class GetCovarianceMatrix:
                     )  # functionalizing the covariances
         else:  # so the user has specified a filename containing the covariance matrix
             logger.info(
-                "#      Loading the user-specified functionalized correlation matrix from the file "
+                "Loading the user-specified functionalized correlation matrix from the file "
                 + params["user_specified_functionalized_matrix_filename"],
                 params["logfile"],
             )
@@ -265,12 +256,12 @@ class GetCovarianceMatrix:
             self.correlations,
         )
 
-        # now modify the coorelation matrix, setting to 0 wherever the average distance between nodes is greater than a given cutoff
+        # now modify the correlation matrix, setting to 0 wherever the average distance between nodes is greater than a given cutoff
         contact_map = np.ones(self.correlations.shape)
         if params["user_specified_contact_map_filename"] == "":
             if params["contact_map_distance_limit"] != 999999.999:
                 logger.info(
-                    "#      Applying the default WISP distance-based contact-map filter to the matrix so that distant residues will never be considered correlated...",
+                    "Applying the default WISP distance-based contact-map filter to the matrix so that distant residues will never be considered correlated...",
                     params["logfile"],
                 )
                 for index1 in range(
@@ -309,7 +300,7 @@ class GetCovarianceMatrix:
                             contact_map[index2][index1] = 0.0
         else:  # so the user has specified a contact map
             logger.info(
-                "#      Loading and applying the user-specified contact map from the file "
+                "Loading and applying the user-specified contact map from the file "
                 + params["user_specified_contact_map_filename"],
                 params["logfile"],
             )
@@ -333,17 +324,24 @@ class GetCovarianceMatrix:
     def convert_list_of_residue_keys_to_residue_indices(self, list_residue_keys):
         """Identify the indices in a nx.Graph object corresponding to the identified residue string ids (CHAIN_RESNAME_RESID).
 
-        Arguments:
-        list_residue_keys -- a list of strings representing protein residues (format: CHAIN_RESNAME_RESID)
+        Args:
+            list_residue_keys: a list of strings representing protein residues
+                (format: CHAIN_RESNAME_RESID)
 
-        Returns a list of ints, the nx.Graph indices corresponding to the residue string ids in list_residue_keys
+        Returns:
+            a list of ints, the nx.Graph indices corresponding to the residue
+            string ids in list_residue_keys
         """
 
         networkx_residue_indices = []
         for key in list_residue_keys:
-            index_of_key = np.nonzero(
-                self.average_pdb.residue_identifiers_in_order == key
-            )[0][0]
+            try:
+                index_of_key = np.nonzero(
+                    self.average_pdb.residue_identifiers_in_order == key
+                )[0][0]
+            except IndexError:
+                logger.critical(f"Cannot find {key} in the structure")
+                raise
             networkx_residue_indices.append(index_of_key)
         return networkx_residue_indices
 

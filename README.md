@@ -16,10 +16,24 @@ TODO: check that the VMD plugin installation works.
    - `vmd_install_extension wisp wisp_tk_cb "Analysis/Wisp"`
 2. Now open VMD: Click Extensions > Analysis > WISP
 
-## How to Use WISP from the Command Line
+## Usage
+
+You may use the `wisp` command-line interface as shown below.
+
+```bash
+wisp -pdb_trajectory_filename tests/files/trajectory_20_frames.pdb -source_residues "C_LEU_10" -sink_residues C_ASP_11
+```
+
+Or, you may use wisp as a library in Python.
 
 ```python
-wisp -pdb_trajectory_filename multi_frame_pdb.pdb -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37`
+from wisp.run import run_wisp
+config = {
+    "pdb_trajectory_filename": "tests/files/trajectory_20_frames.pdb",
+    "source_residues": ["C_LEU_10"],
+    "sink_residues": ["C_ASP_11"],
+}
+paths = run_wisp(config)
 ```
 
 ## Program Output

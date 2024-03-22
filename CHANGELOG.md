@@ -4,6 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Will keep track of `TER` in frames to correctly handle assigning chain IDs.
+- Check for combinatorial explosions.
+
 ### Changed
 
 - Modularized code and set up for deploying to PyPI.

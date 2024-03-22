@@ -6,19 +6,22 @@ from scipy import interpolate
 from .structure import Molecule
 
 
-def log(astring, fileobjects):  # prints to screen and to log file
+def log(astring, fileobjects, print_viz=False):  # prints to screen and to log file
     """Outputs WISP messages
 
-    Arguments:
-    astring -- a string containing the message
-    fileobjects -- a list of python file objects specifying where the messages should be saved
+    Args:
+        astring: a string containing the message
+        fileobjects: a list of python file objects specifying where the messages
+            hould be saved.
+        print_viz: Print viz commands as well.
     """
 
     if not isinstance(fileobjects, list):
         # it's not a list, so make it one
         fileobjects = [fileobjects]
 
-    print(astring)
+    if print_viz:
+        print(astring)
 
     for fileobject in fileobjects:
         fileobject.write(astring + "\n")
@@ -30,12 +33,12 @@ class Visualize:
     def __init__(self, params, corr_matrix_object, pths):
         """Get paths between a single sink and a single source
 
-        Arguments:
-        params -- the user-specified command-line parameters, a UserInput object
-        residue_keys -- a list containing string representations of each residue ("CHAIN_RESNAME_RESID")
-        node_locs -- a dictionary, mapping string representations of each residue to a np.array representation
-             of the node location
-        pths -- a GetPaths object
+        Args:
+            params: the user-specified command-line parameters, a UserInput object
+            residue_keys: a list containing string representations of each residue ("CHAIN_RESNAME_RESID")
+            node_locs: a dictionary, mapping string representations of each residue to a np.array representation
+                of the node location
+            pths: a GetPaths object
         """
 
         log_files = [
@@ -306,7 +309,7 @@ class Visualize:
                         log_files,
                     )
 
-            except:  # so just draw a single cylinder as a backup
+            except Exception:  # so just draw a single cylinder as a backup
                 log(
                     "draw cylinder {"
                     + str(x_vals[0])

@@ -1,10 +1,32 @@
 import copy
 import multiprocessing as mp
+import sys
 import time
+from collections.abc import Collection
 
 import networkx as nx
 import numpy as np
 from loguru import logger
+
+
+def get_log_n_paths(graph, cutoff_length):
+    # Calculate the average branching factor
+    total_edges = graph.number_of_edges()
+    total_nodes = graph.number_of_nodes()
+    avg_branching_factor = total_edges / total_nodes if total_nodes else 0
+
+    # Use logarithms to avoid overflow
+    # Check if avg_branching_factor is greater than 1 to avoid log(0) or negative values
+    if avg_branching_factor > 1:
+        log_estimated_paths = cutoff_length * np.log(avg_branching_factor)
+    else:
+        # If the avg_branching_factor is 1 or less, the growth is linear or
+        # non-existent, not exponential
+        log_estimated_paths = 0
+
+    logger.debug(f"log(estimated_n_paths) = {log_estimated_paths}")
+
+    return log_estimated_paths
 
 
 class multi_threading_find_paths:
@@ -12,24 +34,25 @@ class multi_threading_find_paths:
 
     results = []
 
-    def __init__(self, inputs, num_processors):
-        """Launches path finding on multiple processors
-
-        Arguments:
-        inputs -- the data to be processed, in a list
-        num_processors -- the number of processors to use to process this data, an integer
+    def __init__(self, inputs: Collection, num_processors: int | None = None):
+        """
+        Args:
+            inputs: the data to be processed, in a list
+            num_processors: the number of processors to use to process this data.
         """
 
         self.results = []
 
-        # first, if num_processors <= 0, determine the number of processors to
-        # use programatically
-        if num_processors <= 0:
+        # First, we determine the number of available cores.
+        if num_processors is None:
             num_processors = mp.cpu_count()
-
         # reduce the number of processors if too many have been specified
         if len(inputs) < num_processors:
+            logger.debug("Number of cores is higher than number of inputs.")
             num_processors = len(inputs)
+            if num_processors == 0:
+                num_processors = 1
+        logger.debug(f"Setting the number of cores to {num_processors}")
 
         # now, divide the inputs into the appropriate number of processors
         inputs_divided = {t: [] for t in range(num_processors)}
@@ -76,13 +99,13 @@ class find_paths:  # other, more specific classes with inherit this one
     results = []
 
     def runit(self, running, mutex, results_queue, items):
-        """Path-finding data processing on a single processor
+        """Path-finding data processing on a single processor.
 
-        Arguments:
-        running -- a mp.Value() object
-        mutex -- a mp.Lock() object
-        results_queue -- where the results will be stored [mp.Queue()]
-        items -- the data to be processed, in a list
+        Args:
+            running: a mp.Value() object
+            mutex: a mp.Lock() object
+            results_queue: where the results will be stored [mp.Queue()]
+            items: the data to be processed, in a list
         """
 
         for item in items:
@@ -97,14 +120,14 @@ class find_paths:  # other, more specific classes with inherit this one
     ):  # this is the function that changes through inheritance
         """Process a single path-finding "branch"
 
-        Arguments:
-        item -- a tuple containing required information.
-             The first is a numpy array containing a single float, the path-length cutoff
-             The second is an index corresponding to the ultimate path sink
-             The third is a nx.Graph object describing the connectivity of the different nodes
-             The fourth is a list corresponding to a path. The first item is the length of the path (float).
-                  The remaining items are the indices of the nodes in the path (int).
-        results_queue -- where the results will be stored [mp.Queue()]
+        Args:
+            item: a tuple containing required information.
+                The first is a numpy array containing a single float, the path-length cutoff
+                The second is an index corresponding to the ultimate path sink
+                The third is a nx.Graph object describing the connectivity of the different nodes
+                The fourth is a list corresponding to a path. The first item is the length of the path (float).
+                    The remaining items are the indices of the nodes in the path (int).
+            results_queue: where the results will be stored [mp.Queue()]
         """
 
         cutoff = item[0]
@@ -137,15 +160,17 @@ class find_paths:  # other, more specific classes with inherit this one
         """Expand the paths growing out from the source to the sink by one step
            (to the neighbors of the terminal node) of the expanding paths
 
-        Arguments:
-        paths_growing_out_from_source -- a list of paths, where each path is represented by a list. The first item in each path
-             is the length of the path (float). The remaining items are the indices of the nodes in the path (int).
-        full_paths_from_start_to_sink -- a growing list of identified paths that connect the source and the sink, where each
-             path is formatted as above.
-        cutoff -- a numpy array containing a single element (float), the length cutoff. Paths with lengths greater than the cutoff
-             will be ignored.
-        sink -- the index of the sink (int)
-        G -- a nx.Graph object describing the connectivity of the different nodes
+        Args:
+            paths_growing_out_from_source: a list of paths, where each path is
+                represented by a list. The first item in each path is the length of
+                the path (float). The remaining items are the indices of the nodes
+                in the path (int).
+            full_paths_from_start_to_sink: a growing list of identified paths that
+                connect the source and the sink, where each path is formatted as above.
+            cutoff: a numpy array containing a single element (float), the length
+                cutoff. Paths with lengths greater than the cutoff will be ignored.
+            sink: the index of the sink (int)
+            G: a nx.Graph object describing the connectivity of the different nodes
         """
 
         for i, path_growing_out_from_source in enumerate(paths_growing_out_from_source):
@@ -180,31 +205,43 @@ class find_paths:  # other, more specific classes with inherit this one
 class GetPaths:
     """Get the paths from a list of sources to a list of sinks"""
 
-    def __init__(self, corr_matrix, srcs, snks, params, residue_keys):
-        """Identify paths that link the source and the sink and order them by their lengths
+    def __init__(
+        self, corr_matrix, srcs, snks, params, residue_keys, n_paths_max=1000000
+    ):
+        """Identify paths that link the source and the sink and order them by their
+        lengths.
 
-        Arguments:
-        corr_matrix -- a np.array, the calculated correlation matrix
-        srcs -- a list of ints, the indices of the sources for path finding
-        snks -- a list of ints, the indices of the sinks for path finding
-        params -- the user-specified command-line parameters, a UserInput object
-        residue_keys -- a list containing string representations of each residue
+        Args:
+            corr_matrix: a np.array, the calculated correlation matrix
+            srcs: a list of ints, the indices of the sources for path finding
+            snks: a list of ints, the indices of the sinks for path finding
+            params: the user-specified command-line parameters, a UserInput object
+            residue_keys: a list containing string representations of each residue
+            n_paths_cutoff: Specifies the maximum number of paths to proceed. If we
+                estimate the number of paths to be larger than this number, we will
+                terminate the calculation.
         """
+        # Use params as dict instead of UserInput
+        if not isinstance(params, dict):
+            params = params.parameters
+
+        if "n_paths_max" in params.keys():
+            n_paths_max = params["n_paths_max"]
 
         # populate graph nodes and weighted edges
         G = nx.Graph(incoming_graph_data=corr_matrix)
 
         # first calculate length of shortest path between any source and sink
-        logger.info("# Calculating paths...", params["logfile"])
+        logger.info("Calculating paths...", params["logfile"])
         logger.info(
-            "#       Calculating the shortest path between any of the specified sources and any of the specified sinks...",
+            "Calculating the shortest path between any of the specified sources and any of the specified sinks...",
             params["logfile"],
         )
         shortest_length, shortest_path = self.get_shortest_path_length(
             corr_matrix, srcs, snks, G
         )
         logger.info(
-            f"#           The shortest path has length {str(shortest_length)}",
+            f"The shortest path has length {str(shortest_length)}",
             params["logfile"],
         )
 
@@ -216,21 +253,27 @@ class GetPaths:
 
         cutoff = shortest_length
 
+        # Check for comb explosion
+        log_n_paths = get_log_n_paths(G, cutoff)
+        if log_n_paths > np.log(n_paths_max):
+            logger.error(f"Estimated number of paths is greater than {n_paths_max}")
+            logger.error("Please increase n_paths_max to proceed.")
+            logger.error("Terminating calculation.")
+            sys.exit(1)
+
         cutoff_yields_max_num_paths_below_target = 0
         cutoff_yields_min_num_paths_above_target = 1000000.0
 
         # first step, keep incrementing a little until you have more than the desired number of paths
         logger.info(
-            "#      Identifying the cutoff required to produce "
+            "Identifying the cutoff required to produce "
             + str(params["desired_number_of_paths"])
             + " paths...",
             params["logfile"],
         )
         num_paths = 1
         while num_paths < params["desired_number_of_paths"]:
-            logger.info(
-                f"#          Testing the cutoff {str(cutoff)}...", params["logfile"]
-            )
+            logger.info(f"Testing the cutoff {str(cutoff)}...", params["logfile"])
             cutoff_in_array = np.array([cutoff], np.float64)
             pths = self.remove_redundant_paths(
                 self.get_paths_between_multiple_endpoints(
@@ -240,7 +283,7 @@ class GetPaths:
             num_paths = len(pths)
 
             logger.info(
-                f"#                The cutoff {str(cutoff)} produces {num_paths} paths...",
+                f"The cutoff {str(cutoff)} produces {num_paths} paths...",
                 params["logfile"],
             )
 
@@ -270,7 +313,7 @@ class GetPaths:
         ):  # so further refinement is needed
             pths = pths[: params["desired_number_of_paths"]]
             logger.info(
-                "#          Keeping the first "
+                "Keeping the first "
                 + str(params["desired_number_of_paths"])
                 + " of these paths...",
                 params["logfile"],
@@ -287,13 +330,13 @@ class GetPaths:
             simp = open(params["simply_formatted_paths_filename"], "w")
         for path in pths:
             self.paths_description = (
-                f"{self.paths_description}#     Path {str(index)}:" + "\n"
+                f"{self.paths_description}Path {str(index)}:" + "\n"
             )
             self.paths_description = (
-                f"{self.paths_description}#          Length: {str(path[0])}" + "\n"
+                f"{self.paths_description}   Length: {str(path[0])}" + "\n"
             )
             self.paths_description = (
-                f"{self.paths_description}#          Nodes: "
+                f"{self.paths_description}   Nodes: "
                 + " - ".join([residue_keys[item] for item in path[1:]])
                 + "\n"
             )
@@ -308,10 +351,11 @@ class GetPaths:
     def remove_redundant_paths(self, pths):
         """Removes redundant paths
 
-        Arguments:
-        pths -- a list of paths
+        Args:
+            pths: a list of paths
 
-        Returns a list of paths with the redundant ones eliminated
+        Returns:
+            A list of paths with the redundant ones eliminated.
         """
 
         if len(pths) == 1:
@@ -347,14 +391,15 @@ class GetPaths:
     ):  # where sources and sinks are lists
         """Identify the length of the shortest path connecting any of the sources and any of the sinks
 
-        Arguments:
-        corr_matrix -- a np.array, the calculated correlation matrix
-        srcs -- a list of ints, the indices of the sources for path finding
-        snks -- a list of ints, the indices of the sinks for path finding
-        G -- a nx.Graph object describing the connectivity of the different nodes
+        Args:
+            corr_matrix: a np.array, the calculated correlation matrix
+            srcs: a list of ints, the indices of the sources for path finding
+            snks: a list of ints, the indices of the sinks for path finding
+            G: a nx.Graph object describing the connectivity of the different nodes
 
-        Returns a float, the length of the shortest path, and a list of ints corresponding to
-             the nodes of the shortest path
+        Returns:
+            a float, the length of the shortest path, and a list of ints corresponding
+            to the nodes of the shortest path.
         """
 
         shortest_length = 99999999.999
@@ -373,11 +418,12 @@ class GetPaths:
     def get_length_of_path(self, path, corr_matrix):
         """Calculate the length of a path
 
-        Arguments:
-        path -- a list of ints, the indices of the path
-        corr_matrix -- a np.array, the calculated correlation matrix
+        Args:
+            path: a list of ints, the indices of the path
+            corr_matrix: a np.array, the calculated correlation matrix
 
-        Returns a float, the length of the path
+        Returns:
+            a float, the length of the path
         """
 
         length = 0.0
@@ -390,16 +436,17 @@ class GetPaths:
     ):  # where sources and sinks are lists
         """Get paths between sinks and sources
 
-        Arguments:
-        cutoff -- a np.array containing a single float, the cutoff specifying the maximum permissible path length
-        corr_matrix -- a np.array, the calculated correlation matrix
-        srcs -- a list of ints, the indices of the sources for path finding
-        snks -- a list of ints, the indices of the sinks for path finding
-        G -- a nx.Graph object describing the connectivity of the different nodes
-        params -- the user-specified command-line parameters, a UserInput object
+        Args:
+            cutoff: a np.array containing a single float, the cutoffspecifying the maximum permissible path length
+            corr_matrix: a np.array, the calculated correlation matrix
+            srcs: a list of ints, the indices of the sources for path finding
+            snks: a list of ints, the indices of the sinks for path finding
+            G: a nx.Graph object describing the connectivity of the different nodes
+            params: the user-specified command-line parameters, a UserInput object
 
-        Returns a list of paths, where each path is represented by a list. The first item in each path is the length
-             of the path (float). The remaining items are the indices of the nodes in the path (int).
+        Returns:
+            a list of paths, where each path is represented by a list. The first item in each path is the length
+            of the path (float). The remaining items are the indices of the nodes in the path (int).
         """
 
         pths = []
@@ -416,16 +463,19 @@ class GetPaths:
     def get_paths_fixed_endpoints(self, cutoff, corr_matrix, source, sink, G, params):
         """Get paths between a single sink and a single source
 
-        Arguments:
-        cutoff -- a np.array containing a single float, the cutoff specifying the maximum permissible path length
-        corr_matrix -- a np.array, the calculated correlation matrix
-        source -- the index of the source for path finding
-        sink -- the index of the sink for path finding
-        G -- a nx.Graph object describing the connectivity of the different nodes
-        params -- the user-specified command-line parameters, a UserInput object
+        Args:
+            cutoff: a np.array containing a single float, the cutoff specifying the
+                maximum permissible path length
+            corr_matrix: a np.array, the calculated correlation matrix
+            source: the index of the source for path finding
+            sink: the index of the sink for path finding
+            G: a nx.Graph object describing the connectivity of the different nodes
+            params: the user-specified command-line parameters, a UserInput object
 
-        Returns a list of paths, where each path is represented by a list. The first item in each path is the length
-             of the path (float). The remaining items are the indices of the nodes in the path (int).
+        Returns:
+            a list of paths, where each path is represented by a list. The first item
+            in each path is the length of the path (float). The remaining items are
+            the indices of the nodes in the path (int).
         """
 
         if source == sink:
@@ -486,8 +536,10 @@ class GetPaths:
         paths_growing_out_from_source = [[length, source]]
         full_paths_from_start_to_sink = []
 
-        # This is essentially this list-addition replacement for a recursive algorithm you've envisioned.
-        # To parallelize, just get the first N branches, and send them off to each node. Rest of branches filled out in separate processes.
+        # This is essentially this list-addition replacement for a recursive
+        # algorithm you've envisioned.
+        # To parallelize, just get the first N branches, and send them off to each node.
+        # Rest of branches filled out in separate processes.
 
         find_paths_object = find_paths()
         if params["number_processors"] == 1:
@@ -502,7 +554,7 @@ class GetPaths:
         else:
             # just get some of the initial paths on a single processor
             logger.info(
-                "#                Starting serial portion of path-finding algorithm (will run for "
+                "Starting serial portion of path-finding algorithm (will run for "
                 + str(params["seconds_to_wait_before_parallelizing_path_finding"])
                 + " seconds)...",
                 params["logfile"],
@@ -524,7 +576,7 @@ class GetPaths:
             # ok, so having generated just a first few, divy up those among multiple processors
             if paths_growing_out_from_source:  # in case you've already finished
                 logger.info(
-                    "#                Starting parallel portion of path-finding algorithm running on "
+                    "Starting parallel portion of path-finding algorithm running on "
                     + str(params["number_processors"])
                     + " processors...",
                     params["logfile"],
@@ -540,7 +592,7 @@ class GetPaths:
                 )
             else:
                 logger.info(
-                    "#                     (All paths found during serial path finding; parallelization not required)",
+                    "(All paths found during serial path finding; parallelization not required)",
                     params["logfile"],
                 )
 

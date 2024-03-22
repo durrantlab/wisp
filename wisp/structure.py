@@ -1,16 +1,19 @@
 import gc
 
 import numpy as np
+from loguru import logger
 
 
 class Atom:
     """A class containing atomic information."""
 
-    def read_pdb_line(self, Line):
-        """Reads atomic information from a string formatted according to the PDB standard.
+    def read_pdb_line(self, Line: str, default_chain_id: str = "A") -> None:
+        """Reads atomic information from a string formatted according to the PDB
+        standard.
 
-        Arguments:
-        Line -- A string formatted according to the PDB standard.
+        Args:
+            Line: A string formatted according to the PDB standard.
+            default_chain_id: If the chain ID is missing, replace it with this.
         """
 
         self.line = Line
@@ -28,9 +31,11 @@ class Atom:
         # now get the chain
         self.chain = Line[21:22]
 
-        # If chain is not filled out in PDB, we make it "A"
+        # If chain is not filled out in PDB
+        self.updated_chain = False
         if self.chain == " ":
-            self.chain = "A"
+            self.chain = default_chain_id
+            self.updated_chain = True
 
         # now get the resid
         try:
@@ -92,10 +97,10 @@ class Molecule:
     """Loads, saves, and manipulates molecular models."""
 
     def load_pdb_from_list(self, alist):
-        """Loads a list of PDB ATOM/HETATM lines into the current Molecule object
+        """Loads a list of PDB ATOM/HETATM lines into the current Molecule object.
 
-        Arguments:
-        alist -- the list of PDB lines
+        Args:
+            alist: the list of PDB lines
         """
 
         gc.disable()
@@ -108,10 +113,23 @@ class Molecule:
         self.resnames = []
         self.coordinates = []
 
+        default_chain_id = "A"
         for line in alist:
+            # If no chain IDs are specified and there are multiple chains, we need
+            # to correctly account for multiple chains. We can do this by keeping track
+            # of any `TER` lines and move it to the next letter.
+            if line[:3] == "TER":
+                default_chain_id = chr(ord(default_chain_id) + 1)
+                # We also warn the user that we are updating chains.
+                if temp_atom.updated_chain:
+                    logger.warning(
+                        "We found multiple chains in PDB frame, but no chain IDs are provided"
+                    )
+                    logger.warning("We assume first chain is A, second is B, etc.")
+
             if len(line) >= 7 and (line[:4] == "ATOM" or line[:6] == "HETATM"):
                 temp_atom = Atom()
-                temp_atom.read_pdb_line(line)
+                temp_atom.read_pdb_line(line, default_chain_id=default_chain_id)
                 self.atomnames.append(temp_atom.atomname)
                 self.chains.append(temp_atom.chain)
                 self.resids.append(temp_atom.resid)
@@ -132,8 +150,8 @@ class Molecule:
     def save_pdb(self, filename):
         """Saves a pdb file
 
-        Arguments:
-        filename -- a string specifying the file name
+        Args:
+            filename: a string specifying the file name
         """
 
         with open(filename, "w") as f:
@@ -185,13 +203,14 @@ class Molecule:
     ):
         """Gets the indices of atoms in a specified residue
 
-        Arguments:
-        residue_identifier -- a string (chain_resname_resid) specifying the residue
-        atom_names_list -- a list of strings containing the names of the atoms to keep
-        not_selection -- a optional boolean. if False, match the atom_names_list items.
-                         if True, match the items not in atom_names_list
+        Args:
+            residue_identifier: a string (chain_resname_resid) specifying the residue
+            atom_names_list: a list of strings containing the names of the atoms to keep
+            not_selection: a optional boolean. if False, match the atom_names_list items.
+                if True, match the items not in atom_names_list
 
-        Returns a numpy array containing the indices of the atoms to keep
+        Returns:
+            a numpy array containing the indices of the atoms to keep
         """
 
         # first, get the indices of the residue
@@ -217,9 +236,9 @@ class Molecule:
     def get_center_of_mass_from_selection_by_atom_indices(self, indices_selection):
         """Gets the center of mass of a set of atoms
 
-        Arguments:
-        indices_selection -- a numpy array containing the indices of the
-                             atoms to consider
+        Args:
+            indices_selection: a numpy array containing the indices of the
+                atoms to consider
 
         Returns a numpy array containing the 3D coordinates of the center of
         mass of those atoms
@@ -243,11 +262,12 @@ class Molecule:
     def get_mass(self, element_name):
         """A library to provide the mass of a given element
 
-        Arguments:
-        element_name -- a string that specifies the element
+        Args:
+            element_name: a string that specifies the element
 
-        Returns a float, the mass of the specified element. If the element is
-        not in the library, returns None.
+        Returns:
+            a float, the mass of the specified element. If the element is not in the
+            library, returns None.
         """
 
         element_name = element_name.upper()
@@ -283,9 +303,9 @@ class Molecule:
     def map_nodes_to_residues(self, node_definition):
         """For each residue in the molecule, define the node
 
-        Arguments:
-        node_definition -- a string describing the definition of the node: CA,
-                           RESIDUE_COM, BACKBONE_COM, or SIDECHAIN_COM
+        Args:
+            node_definition: a string describing the definition of the node: `CA`,
+                `RESIDUE_COM`, `BACKBONE_COM`, or `SIDECHAIN_COM`
         """
 
         self.nodes = np.empty((len(self.residue_identifiers_in_order), 3))

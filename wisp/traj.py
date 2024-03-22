@@ -11,25 +11,26 @@ class multi_threading_to_collect_data_from_frames:
 
     combined_results = None
 
-    def __init__(self, inputs, num_processors):
-        """Launches PDB-frame data processing on multiple processors
-
-        Arguments:
-        inputs -- the data to be processed, in a list
-        num_processors -- the number of processors to use to process this data, an integer
+    def __init__(self, inputs, num_processors: int | None = None):
+        """
+        Args:
+            inputs: the data to be processed, in a list
+            num_processors: the number of processors to use to process this data,
+                an integer
 
         """
         self.results = []
 
-        # first, if num_processors <= 0, determine the number of processors to
-        # use programatically
-        if num_processors <= 0:
+        # First, we determine the number of available cores.
+        if num_processors is None:
             num_processors = mp.cpu_count()
-
         # reduce the number of processors if too many have been specified
         if len(inputs) < num_processors:
+            logger.debug("Number of cores is higher than number of inputs.")
             num_processors = len(inputs)
-        logger.debug("Setting num_processors to {}", num_processors)
+            if num_processors == 0:
+                num_processors = 1
+        logger.debug(f"Setting the number of cores to {num_processors}")
 
         # now, divide the inputs into the appropriate number of processors
         inputs_divided = {t: [] for t in range(num_processors)}
@@ -91,14 +92,12 @@ class collect_data_from_frames:
     nodes = {}
 
     def runit(self, running, mutex, results_queue, items):
-        """PDB-frame data processing on a single processor
-
-        Arguments:
-        running -- a mp.Value() object
-        mutex -- a mp.Lock() object
-        results_queue -- where the results will be stored [mp.Queue()]
-        items -- the data to be processed, in a list
-
+        """
+        Args:
+            running: a mp.Value() object
+            mutex: a mp.Lock() object
+            results_queue: where the results will be stored [mp.Queue()]
+            items: the data to be processed, in a list
         """
         for item in items:
             self.value_func(item)  # , results_queue)
@@ -112,7 +111,7 @@ class collect_data_from_frames:
     ):  # , results_queue): # so overwriting this function
         """Process a single PDB frame: identify the relevant nodes
 
-        Arguments:
+        Args:
             params_and_res_keys_and_pdb_lines_and_res_maps: a tuple containing required
                 information.
                 The first item contains user-defined parameters (a UserInput object)
@@ -145,5 +144,5 @@ class collect_data_from_frames:
         for index, residue_iden in enumerate(pdb.residue_identifiers_in_order):
             try:
                 self.nodes[residue_iden].append(pdb.nodes[index])
-            except:
+            except Exception:
                 self.nodes[residue_iden] = [pdb.nodes[index]]
