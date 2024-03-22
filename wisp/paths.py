@@ -206,7 +206,7 @@ class GetPaths:
     """Get the paths from a list of sources to a list of sinks"""
 
     def __init__(
-        self, corr_matrix, srcs, snks, params, residue_keys, n_paths_max=100000
+        self, corr_matrix, srcs, snks, params, residue_keys, n_paths_max=1000000
     ):
         """Identify paths that link the source and the sink and order them by their
         lengths.
