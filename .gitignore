@@ -119,3 +119,4 @@ psi.*.clean
 tests/tmp/
 tests/files/tmp/*
 !tests/files/tmp/.gitkeep
+report.xml
