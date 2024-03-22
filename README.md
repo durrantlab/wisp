@@ -1,39 +1,25 @@
 # WISP
 
 WISP is a trajectory analysis tool that calculates and visualizes allosteric pathways.
-It is licensed under the Academic Free License 3.0.
-For more information, please see http://opensource.org/licenses/AFL-3.0
 
-WISP is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.
-See the GNU General Public License for more details.
+## Installation
 
-Copyright 2012 Adam VanWart and Jacob D. Durrant.
-If you have any questions, comments, or suggestions, please contact durrantj [at] pitt [dot] edu.
+First, you must obtain the WISP code from [GitHub](https://github.com/durrantlab/wisp) either by cloning the repository or downloading and extracting as a ZIP file.
+Move into the `wisp` directory and run `pip install .`.
+This will install the `wisp` Python package in addition to the `wisp` command-line tool.
 
-The latest version of WISP can be downloaded from [http://git.durrantlab.com/jdurrant/wisp](http://git.durrantlab.com/jdurrant/wisp).
+TODO: check that the VMD plugin installation works.
 
-If you use WISP in your work, please cite:
-
-> A.T. Van Wart, J.D. Durrant, L. Votapka, R.E. Amaro. Weighted implementation of suboptimal paths (WISP): An optimized algorithm and tool for dynamical network analysis, J. Chem. Theory Comput. 10 (2014) 511-517
-
-## How to Install the VMD WISP Plugin (Linux/Mac)
-
-1. Unzip the file to a directory of your choice using this command: `tar -xzf wisp.tgz <your directory here>`
-2. To use the VMD plugin, add these two lines of code to your `.vmdrc` file
+1. To use the VMD plugin, add these two lines of code to your `.vmdrc` file
    (usually located in your `~/` directory)
    - `set auto_path "$auto_path <your directory here>"  ; #(NOTE: this may require the full pathname)`
    - `vmd_install_extension wisp wisp_tk_cb "Analysis/Wisp"`
-3. Now open VMD: Click Extensions > Analysis > WISP
+2. Now open VMD: Click Extensions > Analysis > WISP
 
 ## How to Use WISP from the Command Line
 
-To learn how to use wisp from the command line, see the example in the
-`./example_commandline/` directory. Here is a simple example:
-
 ```python
-python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37`
+wisp -pdb_trajectory_filename multi_frame_pdb.pdb -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37`
 ```
 
 ## Program Output
@@ -74,7 +60,7 @@ descriptions of each:
   can be loaded into WISP for use in subsequent runs with the
   `-load_wisp_saved_matrix` and `-wisp_saved_matrix_filename` parameters.
   Thus, the matrix needs only to be calculated once for each trajectory,
-  rather than every time WISP is executed. Use `python wisp.py -help` for more
+  rather than every time WISP is executed. Use `wisp -help` for more
   information.
 - `contact_map_matrix.txt`: A human readable representation of the contact
   map. If the user wishes to generate their own contact map rather than
@@ -94,7 +80,7 @@ descriptions of each:
 
 ## Parameter Description
 
-`python wisp.py -help` displays the following text:
+`wisp -help` displays the following text:
 
 ```text
 FILE-SYSTEM PARAMETERS
@@ -259,7 +245,7 @@ Notes:
    uniquely identifiable by the combination of its chain, resname, and resid.
 
 Example:
-     python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb
+     wisp -pdb_trajectory_filename multi_frame_pdb.pdb
          -node_definition CA -contact_map_distance_limit 4.5
          -load_wisp_saved_matrix false -wisp_saved_matrix_filename
          matrix.file -desired_number_of_paths 30 -source_residues
@@ -270,3 +256,35 @@ Example:
          -spline_smoothness 0.05 -vmd_resolution 6 -node_sphere_radius
          1.0
 ```
+
+## Deploying
+
+We use [bump-my-version](https://github.com/callowayproject/bump-my-version) to release a new version.
+This will create a git tag that is used by [poetry-dynamic-version](https://github.com/mtkennerly/poetry-dynamic-versioning) to generate version strings and update `CHANGELOG.md`.
+
+For example, to bump the `minor` version you would run the following command.
+
+```bash
+poetry run bump-my-version bump minor
+```
+
+After releasing a new version, you need to push and include all tags.
+
+```bash
+git push --follow-tags
+```
+
+## Citation
+
+If you use WISP in your work, please cite:
+
+> A.T. Van Wart, J.D. Durrant, L. Votapka, R.E. Amaro. Weighted implementation of suboptimal paths (WISP): An optimized algorithm and tool for dynamical network analysis, J. Chem. Theory Comput. 10 (2014) 511-517
+
+## License
+
+It is licensed under the [Academic Free License 3.0](http://opensource.org/licenses/AFL-3.0).
+
+WISP is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.

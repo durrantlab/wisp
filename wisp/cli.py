@@ -473,7 +473,7 @@ class UserInput:
         )
         logger.info(
             wrapper.fill(
-                'python wisp.py -pdb_trajectory_filename multi_frame_pdb.pdb -node_definition CA -contact_map_distance_limit 4.5 -load_wisp_saved_matrix false -wisp_saved_matrix_filename matrix.file -desired_number_of_paths 30 -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37 -number_processors 24 -num_frames_to_load_before_processing 96 -seconds_to_wait_before_parallelizing_path_finding 10.0 -shortest_path_radius 0.2 -longest_path_radius 0.05 -spline_smoothness 0.05 -vmd_resolution 6 -node_sphere_radius 1.0'
+                'wisp -pdb_trajectory_filename multi_frame_pdb.pdb -node_definition CA -contact_map_distance_limit 4.5 -load_wisp_saved_matrix false -wisp_saved_matrix_filename matrix.file -desired_number_of_paths 30 -source_residues "X_SER_1 X_LEU_4" -sink_residues X_ARG_37 -number_processors 24 -num_frames_to_load_before_processing 96 -seconds_to_wait_before_parallelizing_path_finding 10.0 -shortest_path_radius 0.2 -longest_path_radius 0.05 -spline_smoothness 0.05 -vmd_resolution 6 -node_sphere_radius 1.0'
             )
         )
         logger.info("")
