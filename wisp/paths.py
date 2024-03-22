@@ -52,6 +52,8 @@ class multi_threading_find_paths:
         if len(inputs) < num_processors:
             logger.debug("Number of cores is higher than number of inputs.")
             num_processors = len(inputs)
+            if num_processors == 0:
+                num_processors = 1
             logger.debug("Setting number of cores to ", num_processors)
 
         # now, divide the inputs into the appropriate number of processors
