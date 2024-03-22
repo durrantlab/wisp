@@ -9,8 +9,8 @@ from wisp.run import run_wisp
 # Ensures we execute from file directory (for relative paths).
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-FILE_DIR = os.path.join(current_dir, "./files/")
-WRITING_DIR = os.path.join(current_dir, "./tmp/")
+FILE_DIR = os.path.join(current_dir, "files/")
+WRITING_DIR = os.path.join(current_dir, "tmp/")
 
 
 def test_example():
