@@ -37,7 +37,7 @@ class GetCovarianceMatrix:
             self.average_pdb = None
 
             for line in afile:
-                if line[:4] == "ATOM" or line[:6] == "HETATM":
+                if line[:4] == "ATOM" or line[:6] == "HETATM" or line[:3] == "TER":
                     this_frame.append(line)
                 if line.startswith(("END", "ENDMDL")):  # so reached end of frame
                     if first_frame:
@@ -256,7 +256,7 @@ class GetCovarianceMatrix:
             self.correlations,
         )
 
-        # now modify the coorelation matrix, setting to 0 wherever the average distance between nodes is greater than a given cutoff
+        # now modify the correlation matrix, setting to 0 wherever the average distance between nodes is greater than a given cutoff
         contact_map = np.ones(self.correlations.shape)
         if params["user_specified_contact_map_filename"] == "":
             if params["contact_map_distance_limit"] != 999999.999:
@@ -335,9 +335,13 @@ class GetCovarianceMatrix:
 
         networkx_residue_indices = []
         for key in list_residue_keys:
-            index_of_key = np.nonzero(
-                self.average_pdb.residue_identifiers_in_order == key
-            )[0][0]
+            try:
+                index_of_key = np.nonzero(
+                    self.average_pdb.residue_identifiers_in_order == key
+                )[0][0]
+            except IndexError:
+                logger.critical(f"Cannot find {key} in the structure")
+                raise
             networkx_residue_indices.append(index_of_key)
         return networkx_residue_indices
 

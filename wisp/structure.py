@@ -1,17 +1,19 @@
 import gc
 
 import numpy as np
+from loguru import logger
 
 
 class Atom:
     """A class containing atomic information."""
 
-    def read_pdb_line(self, Line):
+    def read_pdb_line(self, Line: str, default_chain_id: str = "A") -> None:
         """Reads atomic information from a string formatted according to the PDB
         standard.
 
         Args:
             Line: A string formatted according to the PDB standard.
+            default_chain_id: If the chain ID is missing, replace it with this.
         """
 
         self.line = Line
@@ -29,9 +31,11 @@ class Atom:
         # now get the chain
         self.chain = Line[21:22]
 
-        # If chain is not filled out in PDB, we make it "A"
+        # If chain is not filled out in PDB
+        self.updated_chain = False
         if self.chain == " ":
-            self.chain = "A"
+            self.chain = default_chain_id
+            self.updated_chain = True
 
         # now get the resid
         try:
@@ -93,7 +97,7 @@ class Molecule:
     """Loads, saves, and manipulates molecular models."""
 
     def load_pdb_from_list(self, alist):
-        """Loads a list of PDB ATOM/HETATM lines into the current Molecule object
+        """Loads a list of PDB ATOM/HETATM lines into the current Molecule object.
 
         Args:
             alist: the list of PDB lines
@@ -109,10 +113,23 @@ class Molecule:
         self.resnames = []
         self.coordinates = []
 
+        default_chain_id = "A"
         for line in alist:
+            # If no chain IDs are specified and there are multiple chains, we need
+            # to correctly account for multiple chains. We can do this by keeping track
+            # of any `TER` lines and move it to the next letter.
+            if line[:3] == "TER":
+                default_chain_id = chr(ord(default_chain_id) + 1)
+                # We also warn the user that we are updating chains.
+                if temp_atom.updated_chain:
+                    logger.warning(
+                        "We found multiple chains in PDB frame, but no chain IDs are provided"
+                    )
+                    logger.warning("We assume first chain is A, second is B, etc.")
+
             if len(line) >= 7 and (line[:4] == "ATOM" or line[:6] == "HETATM"):
                 temp_atom = Atom()
-                temp_atom.read_pdb_line(line)
+                temp_atom.read_pdb_line(line, default_chain_id=default_chain_id)
                 self.atomnames.append(temp_atom.atomname)
                 self.chains.append(temp_atom.chain)
                 self.resids.append(temp_atom.resid)
