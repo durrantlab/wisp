@@ -221,7 +221,7 @@ class GetPaths:
                 estimate the number of paths to be larger than this number, we will
                 terminate the calculation.
         """
-        if "n_paths_max" in params.keys():
+        if "n_paths_max" in params.parameters.keys():
             n_paths_max = params["n_paths_max"]
 
         # populate graph nodes and weighted edges
