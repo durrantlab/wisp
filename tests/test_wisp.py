@@ -7,10 +7,10 @@ import pytest
 from wisp.run import run_wisp
 
 # Ensures we execute from file directory (for relative paths).
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
-FILE_DIR = "./files/"
-WRITING_DIR = "./tmp/"
+FILE_DIR = os.path.join(current_dir, "./files/")
+WRITING_DIR = os.path.join(current_dir, "./tmp/")
 
 
 def test_example():
@@ -49,7 +49,7 @@ def test_example():
         "spline_smoothness": 0.01,
         "vmd_resolution": 6,
         "output_directory": test_dir,
-        "logfile": open(os.path.join(test_dir, "log.txt"), "w"),
+        "logfile": open(os.path.join(test_dir, "log.txt"), "w", encoding="utf-8"),
         "user_specified_contact_map_filename": "",
         "user_specified_functionalized_matrix_filename": "",
         "simply_formatted_paths_filename": os.path.join(
