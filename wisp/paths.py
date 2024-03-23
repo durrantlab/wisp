@@ -2,11 +2,14 @@ import copy
 import multiprocessing as mp
 import sys
 import time
-from collections.abc import Collection
+from collections.abc import Collection, MutableMapping
 
 import networkx as nx
 import numpy as np
+import numpy.typing as npt
 from loguru import logger
+
+from .cli import UserInput
 
 
 def get_log_n_paths(graph, cutoff_length):
@@ -55,7 +58,9 @@ class multi_threading_find_paths:
         logger.debug(f"Setting the number of cores to {num_processors}")
 
         # now, divide the inputs into the appropriate number of processors
-        inputs_divided = {t: [] for t in range(num_processors)}
+        inputs_divided: MutableMapping[str, Collection] = {
+            t: [] for t in range(num_processors)
+        }
         for t in range(0, len(inputs), num_processors):
             for t2 in range(num_processors):
                 index = t + t2
@@ -206,7 +211,12 @@ class GetPaths:
     """Get the paths from a list of sources to a list of sinks"""
 
     def __init__(
-        self, corr_matrix, srcs, snks, params, residue_keys, n_paths_max=1000000
+        self,
+        corr_matrix: npt.NDArray[np.floating],
+        srcs: Collection[int],
+        snks: Collection[int],
+        params: UserInput,
+        residue_keys: npt.ArrayLike,
     ):
         """Identify paths that link the source and the sink and order them by their
         lengths.
@@ -217,17 +227,7 @@ class GetPaths:
             snks: a list of ints, the indices of the sinks for path finding
             params: the user-specified command-line parameters, a UserInput object
             residue_keys: a list containing string representations of each residue
-            n_paths_cutoff: Specifies the maximum number of paths to proceed. If we
-                estimate the number of paths to be larger than this number, we will
-                terminate the calculation.
         """
-        # Use params as dict instead of UserInput
-        if not isinstance(params, dict):
-            params = params.parameters
-
-        if "n_paths_max" in params.keys():
-            n_paths_max = params["n_paths_max"]
-
         # populate graph nodes and weighted edges
         G = nx.Graph(incoming_graph_data=corr_matrix)
 

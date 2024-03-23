@@ -62,6 +62,7 @@ class UserInput:
         self.parameters["longest_path_opacity"] = 1.0
         self.parameters["shortest_path_opacity"] = 1.0
         self.parameters["node_sphere_opacity"] = 1.0
+        self.parameters["n_paths_max"] = 100000
         self.parameters[
             "output_directory"
         ] = f'wisp_output__{time.strftime("%b_%d_%Y__%I_%M_%p")}'

@@ -1,6 +1,7 @@
 import os
 import pickle
 import sys
+from collections.abc import Collection
 
 import numpy as np
 from loguru import logger
@@ -321,7 +322,9 @@ class GetCovarianceMatrix:
         ):  # because it only would have gotten here if load_wisp_saved_matrix = FALSE
             pickle.dump(self, open(params["wisp_saved_matrix_filename"], "wb"))
 
-    def convert_list_of_residue_keys_to_residue_indices(self, list_residue_keys):
+    def convert_list_of_residue_keys_to_residue_indices(
+        self, list_residue_keys: Collection[str]
+    ):
         """Identify the indices in a nx.Graph object corresponding to the identified residue string ids (CHAIN_RESNAME_RESID).
 
         Args:
