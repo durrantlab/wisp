@@ -1,10 +1,11 @@
+from typing import Any
+
 import copy
-import os
 import multiprocessing as mp
+import os
 import sys
 import time
 from collections.abc import Collection, MutableMapping
-from typing import Any
 
 import networkx as nx
 import numpy as np

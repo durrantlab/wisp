@@ -1,6 +1,6 @@
 from typing import Any
-import time
 
+import time
 from collections.abc import Iterable, MutableMapping
 
 from loguru import logger

@@ -4,8 +4,8 @@ import shutil
 import numpy as np
 import pytest
 
-from wisp.run import run_wisp
 from wisp.contexts import ContextManager
+from wisp.run import run_wisp
 
 # Ensures we execute from file directory (for relative paths).
 current_dir = os.path.dirname(os.path.abspath(__file__))
