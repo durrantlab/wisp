@@ -9,13 +9,21 @@ def setup_cli_interface(context_manager: ContextManager) -> argparse.ArgumentPar
     parser = argparse.ArgumentParser(description="Update parameters for WISP.")
     attributes = context_manager.get()  # Assuming this returns a dict of attributes
 
+    parser.add_argument("pdb_path", type=str, help="Path to PDB file to analyze")
     for attr, value in attributes.items():
         # Use the type of the current value to infer the expected type
         # This is a simplified approach; you might need custom handling for complex types
         arg_type = type(value) if value is not None else str
-        parser.add_argument(
-            f"--{attr}", type=arg_type, help=f"Set {attr} (current value: {value})"
-        )
+        if attr in ["source_residues", "sink_residues"]:
+            parser.add_argument(
+                f"--{attr}",
+                nargs="+",
+                required=True,
+            )
+        else:
+            parser.add_argument(
+                f"--{attr}", type=arg_type, help=f"Set {attr} (current value: {value})"
+            )
 
     return parser
 
