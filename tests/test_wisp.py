@@ -25,8 +25,8 @@ def test_example():
     context_manager.n_paths = 15
     context_manager.contact_map_distance_limit = 4.5
     context_manager.output_dir = test_dir
-    context_manager.sink_residues = ["C_ASP_11"]
     context_manager.source_residues = ["C_LEU_10"]
+    context_manager.sink_residues = ["C_ASP_11"]
     context_manager.n_cores = 4
     context_manager.frame_chunks = 20
     context_manager.write_formatted_paths = True

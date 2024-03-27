@@ -21,19 +21,23 @@ TODO: check that the VMD plugin installation works.
 You may use the `wisp` command-line interface as shown below.
 
 ```bash
-wisp tests/files/trajectory_20_frames.pdb --source_residues "C_LEU_10" --sink_residues C_ASP_11
+wisp tests/files/trajectory_20_frames.pdb --source_residues C_LEU_10 --sink_residues C_ASP_11
 ```
 
 Or, you may use wisp as a library in Python.
 
 ```python
 from wisp.run import run_wisp
-config = {
-    "pdb_path": "tests/files/trajectory_20_frames.pdb",
-    "source_residues": ["C_LEU_10"],
-    "sink_residues": ["C_ASP_11"],
-}
-paths = run_wisp(config)
+from wisp.contexts import ContextManager
+
+# Update context
+context_manager = ContextManager()
+context_manager.pdb_path = "tests/files/trajectory_20_frames.pdb"
+context_manager.source_residues = ["C_LEU_10"]
+context_manager.sink_residues = ["C_ASP_11"]
+
+# Run wisp
+paths = run_wisp(context_manager)
 ```
 
 ## Program Output
