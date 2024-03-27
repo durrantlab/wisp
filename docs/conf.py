@@ -16,8 +16,8 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = "wisp"
-copyright = "2023, Durrant Lab @ Pitt"
-author = "Durrant Lab @ Pitt"
+copyright = "2023, Durrant Lab at Pitt"
+author = "Durrant Lab at Pitt"
 html_title = "wisp"
 
 

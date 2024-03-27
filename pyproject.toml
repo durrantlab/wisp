@@ -3,7 +3,7 @@ name = "wispy"
 version = "0.0.0"
 description = ""
 authors = [
-    "Durrant Lab @ Pitt",
+    "Durrant Lab at Pitt",
 ]
 readme = "README.md"
 license = "AFL-3.0"
