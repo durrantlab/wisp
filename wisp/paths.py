@@ -215,7 +215,7 @@ class GetPaths:
         corr_matrix: npt.NDArray[np.floating],
         srcs: Collection[int],
         snks: Collection[int],
-        params: MutableMapping[str, Any],
+        context: MutableMapping[str, Any],
         residue_keys: npt.ArrayLike,
     ):
         """Identify paths that link the source and the sink and order them by their
@@ -225,7 +225,7 @@ class GetPaths:
             corr_matrix: a np.array, the calculated correlation matrix
             srcs: a list of ints, the indices of the sources for path finding
             snks: a list of ints, the indices of the sinks for path finding
-            params: the user-specified command-line parameters, a UserInput object
+            context: the user-specified command-line parameters, a UserInput object
             residue_keys: a list containing string representations of each residue
         """
         # populate graph nodes and weighted edges
@@ -253,9 +253,9 @@ class GetPaths:
 
         # Check for comb explosion
         log_n_paths = get_log_n_paths(G, cutoff)
-        if log_n_paths > np.log(params["n_paths_max"]):
+        if log_n_paths > np.log(context["n_paths_max"]):
             logger.error(
-                f"Estimated number of paths is greater than {params['n_paths_max']}"
+                f"Estimated number of paths is greater than {context['n_paths_max']}"
             )
             logger.error("Please increase n_paths_max to proceed.")
             logger.error("Terminating calculation.")
@@ -267,16 +267,16 @@ class GetPaths:
         # first step, keep incrementing a little until you have more than the desired number of paths
         logger.info(
             "Identifying the cutoff required to produce "
-            + str(params["n_paths"])
+            + str(context["n_paths"])
             + " paths...",
         )
         num_paths = 1
-        while num_paths < params["n_paths"]:
+        while num_paths < context["n_paths"]:
             logger.info(f"Testing the cutoff {str(cutoff)}...")
             cutoff_in_array = np.array([cutoff], np.float64)
             pths = self.remove_redundant_paths(
                 self.get_paths_between_multiple_endpoints(
-                    cutoff_in_array, corr_matrix, srcs, snks, G, params
+                    cutoff_in_array, corr_matrix, srcs, snks, G, context
                 )
             )
             num_paths = len(pths)
@@ -286,12 +286,12 @@ class GetPaths:
             )
 
             if (
-                num_paths < params["n_paths"]
+                num_paths < context["n_paths"]
                 and cutoff > cutoff_yields_max_num_paths_below_target
             ):
                 cutoff_yields_max_num_paths_below_target = cutoff
             if (
-                num_paths > params["n_paths"]
+                num_paths > context["n_paths"]
                 and cutoff < cutoff_yields_min_num_paths_above_target
             ):
                 cutoff_yields_min_num_paths_above_target = cutoff
@@ -306,10 +306,10 @@ class GetPaths:
 
         pths.sort()  # sort the paths by length
 
-        if num_paths != params["n_paths"]:  # so further refinement is needed
-            pths = pths[: params["n_paths"]]
+        if num_paths != context["n_paths"]:  # so further refinement is needed
+            pths = pths[: context["n_paths"]]
             logger.info(
-                "Keeping the first " + str(params["n_paths"]) + " of these paths...",
+                "Keeping the first " + str(context["n_paths"]) + " of these paths...",
             )
 
         self.paths_description = ""
@@ -333,9 +333,9 @@ class GetPaths:
             )
             index = index + 1
 
-        if params["write_formatted_paths"]:
+        if context["write_formatted_paths"]:
             formatted_paths_path = os.path.join(
-                params["output_dir"], "simply_formatted_paths.txt"
+                context["output_dir"], "simply_formatted_paths.txt"
             )
             with open(formatted_paths_path, "w", encoding="utf-8") as f:
                 f.writelines(" ".join([str(item) for item in path]) + "\n")
@@ -426,7 +426,7 @@ class GetPaths:
         return length
 
     def get_paths_between_multiple_endpoints(
-        self, cutoff, corr_matrix, srcs, snks, G, params
+        self, cutoff, corr_matrix, srcs, snks, G, context
     ):  # where sources and sinks are lists
         """Get paths between sinks and sources
 
@@ -436,7 +436,7 @@ class GetPaths:
             srcs: a list of ints, the indices of the sources for path finding
             snks: a list of ints, the indices of the sinks for path finding
             G: a nx.Graph object describing the connectivity of the different nodes
-            params: the user-specified command-line parameters, a UserInput object
+            context: the user-specified command-line parameters, a UserInput object
 
         Returns:
             a list of paths, where each path is represented by a list. The first item in each path is the length
@@ -449,12 +449,12 @@ class GetPaths:
                 if source != sink:  # avoid this situation
                     pths.extend(
                         self.get_paths_fixed_endpoints(
-                            cutoff, corr_matrix, source, sink, G, params
+                            cutoff, corr_matrix, source, sink, G, context
                         )
                     )
         return pths
 
-    def get_paths_fixed_endpoints(self, cutoff, corr_matrix, source, sink, G, params):
+    def get_paths_fixed_endpoints(self, cutoff, corr_matrix, source, sink, G, context):
         """Get paths between a single sink and a single source
 
         Args:
@@ -464,7 +464,7 @@ class GetPaths:
             source: the index of the source for path finding
             sink: the index of the sink for path finding
             G: a nx.Graph object describing the connectivity of the different nodes
-            params: the user-specified command-line parameters, a UserInput object
+            context: the user-specified command-line parameters, a UserInput object
 
         Returns:
             a list of paths, where each path is represented by a list. The first item
@@ -536,7 +536,7 @@ class GetPaths:
         # Rest of branches filled out in separate processes.
 
         find_paths_object = find_paths()
-        if params["n_cores"] == 1:
+        if context["n_cores"] == 1:
             while paths_growing_out_from_source:
                 find_paths_object.expand_growing_paths_one_step(
                     paths_growing_out_from_source,
@@ -549,14 +549,14 @@ class GetPaths:
             # just get some of the initial paths on a single processor
             logger.info(
                 "Starting serial portion of path-finding algorithm (will run for "
-                + str(params["seconds_to_wait_before_parallelizing_path_finding"])
+                + str(context["seconds_to_wait_before_parallelizing_path_finding"])
                 + " seconds)...",
             )
             atime = time.time()
             while (
                 paths_growing_out_from_source
                 and time.time() - atime
-                < params["seconds_to_wait_before_parallelizing_path_finding"]
+                < context["seconds_to_wait_before_parallelizing_path_finding"]
             ):
                 find_paths_object.expand_growing_paths_one_step(
                     paths_growing_out_from_source,
@@ -570,14 +570,14 @@ class GetPaths:
             if paths_growing_out_from_source:  # in case you've already finished
                 logger.info(
                     "Starting parallel portion of path-finding algorithm running on "
-                    + str(params["n_cores"])
+                    + str(context["n_cores"])
                     + " processors...",
                 )
                 paths_growing_out_from_source = [
                     (cutoff, sink, G, path) for path in paths_growing_out_from_source
                 ]
                 additional_full_paths_from_start_to_sink = multi_threading_find_paths(
-                    paths_growing_out_from_source, params["n_cores"]
+                    paths_growing_out_from_source, context["n_cores"]
                 )
                 full_paths_from_start_to_sink.extend(
                     additional_full_paths_from_start_to_sink.results
