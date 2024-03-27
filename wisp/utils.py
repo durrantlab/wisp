@@ -320,7 +320,6 @@ class GetCovarianceMatrix:
             a list of ints, the nx.Graph indices corresponding to the residue
             string ids in list_residue_keys
         """
-
         networkx_residue_indices = []
         for key in list_residue_keys:
             try:
