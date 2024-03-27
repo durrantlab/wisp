@@ -1,11 +1,43 @@
-# WISP
+<h1 align="center">WISP</h1>
 
-WISP is a trajectory analysis tool that calculates and visualizes allosteric pathways.
+<h4 align="center">Calculate and visualize allosteric pathways from molecular trajectories.</h4>
+
+<h4 align="center" style="padding-bottom: 0.5em;"><a href="https://durrantlab.github.io/wisp/">Documentation</a></h4>
+
+<p align="center">
+    <a href="https://github.com/durrantlab/wisp/actions/workflows/python-tests.yml">
+        <img src="https://github.com/durrantlab/wisp/actions/workflows/python-tests.yml/badge.svg" alt="Build Status ">
+    </a>
+    <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/wisp">
+    <a href="https://codecov.io/gh/durrantlab/wisp">
+        <img src="https://codecov.io/gh/durrantlab/wisp/branch/main/graph/badge.svg?token=74wLrsOMTD" alt="codecov">
+    </a>
+    <a href="https://github.com/durrantlab/wisp/releases">
+        <img src="https://img.shields.io/github/v/release/durrantlab/wisp" alt="GitHub release (latest by date)">
+    </a>
+    <a href="https://github.com/durrantlab/wisp/blob/main/LICENSE" target="_blank">
+        <img src="https://img.shields.io/github/license/durrantlab/wisp" alt="License">
+    </a>
+    <a href="https://github.com/durrantlab/wisp/" target="_blank">
+        <img src="https://img.shields.io/github/repo-size/durrantlab/wisp" alt="GitHub repo size">
+    </a>
+    <a href="https://github.com/psf/black" target="_blank">
+        <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Black style">
+    </a>
+    <a href="https://github.com/PyCQA/pylint" target="_blank">
+        <img src="https://img.shields.io/badge/linting-pylint-yellowgreen" alt="Black style">
+    </a>
+</p>
 
 ## Installation
 
 First, you must obtain the WISP code from [GitHub](https://github.com/durrantlab/wisp) either by cloning the repository or downloading and extracting as a ZIP file.
-Move into the `wisp` directory and run `pip install .`.
+Move into the `wisp` directory and run
+
+```python
+pip install .
+```
+
 This will install the `wisp` Python package in addition to the `wisp` command-line tool.
 
 TODO: check that the VMD plugin installation works.
@@ -122,8 +154,3 @@ If you use WISP in your work, please cite:
 ## License
 
 It is licensed under the [Academic Free License 3.0](http://opensource.org/licenses/AFL-3.0).
-
-WISP is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.
-See the GNU General Public License for more details.
