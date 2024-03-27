@@ -1,0 +1,51 @@
+name: Upload Python Package TestPyPI
+
+on:
+  push:
+    branches:
+    - main
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pypi-publish:
+    name: testpypi
+    runs-on: ubuntu-latest
+    environment:
+      name: "testpypi"
+      url: https://test.pypi.org/p/wispy
+    permissions:
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Initialize conda environment
+      run: make conda-create
+
+    - name: Setup conda
+      run: make conda-setup
+
+    - name: Install conda dependencies
+      run: make from-conda-lock
+
+    - name: Install dependencies
+      run: make install
+
+    - name: Build package
+      run: make build
+
+    - name: Publish package to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
