@@ -1,6 +1,7 @@
 .vscode
 example_commandline/*.jdd.*
 example_commandline/example_output
+wisp_output_**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
