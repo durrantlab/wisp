@@ -38,7 +38,7 @@ namespace eval ::wisp:: {
   variable workdir "./"
   variable workdir_temp "$workdir"
 
-  variable pdb_trajectory_filename ""
+  variable pdb_path ""
   variable source_residues "";# these three variables are dummy variables that don't actually hold anything, but keep the "other" menu option from appearing when it shouldn't
   variable sink_residues ""
 
@@ -59,12 +59,12 @@ namespace eval ::wisp:: {
   variable wisp_saved_matrix_filename "" ;# NOTE: need default here
   variable wisp_saved_matrix_filename_temp ""
   variable wisp_saved_matrix_filename_format "file"
-  variable desired_number_of_paths 20
-  variable desired_number_of_paths_temp ""
-  variable number_processors 1
-  variable number_processors_temp ""
-  variable num_frames_to_load_before_processing 96
-  variable num_frames_to_load_before_processing_temp ""
+  variable n_paths 20
+  variable n_paths_temp ""
+  variable n_cores 1
+  variable n_cores_temp ""
+  variable frame_chunks 96
+  variable frame_chunks_temp ""
   variable shortest_path_radius 0.1
   variable shortest_path_radius_temp ""
   variable longest_path_radius 0.01
@@ -94,12 +94,12 @@ namespace eval ::wisp:: {
   #variable simply_formatted_paths_filename_temp ""
   variable seconds_to_wait_before_parallelizing_path_finding 5.0
   variable seconds_to_wait_before_parallelizing_path_finding_temp ""
-  variable user_specified_functionalized_matrix_filename ""
-  variable user_specified_functionalized_matrix_filename_temp ""
-  variable user_specified_functionalized_matrix_filename_format "file"
-  variable user_specified_contact_map_filename ""
-  variable user_specified_contact_map_filename_temp ""
-  variable user_specified_contact_map_filename_format "file"
+  variable functionalized_matrix_filename ""
+  variable functionalized_matrix_filename_temp ""
+  variable functionalized_matrix_filename_format "file"
+  variable contact_map_path ""
+  variable contact_map_path_temp ""
+  variable contact_map_path_format "file"
   variable temp_pdb "wisp_temp.pdb"
   variable temp_pdb_temp ""
   variable path_contrast 1.0
@@ -109,10 +109,10 @@ namespace eval ::wisp:: {
 
   variable arglist_files "wisp_directory output_directory"
   variable arglist_covariance "node_definition contact_map_distance_limit load_wisp_saved_matrix wisp_saved_matrix_filename"
-  variable arglist_pathsearching "desired_number_of_paths"
-  variable arglist_multiprocessor "number_processors num_frames_to_load_before_processing"
+  variable arglist_pathsearching "n_paths"
+  variable arglist_multiprocessor "n_cores frame_chunks"
   variable arglist_graphics "shortest_path_radius  longest_path_radius spline_smoothness vmd_resolution node_sphere_radius shortest_path_r shortest_path_g shortest_path_b longest_path_r longest_path_g longest_path_b node_sphere_r node_sphere_g node_sphere_b shortest_path_opacity longest_path_opacity node_sphere_opacity pdb_single_frame_filename"
-  variable arglist_advanced "seconds_to_wait_before_parallelizing_path_finding user_specified_functionalized_matrix_filename user_specified_contact_map_filename"
+  variable arglist_advanced "seconds_to_wait_before_parallelizing_path_finding functionalized_matrix_filename contact_map_path"
 
   variable arglist_other ""
   variable moltxt "(none)"
@@ -241,7 +241,7 @@ proc ::wisp::wisp_mainwin {} {
   # num_paths
   frame $w.num_paths -relief groove -bd 2
   pack [label $w.num_paths.lbl1 -text "Desired Number of Paths:"] -side top
-  pack [entry $w.num_paths.entry -textvariable ::wisp::desired_number_of_paths] -side top
+  pack [entry $w.num_paths.entry -textvariable ::wisp::n_paths] -side top
   pack $w.num_paths -side top -anchor n -padx 10 -pady 10
   # buttons
   frame $w.buttons
@@ -292,7 +292,7 @@ proc ::wisp::run_wisp {} {
   grab $dialog
   animate write pdb $::wisp::temp_pdb sel $pdb_struct $selected_mol  ;# this writes the pdb trajectory explicitly
 
-  set pdb_trajectory_filename $::wisp::temp_pdb ;#[molinfo $selected_mol get filename]
+  set pdb_path $::wisp::temp_pdb ;#[molinfo $selected_mol get filename]
   set timename [clock format [clock seconds] -format "wisp_output__%h_%d_%Y__%H_%M_%p"]
   if {$::wisp::output_directory == ""} {
     set outdir $timename
@@ -301,7 +301,7 @@ proc ::wisp::run_wisp {} {
   }
   set curdir [pwd]
   cd $::wisp::workdir
-  set command "python $::wisp::wisp_directory -pdb_trajectory_filename $pdb_trajectory_filename -source_residues \"$src_str\" -sink_residues \"$sink_str\" -output_directory $outdir $other_args"
+  set command "python $::wisp::wisp_directory -pdb_path $pdb_path -source_residues \"$src_str\" -sink_residues \"$sink_str\" -output_directory $outdir $other_args"
   puts "running command: $command"
   update
 
@@ -382,9 +382,9 @@ proc ::wisp::default_args {} { ;# in case there is some sort of problem with par
   lappend ::wisp::arglist contact_map_distance_limit
   lappend ::wisp::arglist load_wisp_saved_matrix
   lappend ::wisp::arglist wisp_saved_matrix_filename
-  lappend ::wisp::arglist desired_number_of_paths
-  lappend ::wisp::arglist number_processors
-  lappend ::wisp::arglist num_frames_to_load_before_processing
+  lappend ::wisp::arglist n_paths
+  lappend ::wisp::arglist n_cores
+  lappend ::wisp::arglist frame_chunks
   lappend ::wisp::arglist shortest_path_radius
   lappend ::wisp::arglist longest_path_radius
   lappend ::wisp::arglist spline_smoothness
@@ -404,8 +404,8 @@ proc ::wisp::default_args {} { ;# in case there is some sort of problem with par
   lappend ::wisp::arglist node_sphere_opacity
   lappend ::wisp::arglist pdb_single_frame_filename
   lappend ::wisp::arglist seconds_to_wait_before_parallelizing_path_finding
-  lappend ::wisp::arglist user_specified_functionalized_matrix_filename
-  lappend ::wisp::arglist user_specified_contact_map_filename
+  lappend ::wisp::arglist functionalized_matrix_filename
+  lappend ::wisp::arglist contact_map_path
 
 }
 
@@ -506,7 +506,7 @@ proc ::wisp::wisp_settings {{mode graphics}} { ;# mode can be graphics, advanced
 	  } elseif {[llength $arg_format_list] == 2} { ;# then its a list
 	    set arg_list_options [lindex $arg_format_list 1]
 	  }
-	  if {$arg == "pdb_trajectory_filename" || $arg == "source_residues" || $arg == "sink_residues" } { ;# or many other things...
+	  if {$arg == "pdb_path" || $arg == "source_residues" || $arg == "sink_residues" } { ;# or many other things...
 	    continue ;# skip it, we already have it covered in the main menu
 	  }
 	  #if {($i < $half_len_arglist || $len_arglist < 6) } { ;# then we are on the left side

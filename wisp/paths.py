@@ -267,12 +267,12 @@ class GetPaths:
         # first step, keep incrementing a little until you have more than the desired number of paths
         logger.info(
             "Identifying the cutoff required to produce "
-            + str(params["desired_number_of_paths"])
+            + str(params["n_paths"])
             + " paths...",
             params["logfile"],
         )
         num_paths = 1
-        while num_paths < params["desired_number_of_paths"]:
+        while num_paths < params["n_paths"]:
             logger.info(f"Testing the cutoff {str(cutoff)}...", params["logfile"])
             cutoff_in_array = np.array([cutoff], np.float64)
             pths = self.remove_redundant_paths(
@@ -288,12 +288,12 @@ class GetPaths:
             )
 
             if (
-                num_paths < params["desired_number_of_paths"]
+                num_paths < params["n_paths"]
                 and cutoff > cutoff_yields_max_num_paths_below_target
             ):
                 cutoff_yields_max_num_paths_below_target = cutoff
             if (
-                num_paths > params["desired_number_of_paths"]
+                num_paths > params["n_paths"]
                 and cutoff < cutoff_yields_min_num_paths_above_target
             ):
                 cutoff_yields_min_num_paths_above_target = cutoff
@@ -308,14 +308,10 @@ class GetPaths:
 
         pths.sort()  # sort the paths by length
 
-        if (
-            num_paths != params["desired_number_of_paths"]
-        ):  # so further refinement is needed
-            pths = pths[: params["desired_number_of_paths"]]
+        if num_paths != params["n_paths"]:  # so further refinement is needed
+            pths = pths[: params["n_paths"]]
             logger.info(
-                "Keeping the first "
-                + str(params["desired_number_of_paths"])
-                + " of these paths...",
+                "Keeping the first " + str(params["n_paths"]) + " of these paths...",
                 params["logfile"],
             )
 
@@ -542,7 +538,7 @@ class GetPaths:
         # Rest of branches filled out in separate processes.
 
         find_paths_object = find_paths()
-        if params["number_processors"] == 1:
+        if params["n_cores"] == 1:
             while paths_growing_out_from_source:
                 find_paths_object.expand_growing_paths_one_step(
                     paths_growing_out_from_source,
@@ -577,7 +573,7 @@ class GetPaths:
             if paths_growing_out_from_source:  # in case you've already finished
                 logger.info(
                     "Starting parallel portion of path-finding algorithm running on "
-                    + str(params["number_processors"])
+                    + str(params["n_cores"])
                     + " processors...",
                     params["logfile"],
                 )
@@ -585,7 +581,7 @@ class GetPaths:
                     (cutoff, sink, G, path) for path in paths_growing_out_from_source
                 ]
                 additional_full_paths_from_start_to_sink = multi_threading_find_paths(
-                    paths_growing_out_from_source, params["number_processors"]
+                    paths_growing_out_from_source, params["n_cores"]
                 )
                 full_paths_from_start_to_sink.extend(
                     additional_full_paths_from_start_to_sink.results

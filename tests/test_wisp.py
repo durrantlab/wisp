@@ -21,7 +21,7 @@ def test_example():
     os.makedirs(test_dir, exist_ok=True)
     config = {
         "contact_map_distance_limit": 4.5,
-        "desired_number_of_paths": 15,
+        "n_paths": 15,
         "load_wisp_saved_matrix": "FALSE",
         "wisp_saved_matrix_filename": "",
         "longest_path_b": 0.0,
@@ -35,9 +35,9 @@ def test_example():
         "node_sphere_opacity": 1.0,
         "node_sphere_r": 1.0,
         "node_sphere_radius": 1.0,
-        "num_frames_to_load_before_processing": 20,
-        "number_processors": 4,
-        "pdb_trajectory_filename": pdb_path,
+        "frame_chunks": 20,
+        "n_cores": 4,
+        "pdb_path": pdb_path,
         "seconds_to_wait_before_parallelizing_path_finding": 5.0,
         "shortest_path_b": 1.0,
         "shortest_path_g": 0.0,
@@ -50,8 +50,8 @@ def test_example():
         "vmd_resolution": 6,
         "output_directory": test_dir,
         "logfile": open(os.path.join(test_dir, "log.txt"), "w", encoding="utf-8"),
-        "user_specified_contact_map_filename": "",
-        "user_specified_functionalized_matrix_filename": "",
+        "contact_map_path": "",
+        "functionalized_matrix_filename": "",
         "simply_formatted_paths_filename": os.path.join(
             test_dir, "simply_formatted_paths.txt"
         ),
@@ -91,7 +91,7 @@ def test_issue_1_serial():
     os.makedirs(test_dir, exist_ok=True)
     config = {
         "contact_map_distance_limit": 4.5,
-        "desired_number_of_paths": 15,
+        "n_paths": 15,
         "load_wisp_saved_matrix": "FALSE",
         "wisp_saved_matrix_filename": "",
         "longest_path_b": 0.0,
@@ -105,9 +105,9 @@ def test_issue_1_serial():
         "node_sphere_opacity": 1.0,
         "node_sphere_r": 1.0,
         "node_sphere_radius": 1.0,
-        "num_frames_to_load_before_processing": 1,
-        "number_processors": 1,
-        "pdb_trajectory_filename": pdb_path,
+        "frame_chunks": 1,
+        "n_cores": 1,
+        "pdb_path": pdb_path,
         "seconds_to_wait_before_parallelizing_path_finding": 5.0,
         "shortest_path_b": 1.0,
         "shortest_path_g": 0.0,
@@ -120,8 +120,8 @@ def test_issue_1_serial():
         "vmd_resolution": 6,
         "output_directory": test_dir,
         "logfile": open(os.path.join(test_dir, "log.txt"), "w", encoding="utf-8"),
-        "user_specified_contact_map_filename": "",
-        "user_specified_functionalized_matrix_filename": "",
+        "contact_map_path": "",
+        "functionalized_matrix_filename": "",
         "simply_formatted_paths_filename": os.path.join(
             test_dir, "simply_formatted_paths.txt"
         ),
