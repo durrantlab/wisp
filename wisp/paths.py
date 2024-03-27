@@ -255,7 +255,9 @@ class GetPaths:
         # Check for comb explosion
         log_n_paths = get_log_n_paths(G, cutoff)
         if log_n_paths > np.log(params["n_paths_max"]):
-            logger.error(f"Estimated number of paths is greater than {params['n_paths_max']}")
+            logger.error(
+                f"Estimated number of paths is greater than {params['n_paths_max']}"
+            )
             logger.error("Please increase n_paths_max to proceed.")
             logger.error("Terminating calculation.")
             sys.exit(1)
@@ -321,7 +323,7 @@ class GetPaths:
         )
         index = 1
 
-        if params["simply_formatted_paths_path"] != "":
+        if params["simply_formatted_paths_path"] is not None:
             simp = open(params["simply_formatted_paths_path"], "w")
         for path in pths:
             self.paths_description = (
@@ -335,10 +337,10 @@ class GetPaths:
                 + " - ".join([residue_keys[item] for item in path[1:]])
                 + "\n"
             )
-            if params["simply_formatted_paths_path"] != "":
+            if params["simply_formatted_paths_path"] is not None:
                 simp.write(" ".join([str(item) for item in path]) + "\n")
             index = index + 1
-        if params["simply_formatted_paths_path"] != "":
+        if params["simply_formatted_paths_path"] is not None:
             simp.close()
 
         self.paths = pths

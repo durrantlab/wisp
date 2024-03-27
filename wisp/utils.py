@@ -94,11 +94,7 @@ class GetCovarianceMatrix:
                         multiple_frames.append((params, this_frame))
                     this_frame = []  # so deleted for next time
 
-                    if (
-                        number_of_frames
-                        % params["frame_chunks"]
-                        == 0
-                    ):
+                    if number_of_frames % params["frame_chunks"] == 0:
                         # so you've collected 100 frames. Time to send them
                         # off to the multiple processes. note that the results
                         # are cumulative within the object.
@@ -243,7 +239,6 @@ class GetCovarianceMatrix:
             logger.info(
                 "Loading the user-specified functionalized correlation matrix from the file "
                 + params["functionalized_matrix_path"],
-                params["logfile"],
             )
             self.correlations = np.loadtxt(
                 params["functionalized_matrix_path"], dtype=float
@@ -305,9 +300,7 @@ class GetCovarianceMatrix:
                 + params["contact_map_path"],
                 params["logfile"],
             )
-            contact_map = np.loadtxt(
-                params["contact_map_path"], dtype=float
-            )
+            contact_map = np.loadtxt(params["contact_map_path"], dtype=float)
             self.correlations = self.correlations * contact_map
 
         # save the contact map in a human-readable format
@@ -317,9 +310,7 @@ class GetCovarianceMatrix:
         )
 
         # now save the matrix if needed
-        if (
-            params["wisp_saved_matrix_path"] != ""
-        ):  # because it only would have gotten here if load_wisp_saved_matrix = FALSE
+        if params["wisp_saved_matrix_path"] is not None:
             pickle.dump(self, open(params["wisp_saved_matrix_path"], "wb"))
 
     def convert_list_of_residue_keys_to_residue_indices(

@@ -120,7 +120,9 @@ class Visualize:
         )  # node sphere color
 
         # determine whether the average structure or a user-specified structure will be used for drawing
-        if params["pdb_single_frame_path"] != "":  # use a user-specified structure
+        if (
+            params["pdb_single_frame_path"] is not None
+        ):  # use a user-specified structure
             molecule_object_to_use = Molecule()
             molecule_object_to_use.load_pdb_from_list(
                 open(params["pdb_single_frame_path"]).readlines()
