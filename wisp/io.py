@@ -1,17 +1,15 @@
 import os
 
 
-def output_directory_info(params):
+def output_dir_info(context):
     """Create a README.txt file in the output directory describing the directory
     contents.
 
     Args:
-        params: The user-specified command-line parameters, a UserInput object
+        context: The user-specified command-line parameters, a UserInput object
     """
 
-    f = open(
-        os.path.join(params["output_directory"], "README.txt"), "w", encoding="utf-8"
-    )
+    f = open(os.path.join(context["output_dir"], "README.txt"), "w", encoding="utf-8")
     f.write(
         "This directory contains output from the program WISP. The best way to visualize the output is to use a free program called VMD, which can be downloaded from http://www.ks.uiuc.edu/Research/vmd/ ."
         + "\n\n"
@@ -50,15 +48,15 @@ def output_directory_info(params):
         + "\n\n"
     )
     f.write(
-        'functionalized_matrix_with_contact_map_applied.pickle: A python pickle file that contains the matrix obtained by multiplying a functionalized correlation matrix and a contact map. This file is not human readable but can be loaded into WISP for use in subsequent runs with the -load_wisp_saved_matrix and -wisp_saved_matrix_filename parameters. Thus, the matrix needs only to be calculated once for each trajectory, rather than every time WISP is executed. Use "wisp -help" for more information.'
+        'functionalized_matrix_with_contact_map_applied.npy: A NumPy array that contains the matrix obtained by multiplying a functionalized correlation matrix and a contact map. This file is not human readable but can be loaded into WISP for use in subsequent runs with the -load_wisp_saved_matrix and -wisp_saved_matrix_path parameters. Thus, the matrix needs only to be calculated once for each trajectory, rather than every time WISP is executed. Use "wisp -help" for more information.'
         + "\n\n"
     )
     f.write(
-        "contact_map_matrix.txt: A human readable representation of the contact map. If the user wishes to generate their own contact map rather than letting WISP generate one automatically, a custom contact map formatted like this one can be loaded into WISP using the -user_specified_contact_map_filename parameter. "
+        "contact_map_matrix.txt: A human readable representation of the contact map. If the user wishes to generate their own contact map rather than letting WISP generate one automatically, a custom contact map formatted like this one can be loaded into WISP using the -contact_map_path parameter. "
         + "\n\n"
     )
     f.write(
-        "functionalized_correlation_matrix.txt: A human readable representation of the functionalized correlation matrix, prior to multiplication by the contact map. If the user wishes to generate their own functionalized correlation matrix rather than letting WISP generate one automatically, a custom matrix formatted like this one can be loaded into WISP using the -user_specified_functionalized_matrix_filename parameter. "
+        "functionalized_correlation_matrix.txt: A human readable representation of the functionalized correlation matrix, prior to multiplication by the contact map. If the user wishes to generate their own functionalized correlation matrix rather than letting WISP generate one automatically, a custom matrix formatted like this one can be loaded into WISP using the -functionalized_matrix_path parameter. "
         + "\n\n"
     )
     f.write(

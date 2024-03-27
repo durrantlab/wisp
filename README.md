@@ -1,11 +1,43 @@
-# WISP
+<h1 align="center">WISP</h1>
 
-WISP is a trajectory analysis tool that calculates and visualizes allosteric pathways.
+<h4 align="center">Calculate and visualize allosteric pathways from molecular trajectories.</h4>
+
+<h4 align="center" style="padding-bottom: 0.5em;"><a href="https://durrantlab.github.io/wisp/">Documentation</a></h4>
+
+<p align="center">
+    <a href="https://github.com/durrantlab/wisp/actions/workflows/python-tests.yml">
+        <img src="https://github.com/durrantlab/wisp/actions/workflows/python-tests.yml/badge.svg" alt="Build Status ">
+    </a>
+    <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/wisp">
+    <a href="https://codecov.io/gh/durrantlab/wisp">
+        <img src="https://codecov.io/gh/durrantlab/wisp/branch/main/graph/badge.svg?token=74wLrsOMTD" alt="codecov">
+    </a>
+    <a href="https://github.com/durrantlab/wisp/releases">
+        <img src="https://img.shields.io/github/v/release/durrantlab/wisp" alt="GitHub release (latest by date)">
+    </a>
+    <a href="https://github.com/durrantlab/wisp/blob/main/LICENSE" target="_blank">
+        <img src="https://img.shields.io/github/license/durrantlab/wisp" alt="License">
+    </a>
+    <a href="https://github.com/durrantlab/wisp/" target="_blank">
+        <img src="https://img.shields.io/github/repo-size/durrantlab/wisp" alt="GitHub repo size">
+    </a>
+    <a href="https://github.com/psf/black" target="_blank">
+        <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Black style">
+    </a>
+    <a href="https://github.com/PyCQA/pylint" target="_blank">
+        <img src="https://img.shields.io/badge/linting-pylint-yellowgreen" alt="Black style">
+    </a>
+</p>
 
 ## Installation
 
 First, you must obtain the WISP code from [GitHub](https://github.com/durrantlab/wisp) either by cloning the repository or downloading and extracting as a ZIP file.
-Move into the `wisp` directory and run `pip install .`.
+Move into the `wisp` directory and run
+
+```python
+pip install .
+```
+
 This will install the `wisp` Python package in addition to the `wisp` command-line tool.
 
 TODO: check that the VMD plugin installation works.
@@ -21,19 +53,23 @@ TODO: check that the VMD plugin installation works.
 You may use the `wisp` command-line interface as shown below.
 
 ```bash
-wisp -pdb_trajectory_filename tests/files/trajectory_20_frames.pdb -source_residues "C_LEU_10" -sink_residues C_ASP_11
+wisp tests/files/trajectory_20_frames.pdb --source_residues C_LEU_10 --sink_residues C_ASP_11
 ```
 
 Or, you may use wisp as a library in Python.
 
 ```python
 from wisp.run import run_wisp
-config = {
-    "pdb_trajectory_filename": "tests/files/trajectory_20_frames.pdb",
-    "source_residues": ["C_LEU_10"],
-    "sink_residues": ["C_ASP_11"],
-}
-paths = run_wisp(config)
+from wisp.contexts import ContextManager
+
+# Update context
+context_manager = ContextManager()
+context_manager.pdb_path = "tests/files/trajectory_20_frames.pdb"
+context_manager.source_residues = ["C_LEU_10"]
+context_manager.sink_residues = ["C_ASP_11"]
+
+# Run wisp
+paths = run_wisp(context_manager)
 ```
 
 ## Program Output
@@ -80,196 +116,17 @@ descriptions of each:
   map. If the user wishes to generate their own contact map rather than
   letting WISP generate one automatically, a custom contact map formatted like
   this one can be loaded into WISP using the
-  `-user_specified_contact_map_filename parameter`.
+  `-contact_map_path parameter`.
 - `functionalized_correlation_matrix.txt`: A human readable representation of
   the functionalized correlation matrix, prior to multiplication by the
   contact map. If the user wishes to generate their own functionalized
   correlation matrix rather than letting WISP generate one automatically, a
   custom matrix formatted like this one can be loaded into WISP using the
-  `-user_specified_functionalized_matrix_filename parameter`.
+  `-functionalized_matrix_filename parameter`.
 - `simply_formatted_paths.txt`: A simple list of path lengths and nodes. The
   first column contains the lengths, and all following columns contain node
   indices. This file may be helpful for subsequent statistical analyses of the
   WISP output. Note that the `simply_formatted_paths.txt` output file reindexes the residues. See the `visualize.tcl` file instead for a more human-readable output.
-
-## Parameter Description
-
-`wisp -help` displays the following text:
-
-```text
-FILE-SYSTEM PARAMETERS
-----------------------
-pdb_trajectory_filename: The filename of the multi-frame PDB to
-    analyze. Individual frames should be separated by "END" or
-    "ENDMDL" lines.
-output_directory: A new directory where the WISP output should be
-    written. If this parameter is not specified, a default output
-    directory is created whose name includes the current date for
-    future reference. The default value is
-    wisp_output__Sep_12_2019__03_51_AM.
-
-COVARIANCE-MATRIX PARAMETERS
-----------------------------
-node_definition: WISP calculates the covariance matrix by defining
-    nodes associated with each protein residue. If node_definition is
-    set to "CA," the alpha carbon will be used. If set to
-    "RESIDUE_COM,", "SIDECHAIN_COM,", or "BACKBONE_COM," the whole-
-    residue, side-chain, or backbone center of mass will be used,
-    respectively. The default value is RESIDUE_COM.
-contact_map_distance_limit: If you use WISP's default contact-map
-    generator, node pairs with average inter-node distances greater
-    than this value will not be considered in calculating the
-    covariance matrix. The default value is 4.5.
-load_wisp_saved_matrix: If the covariance matrix (appropriately
-    modifed by a contact map) has been previously saved to a file, set
-    this parameter to "TRUE" to load the matrix instead of generating
-    it from scratch. WISP automatically saves a copy of this matrix to
-    the file "functionalized_matrix_with_contact_map_applied.pickle"
-    in the output directory every time it is run. The default value is
-    FALSE.
-wisp_saved_matrix_filename: If load_wisp_saved_matrix is set to
-    "TRUE," this parameter specifies the file to load. If it is set to
-    "FALSE," this parameter specifies the file to which the matrix
-    should be saved.
-
-PATH-SEARCHING PARAMETERS
--------------------------
-desired_number_of_paths: One of the advantages of WISP is that it can
-    calculate not only the optimal path between residues, but multiple
-    good paths. This parameter specifies the desired number of paths.
-    The default value is 1.
-source_residues: This parameter specifies the source residues for path
-    generation. A list of residues should be constructed of the form
-    "CHAIN_RESNAME_RESID," separated by spaces. For example: "X_SER_1
-    X_LEU_4." For unix to treat a space-containing command-line
-    parameter as a single parameter, it must be enclosed in quotes.
-    If your PDB file does not have a chain, use `A`: `A_LEU_4`.
-sink_residues: This parameter specifies the sink residues for path
-    generation. The format is the same as for the source_residues
-    parameter.
-
-MULTI-PROCESSOR PARAMETERS
---------------------------
-number_processors: On unix-like machines, WISP can use multiple
-    processors to significantly increase speed. This parameter
-    specifies the number of processors to use. The default value is 1.
-num_frames_to_load_before_processing: When WISP is run with multiple
-    processors, the frames from the PDB are loaded in chunks before
-    being distributed to the many processors. This parameter specifies
-    the number of frames to load before distribution. The default
-    value is 96.
-
-VISUALIZATION PARAMETERS
-------------------------
-shortest_path_radius: WISP outputs a VMD state file to facilitate
-    visualization. The shortest path is represented by a strand with
-    the largest radius. Longer paths have progressively smaller radii.
-    This parameter specifies the radius of the shortest path, in
-    Angstroms. The default value is 0.1.
-longest_path_radius: This parameter specifies the radius of the
-    longest path visualized, in Angstroms. The default value is 0.01.
-spline_smoothness: The paths are represented by splines connecting the
-    nodes. This parameter indicates the smoothness of the splines.
-    Smaller values produce smoother splies, but take longer to render.
-    The default value is 0.01.
-vmd_resolution: When visualizing in VMD, a number of cylinders and
-    spheres are drawn. This parameter specifies the resolution to use.
-    The default value is 6.
-node_sphere_radius: When visualizing in VMD, spheres are placed at the
-    locations of the nodes. This parameter specifies the radius of
-    these spheres. The default value is 1.0.
-shortest_path_r: The color of the shortest path is given by an RGB
-    color code. This parameter specifies the R value, ranging from 0.0
-    to 1.0. The default value is 0.0.
-shortest_path_g: The color of the shortest path is given by an RGB
-    color code. This parameter specifies the G value, ranging from 0.0
-    to 1.0. The default value is 0.0.
-shortest_path_b: The color of the shortest path is given by an RGB
-    color code. This parameter specifies the B value, ranging from 0.0
-    to 1.0. The default value is 1.0.
-longest_path_r: The color of the longest path is given by an RGB color
-    code. This parameter specifies the R value, ranging from 0.0 to
-    1.0. The default value is 1.0.
-longest_path_g: The color of the longest path is given by an RGB color
-    code. This parameter specifies the G value, ranging from 0.0 to
-    1.0. The default value is 0.0.
-longest_path_b: The color of the longest path is given by an RGB color
-    code. This parameter specifies the B value, ranging from 0.0 to
-    1.0. The default value is 0.0.
-node_sphere_r: The color of the node spheres is given by an RGB color
-    code. This parameter specifies the R value, ranging from 0.0 to
-    1.0. The default value is 1.0.
-node_sphere_g: The color of the node spheres is given by an RGB color
-    code. This parameter specifies the G value, ranging from 0.0 to
-    1.0. The default value is 1.0.
-node_sphere_b: The color of the node spheres is given by an RGB color
-    code. This parameter specifies the B value, ranging from 0.0 to
-    1.0. The default value is 1.0.
-shortest_path_opacity: The opacity of the shortest path, ranging from
-    0.0 (transparent) to 1.0 (fully opaque). Note that if
-    --shortest_path_opacity, --longest_path_opacity, and
-    --node_sphere_opacity are not all identical, the output TCL file
-    will contain many materials, which may be less-than-desirable for
-    some users. The default value is 1.0.
-longest_path_opacity: The opacity of the longest path, ranging from
-    0.0 (transparent) to 1.0 (fully opaque). The default value is 1.0.
-node_sphere_opacity: The opacity of the node spheres, ranging from 0.0
-    (transparent) to 1.0 (fully opaque). The default value is 1.0.
-pdb_single_frame_filename: By default, WISP uses the trajectory-
-    average structure for positioning the nodes, visualizing the paths
-    and protein, etc. However, if desired, a separate PDB structure
-    with the same residue order and number can be specified for this
-    purpose using the "pdb_single_frame_filename" parameter.
-
-ADVANCED FEATURES
------------------
-seconds_to_wait_before_parallelizing_path_finding: WISP identifies
-    paths from the source to the sink by recursively visiting node
-    neighbors. The program begins the recursion algorithm on a single
-    processor before distributing the search efforts to multiple
-    processors. This parameter specifies how long WISP should search
-    for source-sink paths using a single processor before distributing
-    the search effort over multiple processors. By waiting longer
-    before distribution, the search efforts are ultimately distributed
-    more evenly over the multiple processors, potentially increasing
-    speed in the long run. On the other hand, specifiying a lower
-    value for this parameter means the program will spend more time
-    running on multiple processors, also potentially increasing speed.
-    A balance must be struck. The default value is 5.0.
-user_specified_functionalized_matrix_filename: A text file containing
-    a user-specified functionalized correlation matrix. If not given,
-    WISP's default functionalized correlation matrix, as described in
-    the WISP publication, will be automatically calculated. For
-    convenience, WISP automatically saves a human-readable copy of the
-    matrix used to the file "functionalized_correlation_matrix.txt" in
-    the output directory every time it is run.
-user_specified_contact_map_filename: A text file containing a user-
-    specified contact map. If given, each element of the
-    functionalized matrix will be multiplied by the corresponding
-    value specified in the file. If not given, WISP's default contact
-    map, based on the distances between average node locations, will
-    be automatically applied. For convenience, WISP automatically
-    saves a human-readable copy of the contact-map matrix to the file
-    "contact_map_matrix.txt" in the output directory every time it is
-    run.
-
-Notes:
-1) To visualize in VMD, first load the output TCL file, then load the PDB file.
-2) WISP ignores PDB segnames. Every residue in your PDB trajectory must be
-   uniquely identifiable by the combination of its chain, resname, and resid.
-
-Example:
-     wisp -pdb_trajectory_filename multi_frame_pdb.pdb
-         -node_definition CA -contact_map_distance_limit 4.5
-         -load_wisp_saved_matrix false -wisp_saved_matrix_filename
-         matrix.file -desired_number_of_paths 30 -source_residues
-         "X_SER_1 X_LEU_4" -sink_residues X_ARG_37 -number_processors
-         24 -num_frames_to_load_before_processing 96
-         -seconds_to_wait_before_parallelizing_path_finding 10.0
-         -shortest_path_radius 0.2 -longest_path_radius 0.05
-         -spline_smoothness 0.05 -vmd_resolution 6 -node_sphere_radius
-         1.0
-```
 
 ## Deploying
 
@@ -297,8 +154,3 @@ If you use WISP in your work, please cite:
 ## License
 
 It is licensed under the [Academic Free License 3.0](http://opensource.org/licenses/AFL-3.0).
-
-WISP is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-A PARTICULAR PURPOSE.
-See the GNU General Public License for more details.
