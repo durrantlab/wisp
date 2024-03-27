@@ -14,15 +14,15 @@ from .traj import collect_data_from_frames, multi_threading_to_collect_data_from
 class GetCovarianceMatrix:
     """Calculate and store the covariance matrix"""
 
-    def __init__(self, params):
+    def __init__(self, context):
         """
         Args:
-            params: user-specified command-line parameters (a UserInput object)
+            context: WISP context for computing the covariance matrix.
         """
 
         # first, split the file into frames. ^END matches both VMD and ENDMDL
         # formats.
-        afile = open(params["pdb_path"], mode="r", encoding="utf-8")
+        afile = open(context["pdb_path"], mode="r", encoding="utf-8")
         this_frame = []
         first_frame = True
         number_of_frames = 0
@@ -31,7 +31,7 @@ class GetCovarianceMatrix:
             "Loading frames from the PDB file and building the covariance matrix"
         )
 
-        if params["n_cores"] == 1:
+        if context["n_cores"] == 1:
             load_frames_data = collect_data_from_frames()
 
             # a pdb object that will eventually contain the average structure
@@ -50,7 +50,7 @@ class GetCovarianceMatrix:
                     if len(this_frame) == 0:
                         break
 
-                    load_frames_data.value_func((params, this_frame))
+                    load_frames_data.value_func((context, this_frame))
 
                     this_frame = []  # so deleted for next time
 
@@ -91,15 +91,15 @@ class GetCovarianceMatrix:
                     if len(this_frame) > 0:
                         # Because sometimes ENDMDL followed by END => empty
                         # frame.
-                        multiple_frames.append((params, this_frame))
+                        multiple_frames.append((context, this_frame))
                     this_frame = []  # so deleted for next time
 
-                    if number_of_frames % params["frame_chunks"] == 0:
+                    if number_of_frames % context["frame_chunks"] == 0:
                         # so you've collected 100 frames. Time to send them
                         # off to the multiple processes. note that the results
                         # are cumulative within the object.
                         tmp = multi_threading_to_collect_data_from_frames(
-                            multiple_frames, params["n_cores"]
+                            multiple_frames, context["n_cores"]
                         ).combined_results
 
                         if total_coordinate_sum is None:
@@ -124,7 +124,7 @@ class GetCovarianceMatrix:
 
             # you need to get the last chunk
             tmp = multi_threading_to_collect_data_from_frames(
-                multiple_frames, params["n_cores"]
+                multiple_frames, context["n_cores"]
             ).combined_results  # note that the results are cumulative within the object
             if total_coordinate_sum is None:
                 total_coordinate_sum = tmp[0]
@@ -152,22 +152,19 @@ class GetCovarianceMatrix:
         # now process the data that has been loaded
         # now get the average location of each node
 
-        logger.info("Saving the average PDB file...", params["logfile"])
+        logger.info("Saving the average PDB file...")
         self.average_pdb.save_pdb(
-            os.path.join(params["output_directory"], "average_structure.pdb")
+            os.path.join(context["output_dir"], "average_structure.pdb")
         )
 
-        logger.info(
-            "Calculating the average location of each node...", params["logfile"]
-        )
+        logger.info("Calculating the average location of each node...")
         self.average_pdb.map_atoms_to_residues()
-        self.average_pdb.map_nodes_to_residues(params["node_definition"])
+        self.average_pdb.map_nodes_to_residues(context["node_definition"])
 
         # now compute a set of deltas for each node, stored in a big array. delta = distance from node to average node location
         # so note that the nodes do need to be computed for each frame
         logger.info(
             "Calculating the correlation for each node-node pair...",
-            params["logfile"],
         )
         set_of_deltas = {}
         for index, residue_iden in enumerate(
@@ -188,8 +185,8 @@ class GetCovarianceMatrix:
             )
 
         # now build the correlation matrix
-        if params["functionalized_matrix_path"] == "":
-            logger.info("Building the correlation matrix...", params["logfile"])
+        if context["functionalized_matrix_path"] is None:
+            logger.info("Building the correlation matrix...")
             self.correlations = np.empty(
                 (
                     len(self.average_pdb.residue_identifiers_in_order),
@@ -217,7 +214,6 @@ class GetCovarianceMatrix:
                             + ' residues that matched "'
                             + residue2_key
                             + '". Are each of your residues uniquely defined?',
-                            params["logfile"],
                         )
                         sys.exit(0)
 
@@ -238,27 +234,26 @@ class GetCovarianceMatrix:
         else:  # so the user has specified a filename containing the covariance matrix
             logger.info(
                 "Loading the user-specified functionalized correlation matrix from the file "
-                + params["functionalized_matrix_path"],
+                + context["functionalized_matrix_path"],
             )
             self.correlations = np.loadtxt(
-                params["functionalized_matrix_path"], dtype=float
+                context["functionalized_matrix_path"], dtype=float
             )
 
         # save the correlation matrix in a human-readable format
         np.savetxt(
             os.path.join(
-                params["output_directory"], "functionalized_correlation_matrix.txt"
+                context["output_dir"], "functionalized_correlation_matrix.txt"
             ),
             self.correlations,
         )
 
         # now modify the correlation matrix, setting to 0 wherever the average distance between nodes is greater than a given cutoff
         contact_map = np.ones(self.correlations.shape)
-        if params["contact_map_path"] == "":
-            if params["contact_map_distance_limit"] != 999999.999:
+        if context["contact_map_path"] is None:
+            if context["contact_map_distance_limit"] != 999999.999:
                 logger.info(
                     "Applying the default WISP distance-based contact-map filter to the matrix so that distant residues will never be considered correlated...",
-                    params["logfile"],
                 )
                 for index1 in range(
                     len(self.average_pdb.residue_identifiers_in_order) - 1
@@ -287,7 +282,7 @@ class GetCovarianceMatrix:
                         )
                         if (
                             min_dist_between_residue_atoms
-                            > params["contact_map_distance_limit"]
+                            > context["contact_map_distance_limit"]
                         ):
                             # so they are far apart
                             self.correlations[index1][index2] = 0.0
@@ -297,21 +292,20 @@ class GetCovarianceMatrix:
         else:  # so the user has specified a contact map
             logger.info(
                 "Loading and applying the user-specified contact map from the file "
-                + params["contact_map_path"],
-                params["logfile"],
+                + context["contact_map_path"],
             )
-            contact_map = np.loadtxt(params["contact_map_path"], dtype=float)
+            contact_map = np.loadtxt(context["contact_map_path"], dtype=float)
             self.correlations = self.correlations * contact_map
 
         # save the contact map in a human-readable format
         np.savetxt(
-            os.path.join(params["output_directory"], "contact_map_matrix.txt"),
+            os.path.join(context["output_dir"], "contact_map_matrix.txt"),
             contact_map,
         )
 
         # now save the matrix if needed
-        if params["wisp_saved_matrix_path"] is not None:
-            pickle.dump(self, open(params["wisp_saved_matrix_path"], "wb"))
+        if context["wisp_saved_matrix_path"] is not None:
+            pickle.dump(self, open(context["wisp_saved_matrix_path"], "wb"))
 
     def convert_list_of_residue_keys_to_residue_indices(
         self, list_residue_keys: Collection[str]

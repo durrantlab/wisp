@@ -89,7 +89,11 @@ class ContextManager:
         self.pdb_single_frame_path: str | None = None
         """By default, WISP uses the trajectory-average structure for positioning the
         nodes, visualizing the paths and protein, etc. However, if desired, a separate
-        PDB structure with the same residue order and number can be specified for this purpose using the pdb_single_frame_path parameter."""
+        PDB structure with the same residue order and number can be specified for this
+        purpose using the pdb_single_frame_path parameter."""
+        self.write_formatted_paths: bool = False
+        """Write a text file containing a simply formatted list of paths.
+        """
         self.shortest_path_radius: float = 0.1
         """WISP outputs a VMD state file to facilitate visualization. The shortest path
         is represented by a strand with the largest radius. Longer paths have

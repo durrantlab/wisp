@@ -1,24 +1,20 @@
 import os
 import pickle
 import time
-from collections.abc import MutableMapping
-from typing import Any
 
 import numpy as np
 from loguru import logger
 
+from .cli import run_cli
 from .contexts import ContextManager
-from .io import output_directory_info
+from .io import output_dir_info
 from .paths import GetPaths
 from .utils import GetCovarianceMatrix
 from .viz import Visualize
 
 
-def run_wisp(context: MutableMapping[str, Any]) -> None:
-    # Update default context
-    context_manager = ContextManager()
-    context = context_manager.update(context)
-
+def run_wisp(context_manager: ContextManager) -> None:
+    context = context_manager.get()
     program_start_time = time.time()
 
     # compute the correlation matrix
@@ -41,7 +37,7 @@ def run_wisp(context: MutableMapping[str, Any]) -> None:
         correlation_matrix_object,
         open(
             os.path.join(
-                context["output_directory"],
+                context["output_dir"],
                 "functionalized_matrix_with_contact_map_applied.pickle",
             ),
             "wb",
@@ -69,10 +65,15 @@ def run_wisp(context: MutableMapping[str, Any]) -> None:
     Visualize(context, correlation_matrix_object, paths)
 
     # provide the user information about the generated files
-    output_directory_info(context)
+    output_dir_info(context)
 
     logger.info(
         "Program execution time: " + str(time.time() - program_start_time) + " seconds"
     )
 
     return paths.paths
+
+
+def main():
+    context_manager = run_cli()
+    run_wisp(context_manager)

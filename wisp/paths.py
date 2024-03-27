@@ -1,4 +1,5 @@
 import copy
+import os
 import multiprocessing as mp
 import sys
 import time
@@ -231,17 +232,15 @@ class GetPaths:
         G = nx.Graph(incoming_graph_data=corr_matrix)
 
         # first calculate length of shortest path between any source and sink
-        logger.info("Calculating paths...", params["logfile"])
+        logger.info("Calculating paths...")
         logger.info(
             "Calculating the shortest path between any of the specified sources and any of the specified sinks...",
-            params["logfile"],
         )
         shortest_length, shortest_path = self.get_shortest_path_length(
             corr_matrix, srcs, snks, G
         )
         logger.info(
             f"The shortest path has length {str(shortest_length)}",
-            params["logfile"],
         )
 
         path = [shortest_length]
@@ -270,11 +269,10 @@ class GetPaths:
             "Identifying the cutoff required to produce "
             + str(params["n_paths"])
             + " paths...",
-            params["logfile"],
         )
         num_paths = 1
         while num_paths < params["n_paths"]:
-            logger.info(f"Testing the cutoff {str(cutoff)}...", params["logfile"])
+            logger.info(f"Testing the cutoff {str(cutoff)}...")
             cutoff_in_array = np.array([cutoff], np.float64)
             pths = self.remove_redundant_paths(
                 self.get_paths_between_multiple_endpoints(
@@ -285,7 +283,6 @@ class GetPaths:
 
             logger.info(
                 f"The cutoff {str(cutoff)} produces {num_paths} paths...",
-                params["logfile"],
             )
 
             if (
@@ -313,7 +310,6 @@ class GetPaths:
             pths = pths[: params["n_paths"]]
             logger.info(
                 "Keeping the first " + str(params["n_paths"]) + " of these paths...",
-                params["logfile"],
             )
 
         self.paths_description = ""
@@ -323,8 +319,6 @@ class GetPaths:
         )
         index = 1
 
-        if params["simply_formatted_paths_path"] is not None:
-            simp = open(params["simply_formatted_paths_path"], "w")
         for path in pths:
             self.paths_description = (
                 f"{self.paths_description}Path {str(index)}:" + "\n"
@@ -337,11 +331,14 @@ class GetPaths:
                 + " - ".join([residue_keys[item] for item in path[1:]])
                 + "\n"
             )
-            if params["simply_formatted_paths_path"] is not None:
-                simp.write(" ".join([str(item) for item in path]) + "\n")
             index = index + 1
-        if params["simply_formatted_paths_path"] is not None:
-            simp.close()
+
+        if params["write_formatted_paths"]:
+            formatted_paths_path = os.path.join(
+                params["output_dir"], "simply_formatted_paths.txt"
+            )
+            with open(formatted_paths_path, "w", encoding="utf-8") as f:
+                f.writelines(" ".join([str(item) for item in path]) + "\n")
 
         self.paths = pths
 
@@ -554,7 +551,6 @@ class GetPaths:
                 "Starting serial portion of path-finding algorithm (will run for "
                 + str(params["seconds_to_wait_before_parallelizing_path_finding"])
                 + " seconds)...",
-                params["logfile"],
             )
             atime = time.time()
             while (
@@ -576,7 +572,6 @@ class GetPaths:
                     "Starting parallel portion of path-finding algorithm running on "
                     + str(params["n_cores"])
                     + " processors...",
-                    params["logfile"],
                 )
                 paths_growing_out_from_source = [
                     (cutoff, sink, G, path) for path in paths_growing_out_from_source
@@ -590,7 +585,6 @@ class GetPaths:
             else:
                 logger.info(
                     "(All paths found during serial path finding; parallelization not required)",
-                    params["logfile"],
                 )
 
         full_paths_from_start_to_sink.sort()

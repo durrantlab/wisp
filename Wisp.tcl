@@ -45,9 +45,9 @@ namespace eval ::wisp:: {
   #if {![info exists wisp_directory]} {variable wisp_directory "./wisp.py"} ;# depending on whether the user has set the value in their .vmdrc
   variable wisp_directory_temp ""
   variable wisp_directory_format "file"
-  variable output_directory ""
-  variable output_directory_temp ""
-  variable output_directory_format "directory"
+  variable output_dir ""
+  variable output_dir_temp ""
+  variable output_dir_format "directory"
   variable node_definition "CA" ;# RESIDUE_COM, SIDECHAIN_COM, BACKBONE_COM
   variable node_definition_temp ""
   variable node_definition_format "list {CA RESIDUE_COM SIDECHAIN_COM BACKBONE_COM}"
@@ -107,7 +107,7 @@ namespace eval ::wisp:: {
   variable path_contrast_format "slider 1.0 30.0"
   variable num_paths 0 ;# variable will be modified once a WISP visualization is loaded
 
-  variable arglist_files "wisp_directory output_directory"
+  variable arglist_files "wisp_directory output_dir"
   variable arglist_covariance "node_definition contact_map_distance_limit load_wisp_saved_matrix wisp_saved_matrix_path"
   variable arglist_pathsearching "n_paths"
   variable arglist_multiprocessor "n_cores frame_chunks"
@@ -294,14 +294,14 @@ proc ::wisp::run_wisp {} {
 
   set pdb_path $::wisp::temp_pdb ;#[molinfo $selected_mol get filename]
   set timename [clock format [clock seconds] -format "wisp_output__%h_%d_%Y__%H_%M_%p"]
-  if {$::wisp::output_directory == ""} {
+  if {$::wisp::output_dir == ""} {
     set outdir $timename
   } else {
-    set outdir [file join $::wisp::output_directory $timename]
+    set outdir [file join $::wisp::output_dir $timename]
   }
   set curdir [pwd]
   cd $::wisp::workdir
-  set command "python $::wisp::wisp_directory -pdb_path $pdb_path -source_residues \"$src_str\" -sink_residues \"$sink_str\" -output_directory $outdir $other_args"
+  set command "python $::wisp::wisp_directory -pdb_path $pdb_path -source_residues \"$src_str\" -sink_residues \"$sink_str\" -output_dir $outdir $other_args"
   puts "running command: $command"
   update
 
@@ -377,7 +377,7 @@ proc ::wisp::find_py {} {
 
 proc ::wisp::default_args {} { ;# in case there is some sort of problem with parsing the helpfile, this will assign the default arguments
   set ::wisp::arglist {}
-  #lappend ::wisp::arglist output_directory
+  #lappend ::wisp::arglist output_dir
   lappend ::wisp::arglist node_definition
   lappend ::wisp::arglist contact_map_distance_limit
   lappend ::wisp::arglist load_wisp_saved_matrix
@@ -412,7 +412,7 @@ proc ::wisp::default_args {} { ;# in case there is some sort of problem with par
 proc ::wisp::get_other_args {} {
   set argstr ""
   foreach arg $::wisp::arglist {
-    if {$arg == "pdb_path" || $arg == "output_directory"} {continue}
+    if {$arg == "pdb_path" || $arg == "output_dir"} {continue}
     eval "set tmpvar \$::wisp::$arg"
     if {$tmpvar != {}} {set argstr [eval "concat $argstr \"-$arg \$::wisp::$arg\""]}
   }

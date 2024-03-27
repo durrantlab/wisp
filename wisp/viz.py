@@ -30,11 +30,11 @@ def log(astring, fileobjects, print_viz=False):  # prints to screen and to log f
 class Visualize:
     """A class to facilitate the visualization of the identified paths in VMD"""
 
-    def __init__(self, params, corr_matrix_object, pths):
+    def __init__(self, context, corr_matrix_object, pths):
         """Get paths between a single sink and a single source
 
         Args:
-            params: the user-specified command-line parameters, a UserInput object
+            context: the user-specified command-line parameters, a UserInput object
             residue_keys: a list containing string representations of each residue ("CHAIN_RESNAME_RESID")
             node_locs: a dictionary, mapping string representations of each residue to a np.array representation
                 of the node location
@@ -42,23 +42,21 @@ class Visualize:
         """
 
         log_files = [
-            params["logfile"],
-            open(os.path.join(params["output_directory"], "visualize.tcl"), "w"),
-            open(os.path.join(params["output_directory"], "visualize.vmd"), "w"),
+            open(os.path.join(context["output_dir"], "visualize.tcl"), "w"),
+            open(os.path.join(context["output_dir"], "visualize.vmd"), "w"),
         ]
 
         # output a easy-to-read-representation of the paths
         log(pths.paths_description, log_files)
 
         if (
-            params["longest_path_opacity"] == params["shortest_path_opacity"]
-            and params["longest_path_opacity"] == params["node_sphere_opacity"]
+            context["longest_path_opacity"] == context["shortest_path_opacity"]
+            and context["longest_path_opacity"] == context["node_sphere_opacity"]
         ):
             opacity_required = False
         else:
             opacity_required = True
 
-        log("", params["logfile"])
         log("# Creating VMD state (TCL) file for visualization...", log_files)
 
         # get the color range
@@ -81,17 +79,17 @@ class Visualize:
         # define the colors
         a1 = np.array(
             [
-                params["shortest_path_r"],
-                params["shortest_path_g"],
-                params["shortest_path_b"],
+                context["shortest_path_r"],
+                context["shortest_path_g"],
+                context["shortest_path_b"],
             ],
             np.float64,
         )
         a2 = np.array(
             [
-                params["longest_path_r"],
-                params["longest_path_g"],
-                params["longest_path_b"],
+                context["longest_path_r"],
+                context["longest_path_g"],
+                context["longest_path_b"],
             ],
             np.float64,
         )
@@ -112,25 +110,25 @@ class Visualize:
             )
         color_defs[coloridd] = (
             "color change rgb 22 "
-            + str(params["node_sphere_r"])
+            + str(context["node_sphere_r"])
             + " "
-            + str(params["node_sphere_g"])
+            + str(context["node_sphere_g"])
             + " "
-            + str(params["node_sphere_b"])
+            + str(context["node_sphere_b"])
         )  # node sphere color
 
         # determine whether the average structure or a user-specified structure will be used for drawing
         if (
-            params["pdb_single_frame_path"] is not None
+            context["pdb_single_frame_path"] is not None
         ):  # use a user-specified structure
             molecule_object_to_use = Molecule()
             molecule_object_to_use.load_pdb_from_list(
-                open(params["pdb_single_frame_path"]).readlines()
+                open(context["pdb_single_frame_path"]).readlines()
             )
             molecule_object_to_use.map_atoms_to_residues()
-            molecule_object_to_use.map_nodes_to_residues(params["node_definition"])
+            molecule_object_to_use.map_nodes_to_residues(context["node_definition"])
             molecule_object_to_use.save_pdb(
-                os.path.join(params["output_directory"], "draw_frame.pdb")
+                os.path.join(context["output_dir"], "draw_frame.pdb")
             )
             molecule_path = "draw_frame.pdb"
         else:  # so use the average structure
@@ -177,7 +175,7 @@ class Visualize:
         log("mol rename top " + molecule_path, log_files)
 
         if (
-            params["node_sphere_radius"] != 0.0
+            context["node_sphere_radius"] != 0.0
         ):  # if the radius is 0.0, don't even draw the spheres
             # draw spheres
             log("\n# Draw spheres at the nodes", log_files)
@@ -188,7 +186,7 @@ class Visualize:
                 )
                 log(
                     "material change opacity node_spheres "
-                    + str(params["node_sphere_opacity"]),
+                    + str(context["node_sphere_opacity"]),
                     log_files,
                 )
                 log("draw material node_spheres", log_files)
@@ -206,9 +204,9 @@ class Visualize:
                     + " "
                     + str(node[2])
                     + "} resolution "
-                    + str(params["vmd_resolution"])
+                    + str(context["vmd_resolution"])
                     + " radius "
-                    + str(params["node_sphere_radius"]),
+                    + str(context["node_sphere_radius"]),
                     log_files,
                 )
 
@@ -240,13 +238,14 @@ class Visualize:
             )  # so 0.95 => 9.5 => 9 => 32 (red); 0.05 => 0.5 > 0 > 23 (pretty close to blue, but not perfect blue)
 
             radius = (
-                ratio * (params["longest_path_radius"] - params["shortest_path_radius"])
-                + params["shortest_path_radius"]
+                ratio
+                * (context["longest_path_radius"] - context["shortest_path_radius"])
+                + context["shortest_path_radius"]
             )
             opacity = (
                 ratio
-                * (params["longest_path_opacity"] - params["shortest_path_opacity"])
-                + params["shortest_path_opacity"]
+                * (context["longest_path_opacity"] - context["shortest_path_opacity"])
+                + context["shortest_path_opacity"]
             )
 
             if opacity_required:
@@ -277,7 +276,7 @@ class Visualize:
                 tck, _ = interpolate.splprep([x_vals, y_vals, z_vals], s=0, k=degree)
 
                 # now interpolate
-                unew = np.arange(0, 1.01, params["spline_smoothness"])
+                unew = np.arange(0, 1.01, context["spline_smoothness"])
 
                 out = interpolate.splev(unew, tck)
 
@@ -306,7 +305,7 @@ class Visualize:
                         + "} radius "
                         + str(radius)
                         + " resolution "
-                        + str(params["vmd_resolution"])
+                        + str(context["vmd_resolution"])
                         + " filled 0",
                         log_files,
                     )
@@ -328,7 +327,7 @@ class Visualize:
                     + "} radius "
                     + str(radius)
                     + " resolution "
-                    + str(params["vmd_resolution"])
+                    + str(context["vmd_resolution"])
                     + " filled 0",
                     log_files,
                 )

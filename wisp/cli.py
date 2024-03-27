@@ -20,17 +20,23 @@ def setup_cli_interface(context_manager: ContextManager) -> argparse.ArgumentPar
     return parser
 
 
-def setup_output_directory(output_dir: str) -> None:
+def setup_output_dir(output_dir: str) -> None:
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
 
-if __name__ == "__main__":
+def run_cli() -> ContextManager:
     context_manager = ContextManager()
     parser = setup_cli_interface(context_manager)
     args = parser.parse_args()
 
     # Convert argparse Namespace to dictionary, excluding None values
     updates = {k: v for k, v in vars(args).items() if v is not None}
+    context_manager.update(updates)
 
-    setup_output_directory(context_manager.output_dir)
+    setup_output_dir(context_manager.output_dir)
+    return context_manager
+
+
+if __name__ == "__main__":
+    run_cli()
