@@ -5,8 +5,8 @@
 <h4 align="center" style="padding-bottom: 0.5em;"><a href="https://durrantlab.github.io/wisp/">Documentation</a></h4>
 
 <p align="center">
-    <a href="https://github.com/durrantlab/wisp/actions/workflows/python-tests.yml">
-        <img src="https://github.com/durrantlab/wisp/actions/workflows/python-tests.yml/badge.svg" alt="Build Status ">
+    <a href="https://github.com/durrantlab/wisp/actions/workflows/build.yml">
+        <img src="https://github.com/durrantlab/wisp/actions/workflows/build.yml/badge.svg" alt="Build Status ">
     </a>
     <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/wisp">
     <a href="https://codecov.io/gh/durrantlab/wisp">
