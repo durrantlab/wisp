@@ -10,18 +10,20 @@ class UserInput:
     def __init__(self) -> None:
         # Initialize the argument parser
         parser = argparse.ArgumentParser(
-            description="WISP: A Tool for Protein Analysis"
+            description=f"WISP v{__version__}"
         )
 
         parser.add_argument("pdb_path", type=str, help="Path to PDB file to analyze.")
         parser.add_argument(
             "--source_residues",
             nargs="+",
+            required=True,
             help="This parameter specifies the source residues for path generation. A list of residues should be constructed of the form 'CHAIN_RESNAME_RESID', separated by spaces. For example: 'X_SER_1 X_LEU_4'. For unix to treat a space-containing command-line parameter as a single parameter, it must be enclosed in quotes.",
         )
         parser.add_argument(
             "--sink_residues",
             nargs="+",
+            required=True,
             help="This parameter specifies the sink residues for path generation. The format is the same as for the source_residues parameter.",
         )
         parser.add_argument(
@@ -34,8 +36,6 @@ class UserInput:
             required=False,
             help="A new directory where the WISP output should be written. If this parameter is not specified, a default output directory is created whose name includes the current date for future reference.",
         )
-
-        # Define arguments
         parser.add_argument(
             "--n_cores",
             type=int,
@@ -198,7 +198,7 @@ class UserInput:
             type=str,
             default=None,
             required=False,
-            help="By default, WISP uses the trajectory-average structure for positioning the nodes, visualizing the paths and protein, etc. However, if desired, a separate PDB structure with the same residue order and number can be specified for this purpose using the pdb_single_frame_filename parameter.",
+            help="By default, WISP uses the trajectory-average structure for positioning the nodes, visualizing the paths and protein, etc. However, if desired, a separate PDB structure with the same residue order and number can be specified for this purpose using the pdb_single_frame_path parameter.",
         )
 
         # Parse the arguments

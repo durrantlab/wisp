@@ -23,7 +23,8 @@ def test_example():
         "contact_map_distance_limit": 4.5,
         "n_paths": 15,
         "load_wisp_saved_matrix": "FALSE",
-        "wisp_saved_matrix_filename": "",
+        "wisp_saved_matrix_path": "",
+        "n_paths_max": 100000,
         "longest_path_b": 0.0,
         "longest_path_g": 0.0,
         "longest_path_opacity": 1.0,
@@ -51,11 +52,11 @@ def test_example():
         "output_directory": test_dir,
         "logfile": open(os.path.join(test_dir, "log.txt"), "w", encoding="utf-8"),
         "contact_map_path": "",
-        "functionalized_matrix_filename": "",
-        "simply_formatted_paths_filename": os.path.join(
+        "functionalized_matrix_path": "",
+        "simply_formatted_paths_path": os.path.join(
             test_dir, "simply_formatted_paths.txt"
         ),
-        "pdb_single_frame_filename": "",
+        "pdb_single_frame_path": "",
     }
     paths = run_wisp(config)
     test_data = np.array([i[0] for i in paths], dtype=np.float64)
@@ -93,7 +94,8 @@ def test_issue_1_serial():
         "contact_map_distance_limit": 4.5,
         "n_paths": 15,
         "load_wisp_saved_matrix": "FALSE",
-        "wisp_saved_matrix_filename": "",
+        "wisp_saved_matrix_path": "",
+        "n_paths_max": 100000,
         "longest_path_b": 0.0,
         "longest_path_g": 0.0,
         "longest_path_opacity": 1.0,
@@ -121,11 +123,11 @@ def test_issue_1_serial():
         "output_directory": test_dir,
         "logfile": open(os.path.join(test_dir, "log.txt"), "w", encoding="utf-8"),
         "contact_map_path": "",
-        "functionalized_matrix_filename": "",
-        "simply_formatted_paths_filename": os.path.join(
+        "functionalized_matrix_path": "",
+        "simply_formatted_paths_path": os.path.join(
             test_dir, "simply_formatted_paths.txt"
         ),
-        "pdb_single_frame_filename": "",
+        "pdb_single_frame_path": "",
     }
     with pytest.raises(SystemExit) as e:
         run_wisp(config)

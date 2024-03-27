@@ -22,7 +22,7 @@ class GetCovarianceMatrix:
 
         # first, split the file into frames. ^END matches both VMD and ENDMDL
         # formats.
-        afile = open(params["pdb_trajectory_filename"], mode="r", encoding="utf-8")
+        afile = open(params["pdb_path"], mode="r", encoding="utf-8")
         this_frame = []
         first_frame = True
         number_of_frames = 0
@@ -31,7 +31,7 @@ class GetCovarianceMatrix:
             "Loading frames from the PDB file and building the covariance matrix"
         )
 
-        if params["number_processors"] == 1:
+        if params["n_cores"] == 1:
             load_frames_data = collect_data_from_frames()
 
             # a pdb object that will eventually contain the average structure
@@ -96,14 +96,14 @@ class GetCovarianceMatrix:
 
                     if (
                         number_of_frames
-                        % params["num_frames_to_load_before_processing"]
+                        % params["frame_chunks"]
                         == 0
                     ):
                         # so you've collected 100 frames. Time to send them
                         # off to the multiple processes. note that the results
                         # are cumulative within the object.
                         tmp = multi_threading_to_collect_data_from_frames(
-                            multiple_frames, params["number_processors"]
+                            multiple_frames, params["n_cores"]
                         ).combined_results
 
                         if total_coordinate_sum is None:
@@ -128,7 +128,7 @@ class GetCovarianceMatrix:
 
             # you need to get the last chunk
             tmp = multi_threading_to_collect_data_from_frames(
-                multiple_frames, params["number_processors"]
+                multiple_frames, params["n_cores"]
             ).combined_results  # note that the results are cumulative within the object
             if total_coordinate_sum is None:
                 total_coordinate_sum = tmp[0]
@@ -192,7 +192,7 @@ class GetCovarianceMatrix:
             )
 
         # now build the correlation matrix
-        if params["user_specified_functionalized_matrix_filename"] == "":
+        if params["functionalized_matrix_path"] == "":
             logger.info("Building the correlation matrix...", params["logfile"])
             self.correlations = np.empty(
                 (
@@ -242,11 +242,11 @@ class GetCovarianceMatrix:
         else:  # so the user has specified a filename containing the covariance matrix
             logger.info(
                 "Loading the user-specified functionalized correlation matrix from the file "
-                + params["user_specified_functionalized_matrix_filename"],
+                + params["functionalized_matrix_path"],
                 params["logfile"],
             )
             self.correlations = np.loadtxt(
-                params["user_specified_functionalized_matrix_filename"], dtype=float
+                params["functionalized_matrix_path"], dtype=float
             )
 
         # save the correlation matrix in a human-readable format
@@ -259,7 +259,7 @@ class GetCovarianceMatrix:
 
         # now modify the correlation matrix, setting to 0 wherever the average distance between nodes is greater than a given cutoff
         contact_map = np.ones(self.correlations.shape)
-        if params["user_specified_contact_map_filename"] == "":
+        if params["contact_map_path"] == "":
             if params["contact_map_distance_limit"] != 999999.999:
                 logger.info(
                     "Applying the default WISP distance-based contact-map filter to the matrix so that distant residues will never be considered correlated...",
@@ -302,11 +302,11 @@ class GetCovarianceMatrix:
         else:  # so the user has specified a contact map
             logger.info(
                 "Loading and applying the user-specified contact map from the file "
-                + params["user_specified_contact_map_filename"],
+                + params["contact_map_path"],
                 params["logfile"],
             )
             contact_map = np.loadtxt(
-                params["user_specified_contact_map_filename"], dtype=float
+                params["contact_map_path"], dtype=float
             )
             self.correlations = self.correlations * contact_map
 
@@ -318,9 +318,9 @@ class GetCovarianceMatrix:
 
         # now save the matrix if needed
         if (
-            params["wisp_saved_matrix_filename"] != ""
+            params["wisp_saved_matrix_path"] != ""
         ):  # because it only would have gotten here if load_wisp_saved_matrix = FALSE
-            pickle.dump(self, open(params["wisp_saved_matrix_filename"], "wb"))
+            pickle.dump(self, open(params["wisp_saved_matrix_path"], "wb"))
 
     def convert_list_of_residue_keys_to_residue_indices(
         self, list_residue_keys: Collection[str]

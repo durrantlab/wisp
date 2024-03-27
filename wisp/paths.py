@@ -3,13 +3,12 @@ import multiprocessing as mp
 import sys
 import time
 from collections.abc import Collection, MutableMapping
+from typing import Any
 
 import networkx as nx
 import numpy as np
 import numpy.typing as npt
 from loguru import logger
-
-from .cli import UserInput
 
 
 def get_log_n_paths(graph, cutoff_length):
@@ -215,7 +214,7 @@ class GetPaths:
         corr_matrix: npt.NDArray[np.floating],
         srcs: Collection[int],
         snks: Collection[int],
-        params: UserInput,
+        params: MutableMapping[str, Any],
         residue_keys: npt.ArrayLike,
     ):
         """Identify paths that link the source and the sink and order them by their
@@ -255,8 +254,8 @@ class GetPaths:
 
         # Check for comb explosion
         log_n_paths = get_log_n_paths(G, cutoff)
-        if log_n_paths > np.log(n_paths_max):
-            logger.error(f"Estimated number of paths is greater than {n_paths_max}")
+        if log_n_paths > np.log(params["n_paths_max"]):
+            logger.error(f"Estimated number of paths is greater than {params['n_paths_max']}")
             logger.error("Please increase n_paths_max to proceed.")
             logger.error("Terminating calculation.")
             sys.exit(1)
@@ -322,8 +321,8 @@ class GetPaths:
         )
         index = 1
 
-        if params["simply_formatted_paths_filename"] != "":
-            simp = open(params["simply_formatted_paths_filename"], "w")
+        if params["simply_formatted_paths_path"] != "":
+            simp = open(params["simply_formatted_paths_path"], "w")
         for path in pths:
             self.paths_description = (
                 f"{self.paths_description}Path {str(index)}:" + "\n"
@@ -336,10 +335,10 @@ class GetPaths:
                 + " - ".join([residue_keys[item] for item in path[1:]])
                 + "\n"
             )
-            if params["simply_formatted_paths_filename"] != "":
+            if params["simply_formatted_paths_path"] != "":
                 simp.write(" ".join([str(item) for item in path]) + "\n")
             index = index + 1
-        if params["simply_formatted_paths_filename"] != "":
+        if params["simply_formatted_paths_path"] != "":
             simp.close()
 
         self.paths = pths

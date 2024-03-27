@@ -37,7 +37,7 @@ def run_wisp(config):
     # compute the correlation matrix
     if config["load_wisp_saved_matrix"] == "TRUE":
         correlation_matrix_object = pickle.load(
-            open(config["wisp_saved_matrix_filename"], "rb")
+            open(config["wisp_saved_matrix_path"], "rb")
         )  # load the matrix instead of generating
     else:
         correlation_matrix_object = GetCovarianceMatrix(

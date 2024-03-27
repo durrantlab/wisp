@@ -120,20 +120,20 @@ class Visualize:
         )  # node sphere color
 
         # determine whether the average structure or a user-specified structure will be used for drawing
-        if params["pdb_single_frame_filename"] != "":  # use a user-specified structure
+        if params["pdb_single_frame_path"] != "":  # use a user-specified structure
             molecule_object_to_use = Molecule()
             molecule_object_to_use.load_pdb_from_list(
-                open(params["pdb_single_frame_filename"]).readlines()
+                open(params["pdb_single_frame_path"]).readlines()
             )
             molecule_object_to_use.map_atoms_to_residues()
             molecule_object_to_use.map_nodes_to_residues(params["node_definition"])
             molecule_object_to_use.save_pdb(
                 os.path.join(params["output_directory"], "draw_frame.pdb")
             )
-            molecule_filename = "draw_frame.pdb"
+            molecule_path = "draw_frame.pdb"
         else:  # so use the average structure
             molecule_object_to_use = corr_matrix_object.average_pdb
-            molecule_filename = "average_structure.pdb"
+            molecule_path = "average_structure.pdb"
 
         # get all the nodes
         nodes_used = []
@@ -157,7 +157,7 @@ class Visualize:
         log("\n# Load in the protein structure", log_files)
         log(
             "mol new "
-            + molecule_filename
+            + molecule_path
             + " type pdb first 0 last -1 step 1 filebonds 1 autobonds 1 waitfor all",
             log_files,
         )
@@ -172,7 +172,7 @@ class Visualize:
         log("mol selection {" + selection + "}", log_files)
         log("mol material Opaque", log_files)
         log("mol addrep top", log_files)
-        log("mol rename top " + molecule_filename, log_files)
+        log("mol rename top " + molecule_path, log_files)
 
         if (
             params["node_sphere_radius"] != 0.0

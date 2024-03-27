@@ -56,9 +56,9 @@ namespace eval ::wisp:: {
   variable load_wisp_saved_matrix FALSE
   variable load_wisp_saved_matrix_temp ""
   variable load_wisp_saved_matrix_format "list {TRUE FALSE}"
-  variable wisp_saved_matrix_filename "" ;# NOTE: need default here
-  variable wisp_saved_matrix_filename_temp ""
-  variable wisp_saved_matrix_filename_format "file"
+  variable wisp_saved_matrix_path "" ;# NOTE: need default here
+  variable wisp_saved_matrix_path_temp ""
+  variable wisp_saved_matrix_path_format "file"
   variable n_paths 20
   variable n_paths_temp ""
   variable n_cores 1
@@ -87,16 +87,16 @@ namespace eval ::wisp:: {
   variable shortest_path_opacity 1.0; variable longest_path_opacity 1.0; variable node_sphere_opacity 1.0;
   variable shortest_path_opacity_temp ""; variable longest_path_opacity_temp ""; variable node_sphere_opacity_temp "";
   variable shortest_path_opacity_format "slider 0.0 1.0"; variable longest_path_opacity_format "slider 0.0 1.0"; variable node_sphere_opacity_format "slider 0.0 1.0";
-  variable pdb_single_frame_filename ""
-  variable pdb_single_frame_filename_temp ""
-  variable pdb_single_frame_filename_format "file"
-  #variable simply_formatted_paths_filename ""
-  #variable simply_formatted_paths_filename_temp ""
+  variable pdb_single_frame_path ""
+  variable pdb_single_frame_path_temp ""
+  variable pdb_single_frame_path_format "file"
+  #variable simply_formatted_paths_path ""
+  #variable simply_formatted_paths_path_temp ""
   variable seconds_to_wait_before_parallelizing_path_finding 5.0
   variable seconds_to_wait_before_parallelizing_path_finding_temp ""
-  variable functionalized_matrix_filename ""
-  variable functionalized_matrix_filename_temp ""
-  variable functionalized_matrix_filename_format "file"
+  variable functionalized_matrix_path ""
+  variable functionalized_matrix_path_temp ""
+  variable functionalized_matrix_path_format "file"
   variable contact_map_path ""
   variable contact_map_path_temp ""
   variable contact_map_path_format "file"
@@ -108,11 +108,11 @@ namespace eval ::wisp:: {
   variable num_paths 0 ;# variable will be modified once a WISP visualization is loaded
 
   variable arglist_files "wisp_directory output_directory"
-  variable arglist_covariance "node_definition contact_map_distance_limit load_wisp_saved_matrix wisp_saved_matrix_filename"
+  variable arglist_covariance "node_definition contact_map_distance_limit load_wisp_saved_matrix wisp_saved_matrix_path"
   variable arglist_pathsearching "n_paths"
   variable arglist_multiprocessor "n_cores frame_chunks"
-  variable arglist_graphics "shortest_path_radius  longest_path_radius spline_smoothness vmd_resolution node_sphere_radius shortest_path_r shortest_path_g shortest_path_b longest_path_r longest_path_g longest_path_b node_sphere_r node_sphere_g node_sphere_b shortest_path_opacity longest_path_opacity node_sphere_opacity pdb_single_frame_filename"
-  variable arglist_advanced "seconds_to_wait_before_parallelizing_path_finding functionalized_matrix_filename contact_map_path"
+  variable arglist_graphics "shortest_path_radius  longest_path_radius spline_smoothness vmd_resolution node_sphere_radius shortest_path_r shortest_path_g shortest_path_b longest_path_r longest_path_g longest_path_b node_sphere_r node_sphere_g node_sphere_b shortest_path_opacity longest_path_opacity node_sphere_opacity pdb_single_frame_path"
+  variable arglist_advanced "seconds_to_wait_before_parallelizing_path_finding functionalized_matrix_path contact_map_path"
 
   variable arglist_other ""
   variable moltxt "(none)"
@@ -381,7 +381,7 @@ proc ::wisp::default_args {} { ;# in case there is some sort of problem with par
   lappend ::wisp::arglist node_definition
   lappend ::wisp::arglist contact_map_distance_limit
   lappend ::wisp::arglist load_wisp_saved_matrix
-  lappend ::wisp::arglist wisp_saved_matrix_filename
+  lappend ::wisp::arglist wisp_saved_matrix_path
   lappend ::wisp::arglist n_paths
   lappend ::wisp::arglist n_cores
   lappend ::wisp::arglist frame_chunks
@@ -402,9 +402,9 @@ proc ::wisp::default_args {} { ;# in case there is some sort of problem with par
   lappend ::wisp::arglist shortest_path_opacity
   lappend ::wisp::arglist longest_path_opacity
   lappend ::wisp::arglist node_sphere_opacity
-  lappend ::wisp::arglist pdb_single_frame_filename
+  lappend ::wisp::arglist pdb_single_frame_path
   lappend ::wisp::arglist seconds_to_wait_before_parallelizing_path_finding
-  lappend ::wisp::arglist functionalized_matrix_filename
+  lappend ::wisp::arglist functionalized_matrix_path
   lappend ::wisp::arglist contact_map_path
 
 }
@@ -412,7 +412,7 @@ proc ::wisp::default_args {} { ;# in case there is some sort of problem with par
 proc ::wisp::get_other_args {} {
   set argstr ""
   foreach arg $::wisp::arglist {
-    if {$arg == "pdb_filename" || $arg == "output_directory"} {continue}
+    if {$arg == "pdb_path" || $arg == "output_directory"} {continue}
     eval "set tmpvar \$::wisp::$arg"
     if {$tmpvar != {}} {set argstr [eval "concat $argstr \"-$arg \$::wisp::$arg\""]}
   }
