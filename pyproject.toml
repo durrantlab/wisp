@@ -1,12 +1,15 @@
 [tool.poetry]
-name = "wisp"
+name = "wispy"
 version = "0.0.0"
 description = ""
 authors = [
-    "Durrant Lab",
+    "Durrant Lab @ Pitt",
 ]
 readme = "README.md"
 license = "AFL-3.0"
+packages = [
+    { include = "wisp" },
+]
 
 [tool.poetry.scripts]
 wisp = "wisp.run:main"

@@ -1,7 +1,7 @@
 docs_dir: docs
 
 site_name: wisp
-site_author: Durrant Lab
+site_author: Durrant Lab @ Pitt
 
 # Git host
 repo_name: durrantlab/wisp
