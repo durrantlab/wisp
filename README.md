@@ -31,10 +31,15 @@
 
 ## Installation
 
-First, you must obtain the WISP code from [GitHub](https://github.com/durrantlab/wisp) either by cloning the repository or downloading and extracting as a ZIP file.
-Move into the `wisp` directory and run
+First, you must obtain the WISP code by cloning the [GitHub repository](https://github.com/durrantlab/wisp)
 
-```python
+```bash
+git clone https://github.com/durrantlab/wisp && cd wisp
+```
+
+and installing with the following command.
+
+```bash
 pip install .
 ```
 
