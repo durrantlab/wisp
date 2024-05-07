@@ -76,3 +76,23 @@ def test_issue_1_serial():
 
     with pytest.raises(SystemExit):
         run_wisp(context_manager)
+
+
+def test_issue_5():
+    pdb_path = os.path.join(FILE_DIR, "issue5.pdb")
+    test_dir = os.path.join(WRITING_DIR, "test_issue_5")
+    if os.path.exists(test_dir):
+        shutil.rmtree(test_dir)
+    os.makedirs(test_dir, exist_ok=True)
+
+    context_manager = ContextManager()
+    context_manager.pdb_path = pdb_path
+    context_manager.n_paths = 15
+    context_manager.contact_map_distance_limit = 4.5
+    context_manager.output_dir = test_dir
+    context_manager.sink_residues = ["C_PLP_1449"]
+    context_manager.source_residues = ["C_PLP_645"]
+    context_manager.n_cores = 1
+
+    with pytest.raises(SystemExit):
+        run_wisp(context_manager)
