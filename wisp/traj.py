@@ -77,9 +77,9 @@ class multi_threading_to_collect_data_from_frames:
                 total_summed_coordinates = total_summed_coordinates + chunk[0]
 
             for key in chunk[1].keys():
-                try:
+                if key in dictionary_of_node_lists.keys():
                     dictionary_of_node_lists[key].extend(chunk[1][key])
-                except Exception:
+                else:
                     dictionary_of_node_lists[key] = chunk[1][key]
 
         self.combined_results = (total_summed_coordinates, dictionary_of_node_lists)
@@ -142,7 +142,7 @@ class collect_data_from_frames:
         pdb.map_nodes_to_residues(params["node_definition"])
 
         for index, residue_iden in enumerate(pdb.residue_identifiers_in_order):
-            try:
+            if residue_iden in self.nodes.keys():
                 self.nodes[residue_iden].append(pdb.nodes[index])
-            except Exception:
+            else:
                 self.nodes[residue_iden] = [pdb.nodes[index]]
