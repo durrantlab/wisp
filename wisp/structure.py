@@ -1,11 +1,16 @@
 import gc
+from collections.abc import Iterable
 
 import numpy as np
+import numpy.typing as npt
 from loguru import logger
 
 
 class Atom:
     """A class containing atomic information."""
+
+    def __init__(self) -> None:
+        self.updated_chain: bool = False
 
     def read_pdb_line(self, Line: str, default_chain_id: str = "A") -> None:
         """Reads atomic information from a string formatted according to the PDB
@@ -16,8 +21,8 @@ class Atom:
             default_chain_id: If the chain ID is missing, replace it with this.
         """
 
-        self.line = Line
-        self.atomname = Line[11:16].strip()
+        self.line: str = Line
+        self.atomname: str = Line[11:16].strip()
 
         if len(self.atomname) == 1:
             self.atomname = self.atomname + "  "
@@ -29,30 +34,29 @@ class Atom:
             self.atomname = self.atomname + " "
 
         # now get the chain
-        self.chain = Line[21:22]
+        self.chain: str = Line[21:22]
 
         # If chain is not filled out in PDB
-        self.updated_chain = False
         if self.chain == " ":
             self.chain = default_chain_id
             self.updated_chain = True
 
         # now get the resid
         try:
-            self.resid = int(Line[22:26])
+            self.resid: int = int(Line[22:26])
         except Exception:
             self.resid = 0
 
-        self.coordinates_numpy = np.array(
+        self.coordinates_numpy: npt.NDArray[np.float64] = np.array(
             [float(Line[30:38]), float(Line[38:46]), float(Line[46:54])], np.float64
         )
 
-        self.element = ""
+        self.element: str = ""
         if len(Line) >= 79:
             # element specified explicitly at end of life
             self.element = Line[76:79].strip().upper()
         if self.element == "":  # try to guess at element from name
-            two_letters = self.atomname[:2].strip().upper()
+            two_letters: str = self.atomname[:2].strip().upper()
             if two_letters == "BR":
                 self.element = "BR"
             elif two_letters == "CL":
@@ -76,19 +80,10 @@ class Atom:
                 self.element = self.atomname[:1].strip().upper()
 
         # Any number needs to be removed from the element name
-        self.element = self.element.replace("0", "")
-        self.element = self.element.replace("1", "")
-        self.element = self.element.replace("2", "")
-        self.element = self.element.replace("3", "")
-        self.element = self.element.replace("4", "")
-        self.element = self.element.replace("5", "")
-        self.element = self.element.replace("6", "")
-        self.element = self.element.replace("7", "")
-        self.element = self.element.replace("8", "")
-        self.element = self.element.replace("9", "")
+        self.element = self.element.translate(str.maketrans("", "", "0123456789"))
 
-        self.molecule_index = Line[6:12].strip()
-        self.resname = Line[16:20]
+        self.molecule_index: str = Line[6:12].strip()
+        self.resname: str = Line[16:20]
         if self.resname.strip() == "":
             self.resname = " MOL"
 
@@ -96,7 +91,7 @@ class Atom:
 class Molecule:
     """Loads, saves, and manipulates molecular models."""
 
-    def load_pdb_from_list(self, alist):
+    def load_pdb_from_list(self, alist: Iterable[str]) -> None:
         """Loads a list of PDB ATOM/HETATM lines into the current Molecule object.
 
         Args:
@@ -106,15 +101,17 @@ class Molecule:
         gc.disable()
 
         # have to use python lists initially because not sure of size
-        self.atomnames = []
-        self.chains = []
-        self.resids = []
-        self.elements = []
-        self.resnames = []
-        self.coordinates = []
+        atomnames: list[str] = []
+        chains: list[str] = []
+        resids: list[int] = []
+        elements: list[str] = []
+        resnames: list[str] = []
+        coordinates = []
 
         default_chain_id = "A"
         for line in alist:
+            temp_atom = Atom()
+
             # If no chain IDs are specified and there are multiple chains, we need
             # to correctly account for multiple chains. We can do this by keeping track
             # of any `TER` lines and move it to the next letter.
@@ -128,22 +125,23 @@ class Molecule:
                     logger.warning("We assume first chain is A, second is B, etc.")
 
             if len(line) >= 7 and (line[:4] == "ATOM" or line[:6] == "HETATM"):
-                temp_atom = Atom()
                 temp_atom.read_pdb_line(line, default_chain_id=default_chain_id)
-                self.atomnames.append(temp_atom.atomname)
-                self.chains.append(temp_atom.chain)
-                self.resids.append(temp_atom.resid)
-                self.elements.append(temp_atom.element)
-                self.resnames.append(temp_atom.resname)
-                self.coordinates.append(temp_atom.coordinates_numpy)
+                atomnames.append(temp_atom.atomname)
+                chains.append(temp_atom.chain)
+                resids.append(temp_atom.resid)
+                elements.append(temp_atom.element)
+                resnames.append(temp_atom.resname)
+                coordinates.append(temp_atom.coordinates_numpy)
 
         # convert them into numpy arrays
-        self.atomnames = np.array(self.atomnames)
-        self.chains = np.array(self.chains)
-        self.resids = np.array(self.resids)
-        self.elements = np.array(self.elements)
-        self.resnames = np.array(self.resnames)
-        self.coordinates = np.array(self.coordinates, np.float64)
+        self.atomnames: npt.NDArray[np.str_] = np.array(atomnames, dtype="U5")
+        self.chains: npt.NDArray[np.str_] = np.array(chains, dtype="U1")
+        self.resids: npt.NDArray[np.str_] = np.array(resids, dtype="U5")
+        self.elements: npt.NDArray[np.str_] = np.array(elements, dtype="U5")
+        self.resnames: npt.NDArray[np.str_] = np.array(resnames, dtype="U5")
+        self.coordinates: npt.NDArray[np.float64] = np.array(
+            coordinates, dtype=np.float64
+        )
 
         gc.enable()
 
@@ -154,12 +152,12 @@ class Molecule:
             filename: a string specifying the file name
         """
 
-        with open(filename, "w") as f:
-            for index in range(len(self.atomnames)):
+        with open(filename, "w", encoding="utf-8") as f:
+            for index, atom_name in enumerate(self.atomnames):
                 line = (
                     "ATOM  "
                     + str(index + 1).rjust(5)
-                    + self.atomnames[index].rjust(5)
+                    + atom_name.rjust(5)
                     + self.resnames[index].strip().rjust(4)
                     + self.chains[index].strip().rjust(2)
                     + str(self.resids[index]).rjust(4)
@@ -171,7 +169,7 @@ class Molecule:
                 )
                 f.write(line + "\n")
 
-    def map_atoms_to_residues(self):
+    def map_atoms_to_residues(self) -> None:
         """Sets up self.residue_identifier_to_atom_indices, which matches
         chain_resname_resid to associated atom indices"""
 
@@ -189,8 +187,12 @@ class Molecule:
             ):
                 self.residue_identifiers_in_order.pop(t)
 
-        residue_identifiers_for_all_atoms = np.array(residue_identifiers_for_all_atoms)
-        self.residue_identifiers_in_order = np.array(self.residue_identifiers_in_order)
+        residue_identifiers_for_all_atoms: npt.NDArray = np.array(
+            residue_identifiers_for_all_atoms
+        )
+        self.residue_identifiers_in_order: npt.NDArray = np.array(
+            self.residue_identifiers_in_order
+        )
 
         self.residue_identifier_to_atom_indices = {}
         for the_id in self.residue_identifiers_in_order:
@@ -199,12 +201,15 @@ class Molecule:
             )[0]
 
     def get_indices_of_atoms_in_a_residue_by_atom_name(
-        self, residue_identifier, atom_names_list, not_selection=False
-    ):
+        self,
+        residue_identifier: str,
+        atom_names_list: Iterable[str],
+        not_selection: bool = False,
+    ) -> npt.NDArray[np.uint64]:
         """Gets the indices of atoms in a specified residue
 
         Args:
-            residue_identifier: a string (chain_resname_resid) specifying the residue
+            residue_identifier: a string (`chain_resname_resid`) specifying the residue
             atom_names_list: a list of strings containing the names of the atoms to keep
             not_selection: a optional boolean. if False, match the atom_names_list items.
                 if True, match the items not in atom_names_list
@@ -217,19 +222,20 @@ class Molecule:
         residue_indices = self.residue_identifier_to_atom_indices[residue_identifier]
 
         # now find which of these correspond to the desired atom names
-        indices_to_keep = []
+        indices_to_keep_tmp = []
         for indx in residue_indices:
             if not not_selection:
                 if self.atomnames[indx].strip() in atom_names_list:
-                    indices_to_keep.append(indx)
+                    indices_to_keep_tmp.append(indx)
             elif self.atomnames[indx].strip() not in atom_names_list:
-                indices_to_keep.append(indx)
-        indices_to_keep = np.array(indices_to_keep, np.float64)
-
-        if not indices_to_keep:
-            raise Exception(
+                indices_to_keep_tmp.append(indx)
+        if len(indices_to_keep_tmp) == 0:
+            raise RuntimeError(
                 f"No atoms found in residue {residue_identifier} with atom names {str(atom_names_list)}"
             )
+        indices_to_keep: npt.NDArray[np.uint64] = np.array(
+            indices_to_keep_tmp, dtype=np.uint64
+        )
 
         return indices_to_keep
 
