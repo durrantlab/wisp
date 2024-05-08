@@ -94,5 +94,5 @@ def test_issue_5():
     context_manager.source_residues = ["C_PLP_645"]
     context_manager.n_cores = 1
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(RuntimeError):
         run_wisp(context_manager)

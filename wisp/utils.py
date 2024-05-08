@@ -326,9 +326,10 @@ class GetCovarianceMatrix:
                 index_of_key = np.nonzero(
                     self.average_pdb.residue_identifiers_in_order == key
                 )[0][0]
-            except IndexError:
-                logger.critical(f"Cannot find {key} in the structure")
-                raise
+            except IndexError as e:
+                logger.critical(f"Cannot find {key} in the structure.")
+                logger.critical(f"Please check your source and sink residues.")
+                raise RuntimeError(f"Cannot find {key} in the structure") from e
             networkx_residue_indices.append(index_of_key)
         return networkx_residue_indices
 
