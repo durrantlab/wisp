@@ -253,14 +253,15 @@ class GetPaths:
         cutoff = shortest_length
 
         # Check for comb explosion
-        log_n_paths = get_log_n_paths(G, cutoff)
-        if log_n_paths > np.log(context["n_paths_max"]):
-            logger.error(
-                f"Estimated number of paths is greater than {context['n_paths_max']}"
-            )
-            logger.error("Please increase n_paths_max to proceed.")
-            logger.error("Terminating calculation.")
-            sys.exit(1)
+        if context["check_max_paths"]:
+            log_n_paths = get_log_n_paths(G, cutoff)
+            if log_n_paths > np.log(context["n_paths_max"]):
+                logger.error(
+                    f"Estimated number of paths is greater than {context['n_paths_max']}"
+                )
+                logger.error("Please increase n_paths_max to proceed.")
+                logger.error("Terminating calculation.")
+                sys.exit(1)
 
         cutoff_yields_max_num_paths_below_target = 0
         cutoff_yields_min_num_paths_above_target = 1000000.0

@@ -40,6 +40,10 @@ class ContextManager:
         self.n_paths_max: int = 100000
         """Terminate calculation if the number of estimated paths is greater than
         this."""
+        self.check_max_paths: bool = True
+        """Estimate the maximum number of paths and, if larger than `n_paths_max`,
+        terminate the calculation.
+        """
         self.frame_chunks: int = 96
         """When WISP is run with multiple processors, the frames from the PDB are
         loaded in chunks before being distributed to the many processors. This
