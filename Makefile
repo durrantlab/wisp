@@ -11,7 +11,7 @@ CONDA_LOCK_OPTIONS := -p linux-64 -p osx-64 -p win-64 --channel conda-forge
 ###   ENVIRONMENT   ###
 
 # See https://github.com/pypa/pip/issues/7883#issuecomment-643319919
-export PYTHON_KEYRING_BACKEND := keyring.backends.null.Keyring
+export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 
 .PHONY: conda-create
 conda-create:
@@ -32,6 +32,11 @@ conda-setup:
 .PHONY: conda-dependencies
 conda-dependencies:
 	echo "No conda-only packages are required."
+
+.PHONY: nodejs-dependencies
+nodejs-dependencies:
+	$(CONDA) conda install -y -c conda-forge nodejs
+	$(CONDA) npm install markdownlint-cli2 --global
 
 .PHONY: conda-lock
 conda-lock:
@@ -65,18 +70,24 @@ install:
 environment: conda-create from-conda-lock pre-commit-install install
 
 .PHONY: locks
-locks: conda-create conda-setup conda-dependencies conda-lock pre-commit-install poetry-lock install
+locks: conda-create conda-setup conda-dependencies nodejs-dependencies conda-lock pre-commit-install poetry-lock install
+
+
 
 ###   FORMATTING   ###
 
 .PHONY: validate
 validate:
+	- $(CONDA) markdownlint-cli2 "**/*.{md,markdown}" --config .markdownlint.yaml
 	- $(CONDA) pre-commit run --all-files
 
 .PHONY: formatting
 formatting:
+	- $(CONDA) markdownlint-cli2 "**/*.{md,markdown}" --fix --config .markdownlint.yaml
 	- $(CONDA) isort --settings-path pyproject.toml ./
 	- $(CONDA) black --config pyproject.toml ./
+
+
 
 ###   TESTING   ###
 
@@ -87,6 +98,7 @@ test:
 .PHONY: coverage
 coverage:
 	$(CONDA) coverage report
+
 
 ###   LINTING   ###
 
@@ -103,11 +115,21 @@ mypy:
 .PHONY: lint
 lint: check-codestyle mypy
 
-###   BUILDING   ###
+###   DEPLOY   ###
 
 .PHONY: build
 build:
+	- rm -r dist
 	$(CONDA) poetry build
+
+.PHONY: publish-test
+publish-test:
+	$(CONDA) python3 -m twine upload --repository testpypi dist/*
+
+.PHONY: publish
+publish:
+	$(CONDA) python3 -m twine upload dist/*
+
 
 ###   CLEANING   ###
 
@@ -141,6 +163,8 @@ build-remove:
 
 .PHONY: cleanup
 cleanup: pycache-remove dsstore-remove mypycache-remove ipynbcheckpoints-remove pytestcache-remove
+
+
 
 ###   DOCS   ###
 
