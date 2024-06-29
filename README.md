@@ -65,16 +65,16 @@ Or, you may use wisp as a library in Python.
 
 ```python
 from wisp.run import run_wisp
-from wisp.contexts import ContextManager
+from wisp.config import WispConfig
 
 # Update context
-context_manager = ContextManager()
-context_manager.pdb_path = "tests/files/trajectory_20_frames.pdb"
-context_manager.source_residues = ["C_LEU_10"]
-context_manager.sink_residues = ["C_ASP_11"]
+wisp_config = WispConfig()
+wisp_config.pdb_path = "tests/files/trajectory_20_frames.pdb"
+wisp_config.source_residues = ["C_LEU_10"]
+wisp_config.sink_residues = ["C_ASP_11"]
 
 # Run wisp
-paths = run_wisp(context_manager)
+paths = run_wisp(wisp_config)
 ```
 
 ## Program Output

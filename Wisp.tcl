@@ -56,9 +56,9 @@ namespace eval ::wisp:: {
   variable load_wisp_saved_matrix FALSE
   variable load_wisp_saved_matrix_temp ""
   variable load_wisp_saved_matrix_format "list {TRUE FALSE}"
-  variable wisp_saved_matrix_path "" ;# NOTE: need default here
-  variable wisp_saved_matrix_path_temp ""
-  variable wisp_saved_matrix_path_format "file"
+  variable path_saved_matrix "" ;# NOTE: need default here
+  variable path_saved_matrix_temp ""
+  variable path_saved_matrix_format "file"
   variable n_paths 20
   variable n_paths_temp ""
   variable n_cores 1
@@ -108,7 +108,7 @@ namespace eval ::wisp:: {
   variable num_paths 0 ;# variable will be modified once a WISP visualization is loaded
 
   variable arglist_files "wisp_directory output_dir"
-  variable arglist_covariance "node_definition contact_map_distance_limit load_wisp_saved_matrix wisp_saved_matrix_path"
+  variable arglist_covariance "node_definition contact_map_distance_limit load_wisp_saved_matrix path_saved_matrix"
   variable arglist_pathsearching "n_paths"
   variable arglist_multiprocessor "n_cores frame_chunks"
   variable arglist_graphics "shortest_path_radius  longest_path_radius spline_smoothness vmd_resolution node_sphere_radius shortest_path_r shortest_path_g shortest_path_b longest_path_r longest_path_g longest_path_b node_sphere_r node_sphere_g node_sphere_b shortest_path_opacity longest_path_opacity node_sphere_opacity pdb_single_frame_path"
@@ -381,7 +381,7 @@ proc ::wisp::default_args {} { ;# in case there is some sort of problem with par
   lappend ::wisp::arglist node_definition
   lappend ::wisp::arglist contact_map_distance_limit
   lappend ::wisp::arglist load_wisp_saved_matrix
-  lappend ::wisp::arglist wisp_saved_matrix_path
+  lappend ::wisp::arglist path_saved_matrix
   lappend ::wisp::arglist n_paths
   lappend ::wisp::arglist n_cores
   lappend ::wisp::arglist frame_chunks

@@ -1,16 +1,14 @@
 import argparse
 import os
 
-from . import __version__
-from .contexts import ContextManager
+from .config import WispConfig
 
 
-def setup_cli_interface(context_manager: ContextManager) -> argparse.ArgumentParser:
+def setup_cli_interface(wisp_config: WispConfig) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Update parameters for WISP.")
-    attributes = context_manager.get()  # Assuming this returns a dict of attributes
 
     parser.add_argument("pdb_path", type=str, help="Path to PDB file to analyze")
-    for attr, value in attributes.items():
+    for attr, value in wisp_config.model_dump().items():
         # Use the type of the current value to infer the expected type
         # This is a simplified approach; you might need custom handling for complex types
         arg_type = type(value) if value is not None else str
@@ -33,17 +31,17 @@ def setup_output_dir(output_dir: str) -> None:
         os.makedirs(output_dir)
 
 
-def run_cli() -> ContextManager:
-    context_manager = ContextManager()
-    parser = setup_cli_interface(context_manager)
+def run_cli() -> WispConfig:
+    wisp_config = WispConfig()
+    parser = setup_cli_interface(wisp_config)
     args = parser.parse_args()
 
     # Convert argparse Namespace to dictionary, excluding None values
     updates = {k: v for k, v in vars(args).items() if v is not None}
-    context_manager.update(updates)
+    wisp_config.update(updates)
 
-    setup_output_dir(context_manager.output_dir)
-    return context_manager
+    setup_output_dir(wisp_config.output_dir)
+    return wisp_config
 
 
 if __name__ == "__main__":

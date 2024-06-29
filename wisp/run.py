@@ -6,25 +6,24 @@ import numpy as np
 from loguru import logger
 
 from .cli import run_cli
-from .contexts import ContextManager
+from .config import WispConfig
 from .io import output_dir_info
 from .paths import GetPaths
 from .utils import GetCovarianceMatrix
 from .viz import Visualize
 
 
-def run_wisp(context_manager: ContextManager) -> None:
-    context = context_manager.get()
+def run_wisp(wisp_config: WispConfig) -> None:
     program_start_time = time.time()
 
     # compute the correlation matrix
-    if context["wisp_saved_matrix_path"] is not None:
+    if wisp_config.path_saved_matrix is not None:
         correlation_matrix_object = pickle.load(
-            open(context["wisp_saved_matrix_path"], "rb")
+            open(wisp_config.path_saved_matrix, "rb")
         )  # load the matrix instead of generating
     else:
         correlation_matrix_object = GetCovarianceMatrix(
-            context
+            wisp_config
         )  # so generate the matrix instead of loading it
     correlation_matrix = correlation_matrix_object.correlations
 
@@ -37,7 +36,7 @@ def run_wisp(context_manager: ContextManager) -> None:
         correlation_matrix_object,
         open(
             os.path.join(
-                context["output_dir"],
+                wisp_config.output_dir,
                 "functionalized_matrix_with_contact_map_applied.pickle",
             ),
             "wb",
@@ -46,10 +45,10 @@ def run_wisp(context_manager: ContextManager) -> None:
 
     # now get the source and sink locations from the parameters
     sources = correlation_matrix_object.convert_list_of_residue_keys_to_residue_indices(
-        context["source_residues"]
+        wisp_config.source_residues
     )
     sinks = correlation_matrix_object.convert_list_of_residue_keys_to_residue_indices(
-        context["sink_residues"]
+        wisp_config.sink_residues
     )
 
     # compute the paths
@@ -57,15 +56,15 @@ def run_wisp(context_manager: ContextManager) -> None:
         correlation_matrix,
         sources,
         sinks,
-        context,
+        wisp_config,
         correlation_matrix_object.average_pdb.residue_identifiers_in_order,
     )
 
     # create the visualization
-    Visualize(context, correlation_matrix_object, paths)
+    Visualize(wisp_config, correlation_matrix_object, paths)
 
     # provide the user information about the generated files
-    output_dir_info(context)
+    output_dir_info(wisp_config)
 
     logger.info(
         "Program execution time: " + str(time.time() - program_start_time) + " seconds"
@@ -75,5 +74,5 @@ def run_wisp(context_manager: ContextManager) -> None:
 
 
 def main():
-    context_manager = run_cli()
-    run_wisp(context_manager)
+    wisp_config = run_cli()
+    run_wisp(wisp_config)

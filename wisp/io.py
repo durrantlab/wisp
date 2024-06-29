@@ -48,7 +48,7 @@ def output_dir_info(context):
         + "\n\n"
     )
     f.write(
-        'functionalized_matrix_with_contact_map_applied.npy: A NumPy array that contains the matrix obtained by multiplying a functionalized correlation matrix and a contact map. This file is not human readable but can be loaded into WISP for use in subsequent runs with the -load_wisp_saved_matrix and -wisp_saved_matrix_path parameters. Thus, the matrix needs only to be calculated once for each trajectory, rather than every time WISP is executed. Use "wisp -help" for more information.'
+        'functionalized_matrix_with_contact_map_applied.npy: A NumPy array that contains the matrix obtained by multiplying a functionalized correlation matrix and a contact map. This file is not human readable but can be loaded into WISP for use in subsequent runs with the -load_wisp_saved_matrix and -path_saved_matrix parameters. Thus, the matrix needs only to be calculated once for each trajectory, rather than every time WISP is executed. Use "wisp -help" for more information.'
         + "\n\n"
     )
     f.write(
