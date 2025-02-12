@@ -77,6 +77,21 @@ context_manager.sink_residues = ["C_ASP_11"]
 paths = run_wisp(context_manager)
 ```
 
+## Development
+
+We use [pixi](https://pixi.sh/latest/) to manage Python environments and simplify the developer workflow.
+Once you have [pixi](https://pixi.sh/latest/) installed, move into `wisp` directory (e.g., `cd wisp`) and install the  environment using the command
+
+```bash
+pixi install
+```
+
+Now you can activate the new virtual environment using
+
+```sh
+pixi shell
+```
+
 ## Program Output
 
 The output directory contains multiple output files. The best way to visualize
