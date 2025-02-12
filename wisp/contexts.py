@@ -4,7 +4,7 @@ import time
 from collections.abc import Iterable, MutableMapping
 
 from loguru import logger
-from ruamel.yaml import YAML
+import yaml
 
 
 class ContextManager:
@@ -165,9 +165,8 @@ class ContextManager:
         """
         if yaml_path is not None:
             logger.info("Loading YAML context from {}", yaml_path)
-            yaml = YAML(typ="safe")
             with open(yaml_path, "r", encoding="utf-8") as f:
-                yaml_data = yaml.load(f)
+                yaml_data = yaml.safe_load(f)
             logger.debug("YAML data:\n{}", yaml_data)
             self.update(yaml_data)
         self.yaml_path = yaml_path

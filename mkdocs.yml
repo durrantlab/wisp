@@ -49,12 +49,10 @@ validation:
   absolute_links: warn
   unrecognized_links: warn
 
-# Options need to be indented twice for some reason?
 plugins:
   - search
   - autorefs
   - material-plausible
-  - table-reader
   - gen-files:
       scripts:
         - docs/gen_ref_pages.py
@@ -65,12 +63,42 @@ plugins:
           options:
             annotations_path: brief
             docstring_style: google
+            docstring_section_style: spacy
+            show_if_no_docstring: true
+            show_docstring_yields: true
+            show_docstring_examples: true
+            show_docstring_raises: true
+            show_root_toc_entry: true
+            show_root_full_path: true
+            show_object_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_root_members_full_path: true
+            show_source: false
+            merge_init_into_class: true
+            line_length: 88
+            show_root_heading: false
   - awesome-pages:
         collapse_single_pages: true
         strict: false
         order: asc
         sort_type: natural
         order_by: title
+  - git-revision-date-localized:
+      type: iso_datetime
+      timezone: America/Detroit
+      fallback_to_build_date: true
+  - macros
+  - table-reader
+  - glightbox
+  - mkdocs-jupyter:
+        no_input: False
+        include_requirejs: true
+        include_source: True
+        ignore: ["*.py"]
+        remove_tag_config:
+            remove_input_tags:
+                - hide_code
 
 extra:
   generator: false
@@ -81,9 +109,8 @@ extra_css:
   - css/mkdocstrings.css
 
 extra_javascript:
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
   - js/mathjax-config.js
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 markdown_extensions:
   - abbr

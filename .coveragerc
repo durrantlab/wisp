@@ -1,0 +1,10 @@
+[run]
+branch = true
+source = tests
+
+[paths]
+source = vaxstats
+
+[report]
+fail_under = 75
+show_missing = true

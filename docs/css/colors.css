@@ -68,7 +68,7 @@
 [data-md-color-scheme="dark"] {
 
     /* Primary color shades */
-    --md-primary-fg-color:               #03045e;
+    --md-primary-fg-color:               #23243D;
     --md-primary-fg-color--light:        #0437AD;
     --md-primary-bg-color:               #ffffff; /* Header text */
     --md-primary-bg-color--light:        #DBDBDB; /* Secondary header text */
@@ -108,7 +108,7 @@
     --md-typeset-color:                  #ffffff; /* Main text color */
 
     /* Typeset `a` color shades */
-    --md-typeset-a-color:                #01a0d7; /* Link color */
+    --md-typeset-a-color:                #96E4FE; /* Link color */
 
     /* Typeset `table` color shades */
     --md-typeset-table-color:            #a5a5a5;  /* Outline color */
@@ -131,4 +131,49 @@
     --md-admonition-fg-color:            #ffffff;
     --md-admonition-bg-color:            #212529;
 
+    .highlight-ipynb {
+        --jp-mirror-editor-string-color:     #98c379;
+        --jp-mirror-editor-number-color:     #d19a66;
+        --jp-mirror-editor-keyword-color:    #c678dd;
+        --jp-mirror-editor-operator-color:   #c678dd;
+    }
+
+
+
+    .highlight-ipynb {
+        margin: 0;
+        padding: 5px 10px;
+        background-color: #23262A;
+    }
+
+    .highlight-ipynb .nf {
+        color: #61afef;
+    }
+
+    .highlight-ipynb .p {
+        color: #ffffff;
+    }
+
+    .highlight-ipynb .nb {
+        color: #56b6c2;
+    }
+
+    .highlight-ipynb .kc {
+        color: #d19a66;
+    }
+
+    .highlight-ipynb .c1 {
+        color: #8f8f8f;
+    }
+
+    .jupyter-wrapper .jp-InputArea-editor {
+        position: relative;
+        border-color: #30363C;
+    }
+
+    .jupyter-wrapper .highlight pre {
+        background-color: transparent;
+        padding: 10px;
+        overflow: auto;
+    }
 }
